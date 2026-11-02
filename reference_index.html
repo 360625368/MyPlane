@@ -1,0 +1,385 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<!DOCTYPE html><html lang="zh-CN"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>G-Choco 文件索引</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#f3f5f8;--panel:#fff;--alt:#f7f9fb;--border:#e3e8ee;--accent:#2c6e8f;--text:#1c2733;--dim:#5b6773;--faint:#98a2ad;--hover:#f0f6fa;--shadow:0 1px 2px rgba(20,30,40,.05),0 6px 24px rgba(20,30,40,.06)}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font-family:'Noto Sans SC',-apple-system,'PingFang SC','Microsoft YaHei',sans-serif;line-height:1.5;font-size:14px}
+.wrap{max-width:1320px;margin:0 auto;padding:30px 20px 80px}
+h1{margin:0;font-size:1.7rem;font-weight:700}h1 span{color:var(--accent)}
+.sub{color:var(--dim);margin:4px 0 18px;font-size:.9rem}
+.bar{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin:0 0 12px}
+.btn{border:1px solid var(--border);background:var(--panel);border-radius:999px;padding:6px 14px;cursor:pointer;font-family:inherit;font-size:.82rem;color:var(--text);transition:all .12s}
+.btn:hover{border-color:var(--accent);color:var(--accent)}.btn.primary{background:var(--accent);border-color:var(--accent);color:#fff}.btn.primary:hover{opacity:.9;color:#fff}.btn.danger{background:#c0392b;border-color:#c0392b;color:#fff}
+.search{border:1px solid var(--border);background:var(--panel);border-radius:999px;padding:6px 14px;font-family:inherit;font-size:.84rem;min-width:220px;color:var(--text)}
+.note{font-size:.78rem;color:var(--faint)}
+.hidbar{display:none;flex-wrap:wrap;gap:6px;align-items:center;background:var(--panel);border:1px dashed var(--border);border-radius:10px;padding:8px 12px;margin:0 0 12px;font-size:.8rem;color:var(--dim)}
+.hidbar.show{display:flex}.chip-h{border:1px solid var(--border);background:var(--alt);border-radius:999px;padding:2px 10px;cursor:pointer;font-size:.76rem}.chip-h:hover{border-color:var(--accent);color:var(--accent)}
+.card{background:var(--panel);border-radius:14px;box-shadow:var(--shadow);overflow:hidden;border:1px solid var(--border)}
+.tw{overflow-x:auto}.card.idx,.card.idx .tw{overflow:visible}@media(max-width:1000px){.card.idx .tw{overflow-x:auto}}thead th{position:sticky;top:0;z-index:5}.card.idx thead tr:first-child th:first-child{border-top-left-radius:14px}.card.idx thead tr:first-child th:last-child{border-top-right-radius:14px}table{width:100%;border-collapse:separate;border-spacing:0;min-width:980px}
+th{position:sticky;top:0;background:var(--alt);text-align:left;font-weight:600;font-size:.76rem;color:var(--dim);letter-spacing:.04em;padding:10px 12px;border-bottom:1px solid var(--border);white-space:nowrap}
+td{padding:9px 12px;border-bottom:1px solid var(--border);vertical-align:top}tbody tr:hover td{background:var(--hover)}
+th .hb{opacity:.4;cursor:pointer;margin-left:6px;font-weight:400}th:hover .hb{opacity:1}th .delc{color:#c0392b;cursor:pointer;margin-left:4px;font-weight:400}
+.idc{white-space:nowrap}
+.tg{display:inline-flex;width:18px;height:18px;align-items:center;justify-content:center;border-radius:4px;color:var(--faint);cursor:pointer;user-select:none;font-size:.7rem;margin-right:4px}.tg:hover{background:var(--border);color:var(--text)}.tg.leaf{visibility:hidden}
+.idchip{font-family:'IBM Plex Mono',monospace;font-size:.76rem;background:rgba(44,110,143,.1);color:var(--accent);border-radius:5px;padding:1px 7px}
+tr.l0 td{background:var(--alt);border-top:1px solid var(--border)}tr.l0 .nm{font-weight:700;font-size:1rem}tr.l0 td.idc{border-left:4px solid var(--accent)}
+tr.l1 .nm{font-weight:600}.nm{color:var(--text)}.cnt{color:var(--faint);font-size:.76rem;margin-left:4px}.ds{color:var(--dim);font-size:.84rem}
+mark{background:#fff2a8;color:inherit;border-radius:2px;padding:0 1px}
+.pill{display:inline-block;border-radius:999px;padding:1px 9px;font-size:.74rem;font-weight:600;white-space:nowrap}
+.ow{background:rgba(44,110,143,.12);color:#2c6e8f}.ow1{background:rgba(124,77,184,.12);color:#7c4db8}.ow2{background:rgba(47,143,91,.12);color:#2f8f5b}.ow3{background:rgba(176,121,8,.14);color:#a06b00}.ow0{background:rgba(120,130,140,.14);color:#66727e}
+.ac-secret{background:rgba(192,57,43,.12);color:#c0392b}.ac-stage{background:rgba(176,121,8,.14);color:#a06b00}.ac-team{background:rgba(120,130,140,.14);color:#66727e}
+.go{display:inline-flex;align-items:center;gap:4px;background:var(--accent);color:#fff !important;text-decoration:none;border-radius:999px;padding:2px 12px;font-size:.78rem;font-weight:600}.go:hover{opacity:.88}.go.file{background:#2f8f5b}.lock{color:#c0392b;font-size:.78rem;font-weight:600}
+.act{white-space:nowrap}.mini{border:1px solid var(--border);background:var(--panel);border-radius:6px;padding:1px 8px;cursor:pointer;font-family:inherit;font-size:.72rem;color:var(--dim);margin-right:3px}.mini:hover{border-color:var(--accent);color:var(--accent)}
+#menu{position:fixed;display:none;z-index:40;background:var(--panel);border:1px solid var(--border);border-radius:10px;box-shadow:0 10px 30px rgba(0,0,0,.15);padding:6px;min-width:180px}
+#menu.show{display:block}#menu button{display:block;width:100%;text-align:left;border:0;background:none;padding:7px 10px;border-radius:6px;cursor:pointer;font-family:inherit;font-size:.84rem;color:var(--text)}
+#menu button:hover{background:var(--hover);color:var(--accent)}#menu button.dg{color:#c0392b}#menu hr{border:0;border-top:1px solid var(--border);margin:4px 0}#menu button:disabled{opacity:.35;cursor:default}
+#ov{position:fixed;inset:0;background:rgba(15,25,35,.45);display:none;align-items:center;justify-content:center;z-index:50;padding:16px}
+#ov.show{display:flex}.dlg{background:var(--panel);border-radius:14px;box-shadow:0 20px 60px rgba(0,0,0,.3);width:min(560px,100%);padding:20px 22px;max-height:90vh;overflow:auto}
+.dlg h3{margin:0 0 12px;font-size:1.05rem}.dlg label{display:block;font-size:.78rem;color:var(--dim);margin:10px 0 4px}
+.dlg input,.dlg textarea,.dlg select{width:100%;border:1px solid var(--border);border-radius:8px;padding:8px 10px;font-family:inherit;font-size:.9rem;background:var(--panel);color:var(--text)}.dlg textarea{min-height:64px;resize:vertical}
+.dlg .msg{font-size:.86rem;color:var(--dim);white-space:pre-wrap}.dlg .btns{display:flex;justify-content:flex-end;gap:8px;margin-top:16px}
+.trow{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid var(--border);font-size:.86rem}
+
+.dh{display:inline-flex;width:16px;height:18px;align-items:center;justify-content:center;color:var(--faint);cursor:grab;touch-action:none;user-select:none;margin-right:2px;border-radius:4px;font-size:.8rem}.dh:hover{background:var(--border);color:var(--text)}
+tr.dragging td{opacity:.35}tr.drop-before td{box-shadow:inset 0 3px 0 var(--accent)}tr.drop-after td{box-shadow:inset 0 -3px 0 var(--accent)}tr.drop-inside td{background:rgba(44,110,143,.14) !important}
+body.dragmode{cursor:grabbing;user-select:none}
+#ghost{position:fixed;pointer-events:none;z-index:60;background:var(--accent);color:#fff;border-radius:8px;padding:4px 10px;font-size:.8rem;box-shadow:0 6px 20px rgba(0,0,0,.2);display:none}
+tr.flt th{background:var(--panel);padding:6px 8px;position:static}.fsel,.fin{width:100%;min-width:70px;border:1px solid var(--border);border-radius:6px;padding:3px 6px;font-family:inherit;font-size:.76rem;background:var(--panel);color:var(--text)}tr.anc td{opacity:.55}
+.fbtn{width:100%;text-align:left;border:1px solid var(--border);border-radius:6px;padding:3px 8px;font-family:inherit;font-size:.76rem;background:var(--panel);color:var(--text);cursor:pointer;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.fbtn.on{border-color:var(--accent);color:var(--accent);font-weight:600}
+#fp{position:fixed;display:none;z-index:45;background:var(--panel);border:1px solid var(--border);border-radius:10px;box-shadow:0 10px 30px rgba(0,0,0,.15);padding:8px;min-width:200px;max-height:320px;overflow:auto}#fp.show{display:block}#fp label{display:flex;align-items:center;gap:8px;padding:5px 8px;border-radius:6px;cursor:pointer;font-size:.84rem}#fp label:hover{background:var(--hover)}#fp .fc{margin-left:auto;color:var(--faint);font-size:.76rem}#fp .fh{display:flex;justify-content:space-between;padding:2px 8px 6px;font-size:.76rem;color:var(--faint)}#fp .fh a{color:var(--accent);cursor:pointer}
+.resbar{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin:-2px 0 10px}.rchip{display:inline-flex;align-items:center;gap:6px;border-radius:999px;padding:4px 14px;font-size:.84rem;background:var(--alt);border:1px solid var(--border);color:var(--dim)}.rchip.on{background:var(--accent);border-color:var(--accent);color:#fff;font-weight:600}.rchip b{font-size:1rem}
+footer{margin-top:22px;color:var(--faint);font-size:.78rem;line-height:1.7}
+.tools{display:flex;gap:8px;flex-wrap:wrap;margin:0 0 12px}.tools button{border:1px solid var(--border);background:var(--panel);border-radius:999px;padding:6px 14px;cursor:pointer;font-family:inherit;font-size:.8rem;color:var(--text)}.tools .note{display:none}
+@media print{.bar,.hidbar,.act,.tools{display:none}}
+</style>
+<style id="platform-base">
+:root{box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);}
+html{scroll-padding-top:env(safe-area-inset-top,0px);}
+img,svg{max-width:100%;}
+@media (prefers-color-scheme: dark){
+ :root:not([data-theme="light"]){
+  --c-bg:#14181c;--c-bg-grid:rgba(255,255,255,0.04);--c-panel:#1c2228;--c-panel-alt:#232a31;--c-border:#2f3841;--c-border-strong:#46525d;--c-accent:#5aa6cc;--c-accent-dim:rgba(90,166,204,0.14);--c-text:#e6eaee;--c-text-dim:#a9b3bc;--c-text-faint:#7c8791;
+  --bg:#14181c;--panel:#1c2228;--alt:#232a31;--border:#2f3841;--accent:#5aa6cc;--text:#e6eaee;--dim:#a9b3bc;--faint:#7c8791;
+ }}
+:root[data-theme="dark"]{
+  --c-bg:#14181c;--c-bg-grid:rgba(255,255,255,0.04);--c-panel:#1c2228;--c-panel-alt:#232a31;--c-border:#2f3841;--c-border-strong:#46525d;--c-accent:#5aa6cc;--c-accent-dim:rgba(90,166,204,0.14);--c-text:#e6eaee;--c-text-dim:#a9b3bc;--c-text-faint:#7c8791;
+  --bg:#14181c;--panel:#1c2228;--alt:#232a31;--border:#2f3841;--accent:#5aa6cc;--text:#e6eaee;--dim:#a9b3bc;--faint:#7c8791;
+}
+body{background-color:var(--bg,var(--c-bg));}
+.tablewrap{overflow-x:auto;-webkit-overflow-scrolling:touch;}
+</style>
+
+<style id="tools-css">
+.tools{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin:10px 0 16px}
+.tools button{border:1px solid var(--border,#d8dee3);background:var(--panel,#fff);border-radius:3px;padding:6px 12px;cursor:pointer;font-family:inherit;font-size:.82rem;color:var(--text,#1f2933)}
+.tools button:hover{border-color:var(--accent,#2c6e8f);color:var(--accent,#2c6e8f)}
+.tools .note{font-size:.76rem;color:var(--faint,#8b959d)}
+h2.sec-toggle,.sec.sec-toggle{cursor:pointer;user-select:none}
+h2.sec-toggle::before,.sec.sec-toggle::before{content:'▾';display:inline-block;width:1em;color:var(--faint,#8b959d);transition:transform .15s}
+h2.sec-toggle.collapsed::before,.sec.sec-toggle.collapsed::before{transform:rotate(-90deg)}
+.sec-hidden{display:none !important}
+.toc{background:var(--panel,#fff);border:1px solid var(--border,#d8dee3);border-radius:3px;padding:10px 14px;margin:0 0 18px;font-size:.86rem}
+.toc a{color:var(--accent,#2c6e8f);text-decoration:none;margin-right:14px;display:inline-block;margin-bottom:4px}
+@media print{.tools,.toc{display:none}.sec-hidden{display:block !important}.caps{display:block !important}.dom.open .caps,.caps{display:block !important}body{background:#fff}}
+</style>
+</head><body><div class="wrap">
+<header><h1>文件 <span>索引</span></h1><p class="sub">G-Choco Quant · 所有知识、工具、体系、规范、文件、代码、程序的编号与入口 <span id="conn" class="note"></span></p></header>
+<div class="bar"><input class="search" id="q" placeholder="搜索名称、说明、维护人、编号…"><button class="btn" data-act="expand">全部展开</button><button class="btn" data-act="collapse">全部折叠</button><button class="btn" data-act="lv">展开到第 2 层</button><span id="ownerBar" style="display:none;gap:8px"><button class="btn" data-act="undo" id="undoBtn" title="撤销（Ctrl / ⌘ + Z）" disabled>↶ 撤销</button><button class="btn primary" data-act="addtop">＋ 顶层文件夹</button><button class="btn" data-act="addcol">＋ 列</button><button class="btn" data-act="trash">回收站 <span id="tcount"></span></button><button class="btn" data-act="export">导出 JSON</button></span><span class="note" id="modeNote"></span></div>
+<div class="hidbar" id="hidbar"></div><div class="resbar" id="fcount"></div>
+<div class="card idx"><div class="tw"><table><thead id="th"></thead><tbody id="tb"></tbody></table></div></div>
+<footer>拖动每行最左侧的 ⠿ 即可移动：落在一行的上沿 / 下沿 = 放到它前面 / 后面，落在文件夹中间 = 放进文件夹。每一步都可撤销（↶ 或 Ctrl / ⌘ + Z）。编号由位置自动生成（顶层从 0 起，其余从 1 起），移动、删除、复制后自动重排。删除文件夹时可选「子项上移一级」——子项自然成为上一层的编号。删除的东西进回收站，可恢复。入口只有三种：网址、上传的文件、暂无；填入后可在入口旁点「修改」更改，每次修改都要二次确认。标「机密」的入口只对 JT、被授权的人和该工段负责人显示。标「仅 JT 可见」的顶层文件夹，连同其中全部内容，只在 JT 打开本页时显示。「隐藏」只影响你自己的浏览器。</footer>
+<input type="file" id="fileIn" style="display:none" accept=".pdf,.png,.jpg,.jpeg,.gif,.webp,.md,.json,.csv,.txt">
+</div>
+<div id="menu"></div><div id="fp"></div><div id="ghost"></div>
+<div id="ov"><div class="dlg" id="dlg"></div></div>
+<script>
+const INIT_NODES=[{"id": "0", "name": "根：本库说明与索引", "desc": "本库的目的、结构、命名、权限；本页即索引", "owner": "JT", "access": "团队内", "freq": "结构变化时", "url": "https://claude.ai/artifact/8Px3Pw21eBAmvRZrPjvWNE", "kind": "file"}, {"id": "1", "name": "Alpha Factory（体系）", "desc": "生产线本身", "owner": "", "access": "", "freq": "—", "url": "", "kind": "folder"}, {"id": "1.1", "name": "Alpha Factory Map", "desc": "理念、飞轮、工段与中台、各工段现状", "owner": "JT", "access": "团队内", "freq": "版本窗口", "url": "https://claude.ai/artifact/J9snLqE8uAGJx8eyw6DHPr", "kind": "file"}, {"id": "1.2", "name": "实验室 · 市场研究与假设生成", "desc": "市场研究与假设：市场状态框架、研究七步法与校验清单、开发过程抽象", "owner": "", "access": "", "freq": "按需", "url": "", "kind": "folder"}, {"id": "1.2.1", "name": "市场状态框架", "desc": "五维（趋势 / 波动 / 结构 / 流动性 / 微观结构）已提出，划分未冻结", "owner": "", "access": "", "freq": "按需", "url": "", "kind": "folder"}, {"id": "1.2.2", "name": "研究方法论", "desc": "研究七步法 + 校验清单；入场准度检验等方法", "owner": "", "access": "", "freq": "按需", "url": "", "kind": "folder"}, {"id": "1.3", "name": "工段一 · 策略设计与实现", "desc": "把假设写成规格书、参数表、登记表、代码，按工段二契约交付", "owner": "", "access": "", "freq": "—", "url": "", "kind": "folder"}, {"id": "1.3.1", "name": "Master Document", "desc": "待写（Yui 写、JT 审）", "owner": "Yui", "access": "机密", "freq": "—", "url": "", "kind": "file"}, {"id": "1.3.2", "name": "开线交付检查表", "desc": "工段一的交付行目前在工段二检查表上（Yui 两行）", "owner": "Yui", "access": "团队内", "freq": "—", "url": "", "kind": "file"}, {"id": "1.3.3", "name": "目标书 · Yui", "desc": "十个文件怎么交、怎么自检、端到端配合、周报结构", "owner": "JT", "access": "团队内", "freq": "Master 升版时", "url": "https://claude.ai/artifact/Ab8S5rFmN27V1iWTFGVFy8", "kind": "file"}, {"id": "1.4", "name": "工段二 · 自动化检验与淘汰", "desc": "判断一个策略值不值得继续研究", "owner": "", "access": "", "freq": "—", "url": "", "kind": "folder"}, {"id": "1.4.1", "name": "Master Document v2.0.2（冻结）", "desc": "唯一真源；JT 撰写，Eric 维护；只有 JT 与 Eric 可看改", "owner": "Eric", "access": "机密", "freq": "版本窗口", "url": "https://claude.ai/artifact/RFhw3gzgZzzrVPSrwmqCRY", "kind": "file"}, {"id": "1.4.2", "name": "开线交付检查表", "desc": "24 行设备 / 程序 / 文件；状态实时同步", "owner": "Eric", "access": "团队内", "freq": "每周", "url": "https://claude.ai/artifact/5kGh2Yc6zG6FWTK5TJY76m", "kind": "file"}, {"id": "1.4.3", "name": "目标书 · Eric", "desc": "24 行逐行：输入输出 / 依据 / 怎么算交了 / 顺序 / 不要做", "owner": "JT", "access": "团队内", "freq": "Master 升版时", "url": "https://claude.ai/artifact/Gqq6RR2aBuZEWgqXWssfCg", "kind": "file"}, {"id": "1.4.4", "name": "专题方案", "desc": "不进 Master、要单独定的事", "owner": "", "access": "", "freq": "按需", "url": "", "kind": "folder"}, {"id": "1.4.4.1", "name": "前向验证方案 v0.2", "desc": "低频策略怎么度过回测与满仓之间；取消模拟盘、50 美元实盘起", "owner": "JT", "access": "团队内", "freq": "专项会后", "url": "https://claude.ai/artifact/BCCZegg5mqiwJyiuftMDEb", "kind": "file"}, {"id": "1.4.5", "name": "工具与程序", "desc": "每件设备一个子节点：README（是什么 / 为什么 / 怎么实现 / 怎么用）、源码、测试、验收证据、CHANGELOG", "owner": "", "access": "", "freq": "每次交付", "url": "", "kind": "folder"}, {"id": "1.4.5.1", "name": "validator 输入校验工具", "desc": "检查上游十个文件", "owner": "Eric", "access": "团队内", "freq": "每次交付", "url": "", "kind": "file"}, {"id": "1.4.5.2", "name": "registry_from_spec 登记表骨架生成", "desc": "spec → registry 骨架", "owner": "Eric", "access": "团队内", "freq": "每次交付", "url": "", "kind": "file"}, {"id": "1.4.5.3", "name": "market_data_fetch 行情拉取", "desc": "K 线 / 标记价 / 资金费率 / 持仓量，带哈希，切段", "owner": "Eric", "access": "团队内", "freq": "每次交付", "url": "", "kind": "file"}, {"id": "1.4.5.4", "name": "容器编排", "desc": "Agent 容器与判定容器", "owner": "Eric", "access": "团队内", "freq": "每次交付", "url": "", "kind": "file"}, {"id": "1.4.5.5", "name": "backtest_runner 回测器", "desc": "动作表接口 + 头寸账本", "owner": "Eric", "access": "团队内", "freq": "每次交付", "url": "", "kind": "file"}, {"id": "1.4.5.6", "name": "acceptance_math 判据计算库", "desc": "全部判据与五种状态词", "owner": "Eric", "access": "团队内", "freq": "每次交付", "url": "", "kind": "file"}, {"id": "1.4.5.7", "name": "param_search 参数搜索", "desc": "粗到细两段网格", "owner": "Eric", "access": "团队内", "freq": "每次交付", "url": "", "kind": "file"}, {"id": "1.4.5.8", "name": "registry_diff 比对器", "desc": "九类修改归类与单调性", "owner": "Eric", "access": "团队内", "freq": "每次交付", "url": "", "kind": "file"}, {"id": "1.4.5.9", "name": "保真工具三件", "desc": "抽查出题 / 边界行情 / 剥注释", "owner": "Eric", "access": "团队内", "freq": "每次交付", "url": "", "kind": "file"}, {"id": "1.4.5.10", "name": "orchestrator 编排器", "desc": "A→H 调度与闸门", "owner": "Eric", "access": "团队内", "freq": "每次交付", "url": "", "kind": "file"}, {"id": "1.4.5.11", "name": "holdout_manage 留出段管理", "desc": "按段计 k", "owner": "Eric", "access": "团队内", "freq": "每次交付", "url": "", "kind": "file"}, {"id": "1.4.5.12", "name": "run_ledger 账本", "desc": "索引链、哈希", "owner": "Eric", "access": "团队内", "freq": "每次交付", "url": "", "kind": "file"}, {"id": "1.4.5.13", "name": "Alpha 登记册", "desc": "按 Alpha 汇总", "owner": "Eric", "access": "团队内", "freq": "每次交付", "url": "", "kind": "file"}, {"id": "1.4.5.14", "name": "report_gen 报告生成", "desc": "14 项报告", "owner": "Eric", "access": "团队内", "freq": "每次交付", "url": "", "kind": "file"}, {"id": "1.4.5.15", "name": "slicer 切片器与九份 Skill", "desc": "从 Master 切出", "owner": "Eric", "access": "团队内", "freq": "每次交付", "url": "", "kind": "file"}, {"id": "1.4.5.16", "name": "测试 Agent 运行时", "desc": "质检员本人", "owner": "Eric", "access": "团队内", "freq": "每次交付", "url": "", "kind": "file"}, {"id": "1.4.6", "name": "本工段维护的规范与接口", "desc": "交界产物只登记在维护人所在工段", "owner": "", "access": "", "freq": "改动时", "url": "", "kind": "folder"}, {"id": "1.4.6.1", "name": "策略模块接口（动作表）", "desc": "可执行版 = 接口定义代码 + 回测器；Master 附录 A.4 同步", "owner": "Eric", "access": "团队内", "freq": "改动时", "url": "", "kind": "file"}, {"id": "1.4.6.2", "name": "上游交付格式（十个文件）", "desc": "可执行版 = validator；Master 附录 A 同步", "owner": "Eric", "access": "团队内", "freq": "改动时", "url": "", "kind": "file"}, {"id": "1.4.6.3", "name": "成交记录格式", "desc": "字段表 + 示例 + 校验代码", "owner": "Eric", "access": "团队内", "freq": "改动时", "url": "", "kind": "file"}, {"id": "1.4.6.4", "name": "引擎行为声明表", "desc": "每项引擎行为的取值；CZ 回签", "owner": "Eric", "access": "团队内", "freq": "改动时", "url": "", "kind": "file"}, {"id": "1.4.6.5", "name": "版本号与配置指纹函数", "desc": "给策略目录返回版本号与指纹", "owner": "Eric", "access": "团队内", "freq": "改动时", "url": "", "kind": "file"}, {"id": "1.4.7", "name": "Skill 与 Agent 配置", "desc": "九份 Skill 由 Master 切出；权限边界与越界测试记录", "owner": "", "access": "", "freq": "Master 升版", "url": "", "kind": "folder"}, {"id": "1.4.8", "name": "运行记录与账本归档", "desc": "报告、提议书、样件索引快照", "owner": "", "access": "", "freq": "每次运行", "url": "", "kind": "folder"}, {"id": "1.4.9", "name": "问题清单与版本窗口", "desc": "冻结期设计意见；v2.1 窗口处置", "owner": "", "access": "", "freq": "持续", "url": "", "kind": "folder"}, {"id": "1.5", "name": "工段三 · 实盘执行", "desc": "把通过检测的策略安全可靠地放进真实市场", "owner": "", "access": "", "freq": "—", "url": "", "kind": "folder"}, {"id": "1.5.1", "name": "Master Document（前身：需求与问题清单 v1.3）", "desc": "待 CZ 写、JT 审；现为需求清单", "owner": "CZ", "access": "机密", "freq": "—", "url": "https://claude.ai/artifact/NFcXnFcW9YR5HprV8zdag8", "kind": "file"}, {"id": "1.5.2", "name": "开线交付检查表 v0", "desc": "19 行 + 4 行依赖", "owner": "CZ", "access": "团队内", "freq": "每周", "url": "https://claude.ai/artifact/2PoEAzbTcT2ac6WYNY8sKU", "kind": "file"}, {"id": "1.5.3", "name": "目标书 · CZ", "desc": "19 行逐行；安全先于连交易所", "owner": "JT", "access": "团队内", "freq": "Master 升版时", "url": "https://claude.ai/artifact/2N12A17jiR5W7RWQuu95uE", "kind": "file"}, {"id": "1.5.4", "name": "专题方案", "desc": "—", "owner": "", "access": "", "freq": "按需", "url": "", "kind": "folder"}, {"id": "1.5.5", "name": "工具与程序", "desc": "执行服务各模块：策略加载、下单、头寸核对、独立风控、记录、监控、安全配置", "owner": "", "access": "", "freq": "每次交付", "url": "", "kind": "folder"}, {"id": "1.5.5.1", "name": "策略加载模块", "desc": "按动作表接口加载策略，喂行情与头寸状态，取回动作清单", "owner": "CZ", "access": "团队内", "freq": "", "url": "", "kind": "file"}, {"id": "1.5.5.2", "name": "下单模块", "desc": "动作 → 币安订单；市价 / 限价 / 交易所侧条件止损；双向持仓", "owner": "CZ", "access": "团队内", "freq": "", "url": "", "kind": "file"}, {"id": "1.5.5.3", "name": "头寸与批次核对", "desc": "与交易所持仓、挂单核对；重连、重启先核对再继续", "owner": "CZ", "access": "团队内", "freq": "", "url": "", "kind": "file"}, {"id": "1.5.5.4", "name": "限价止盈与未成交处置", "desc": "maker 限价止盈；未成交撤 / 追 / 放弃可配置", "owner": "CZ", "access": "团队内", "freq": "", "url": "", "kind": "file"}, {"id": "1.5.5.5", "name": "独立风控层", "desc": "最大敞口、单日亏损、订单频率、价格偏离、总开关", "owner": "CZ", "access": "团队内", "freq": "", "url": "", "kind": "file"}, {"id": "1.5.5.6", "name": "成交与事件记录模块", "desc": "按 Eric 的格式落盘，带版本号与指纹", "owner": "CZ", "access": "团队内", "freq": "", "url": "", "kind": "file"}, {"id": "1.5.5.7", "name": "审计日志", "desc": "关键操作留痕", "owner": "CZ", "access": "团队内", "freq": "", "url": "", "kind": "file"}, {"id": "1.5.5.8", "name": "心跳与告警", "desc": "进程、连接、持仓一致性、亏损、频率监控", "owner": "CZ", "access": "团队内", "freq": "", "url": "", "kind": "file"}, {"id": "1.5.5.9", "name": "密钥与账户配置", "desc": "禁提现、IP 白名单、子账户、2FA", "owner": "CZ", "access": "团队内", "freq": "", "url": "", "kind": "file"}, {"id": "1.5.5.10", "name": "服务器加固", "desc": "无入站端口、依赖锁定、漏洞扫描", "owner": "CZ", "access": "团队内", "freq": "", "url": "", "kind": "file"}, {"id": "1.5.6", "name": "本工段维护的规范与接口", "desc": "暂无（交界规范由工段二维护）", "owner": "", "access": "", "freq": "—", "url": "", "kind": "folder"}, {"id": "1.5.7", "name": "Skill 与 Agent 配置", "desc": "暂无", "owner": "", "access": "", "freq": "—", "url": "", "kind": "folder"}, {"id": "1.5.8", "name": "运行记录", "desc": "实盘成交记录、事故记录", "owner": "", "access": "", "freq": "持续", "url": "", "kind": "folder"}, {"id": "1.5.9", "name": "问题清单", "desc": "—", "owner": "", "access": "", "freq": "持续", "url": "", "kind": "folder"}, {"id": "1.6", "name": "工段四 · 组合与资本配置", "desc": "未启动", "owner": "", "access": "", "freq": "—", "url": "", "kind": "folder"}, {"id": "1.7", "name": "数据与知识中台", "desc": "所有工段共用的长期资产", "owner": "", "access": "", "freq": "持续", "url": "", "kind": "folder"}, {"id": "1.7.1", "name": "Alpha 登记册", "desc": "每个 Alpha 一行：ID、假设、状态、谱系、三轴坐标", "owner": "", "access": "", "freq": "每次运行", "url": "", "kind": "folder"}, {"id": "1.7.2", "name": "失败分类库", "desc": "失败样件：分类码、Alpha、版本、原因", "owner": "", "access": "", "freq": "每次运行", "url": "", "kind": "folder"}, {"id": "1.7.3", "name": "跨策略经验库与约定值校准", "desc": "三轴实测坐标、判据实测值；校准占位约定值", "owner": "", "access": "", "freq": "每次运行", "url": "", "kind": "folder"}, {"id": "1.7.4", "name": "研究记忆", "desc": "研究结论的结构化存档，成功与失败都存", "owner": "", "access": "", "freq": "持续", "url": "", "kind": "folder"}, {"id": "1.7.5", "name": "数据资产", "desc": "行情文件与哈希清单、数据源说明、付费数据订阅", "owner": "", "access": "", "freq": "每周", "url": "", "kind": "folder"}, {"id": "1.7.6", "name": "实盘反馈", "desc": "成交记录、一致性指标、滑点校准", "owner": "", "access": "", "freq": "持续", "url": "", "kind": "folder"}, {"id": "1.8", "name": "运营机制与规范", "desc": "管理原则、流程、登记表；审阅指南与各类模板", "owner": "", "access": "", "freq": "", "url": "", "kind": "folder"}, {"id": "1.8.1", "name": "Alpha Factory 运营机制", "desc": "A 管理原则 / B 流程 / C 登记表", "owner": "JT", "access": "团队内", "freq": "", "url": "https://claude.ai/artifact/8yHhC1mCQwhg5EuvW5bCNS", "kind": "file"}, {"id": "1.8.2", "name": "Master 审阅指南", "desc": "三种视角、必答问题、分层规则、一次提交", "owner": "JT", "access": "团队内", "freq": "", "url": "https://claude.ai/artifact/8XisdYzy7SMKPBK6HKgpa1", "kind": "file"}, {"id": "1.9", "name": "考试", "desc": "题库、出题规则、成绩", "owner": "", "access": "", "freq": "每次定版", "url": "", "kind": "folder"}, {"id": "1.9.1", "name": "工段二 Master v2.0.2 评审测试", "desc": "30 题；成绩自动提交", "owner": "JT", "access": "团队内", "freq": "定版时", "url": "https://claude.ai/artifact/SDv9CfVxrviw5VNaCFv49b", "kind": "file"}, {"id": "1.9.2", "name": "Alpha Factory·基本概念测试", "desc": "21 题；全员", "owner": "JT", "access": "团队内", "freq": "蓝图变化时", "url": "https://claude.ai/artifact/7ybfRfnbmVtHAdvBfh4h2w", "kind": "file"}, {"id": "1.10", "name": "动态管理", "desc": "时间流：进度、周报、会议、反馈、决策", "owner": "", "access": "", "freq": "每周", "url": "", "kind": "folder"}, {"id": "1.10.1", "name": "阶段性基础事实与进度", "desc": "每周五后更新，每期存快照", "owner": "JT", "access": "团队内", "freq": "每周", "url": "https://claude.ai/artifact/TtTYJQW4Wq6vrjKJjJfQ6U", "kind": "file"}, {"id": "1.10.2", "name": "周报", "desc": "按人按周归档", "owner": "", "access": "", "freq": "每周五", "url": "", "kind": "folder"}, {"id": "1.10.3", "name": "会议", "desc": "准备页与纪要", "owner": "", "access": "", "freq": "每次会", "url": "", "kind": "folder"}, {"id": "1.10.3.1", "name": "全员会 2026-10-09 准备页", "desc": "一次性会议准备页", "owner": "Eric", "access": "团队内", "freq": "", "url": "https://claude.ai/artifact/DQseScdDeWTnGbkq3ezYyG", "kind": "file"}, {"id": "1.10.4", "name": "反馈与处置", "desc": "反馈原件 + 逐条处置", "owner": "", "access": "", "freq": "每轮", "url": "", "kind": "folder"}, {"id": "1.10.5", "name": "决策记录", "desc": "一行一决：日期 / 决定 / 谁定 / 依据 / 影响", "owner": "JT", "access": "团队内", "freq": "每次拍板", "url": "", "kind": "file"}, {"id": "2", "name": "Strategy Cluster（策略簇）", "desc": "每个策略一个节点，结构相同", "owner": "", "access": "", "freq": "—", "url": "", "kind": "folder"}, {"id": "2.1", "name": "Range Y（区间回归，原 Strategy Y）", "desc": "TradingView → Webhook → 币安实盘中；分批建仓", "owner": "", "access": "", "freq": "—", "url": "", "kind": "folder"}, {"id": "2.1.1", "name": "策略档案", "desc": "Alpha ID、假设、状态、谱系、负责人", "owner": "Yui", "access": "团队内", "freq": "—", "url": "", "kind": "file"}, {"id": "2.1.2", "name": "研究记录", "desc": "大纲、报告、实测、失败的尝试", "owner": "", "access": "", "freq": "—", "url": "", "kind": "folder"}, {"id": "2.1.3", "name": "逻辑说明书 / 规格书", "desc": "spec.md 各版本", "owner": "Yui", "access": "团队内", "freq": "—", "url": "", "kind": "file"}, {"id": "2.1.4", "name": "参数表与登记表", "desc": "params.yaml、registry.yaml", "owner": "Yui", "access": "团队内", "freq": "—", "url": "", "kind": "file"}, {"id": "2.1.5", "name": "代码", "desc": "回测实盘同一份；旧实现 legacy", "owner": "Yui", "access": "团队内", "freq": "—", "url": "", "kind": "file"}, {"id": "2.1.6", "name": "回测记录", "desc": "工段二产出", "owner": "", "access": "", "freq": "—", "url": "", "kind": "folder"}, {"id": "2.1.7", "name": "前向验证与实盘记录", "desc": "工段三产出", "owner": "", "access": "", "freq": "—", "url": "", "kind": "folder"}, {"id": "2.1.8", "name": "版本谱系与变更", "desc": "版本号、父版本、M 类型、审批", "owner": "Yui", "access": "团队内", "freq": "—", "url": "", "kind": "file"}, {"id": "2.1.9", "name": "复盘与退役", "desc": "判定、原因、经验写回", "owner": "Yui", "access": "团队内", "freq": "—", "url": "", "kind": "file"}, {"id": "2.2", "name": "Trend（趋势，BTC 永续小趋势）", "desc": "多头、空头两个 Alpha；入场重做中", "owner": "", "access": "", "freq": "—", "url": "", "kind": "folder"}, {"id": "2.2.1", "name": "策略档案", "desc": "Alpha ID、假设、状态、谱系、负责人", "owner": "Yui", "access": "团队内", "freq": "—", "url": "", "kind": "file"}, {"id": "2.2.2", "name": "研究记录", "desc": "大纲、报告、实测、失败的尝试", "owner": "", "access": "", "freq": "—", "url": "", "kind": "folder"}, {"id": "2.2.3", "name": "逻辑说明书 / 规格书", "desc": "spec.md 各版本", "owner": "Yui", "access": "团队内", "freq": "—", "url": "", "kind": "file"}, {"id": "2.2.4", "name": "参数表与登记表", "desc": "params.yaml、registry.yaml", "owner": "Yui", "access": "团队内", "freq": "—", "url": "", "kind": "file"}, {"id": "2.2.5", "name": "代码", "desc": "回测实盘同一份；旧实现 legacy", "owner": "Yui", "access": "团队内", "freq": "—", "url": "", "kind": "file"}, {"id": "2.2.6", "name": "回测记录", "desc": "工段二产出", "owner": "", "access": "", "freq": "—", "url": "", "kind": "folder"}, {"id": "2.2.7", "name": "前向验证与实盘记录", "desc": "工段三产出", "owner": "", "access": "", "freq": "—", "url": "", "kind": "folder"}, {"id": "2.2.8", "name": "版本谱系与变更", "desc": "版本号、父版本、M 类型、审批", "owner": "Yui", "access": "团队内", "freq": "—", "url": "", "kind": "file"}, {"id": "2.2.9", "name": "复盘与退役", "desc": "判定、原因、经验写回", "owner": "Yui", "access": "团队内", "freq": "—", "url": "", "kind": "file"}], BASE_COLS=[{"key": "name", "label": "名称"}, {"key": "desc", "label": "说明"}, {"key": "owner", "label": "维护人"}, {"key": "access", "label": "权限"}, {"key": "url", "label": "入口"}];
+const esc=t=>String(t??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const ld=(k,d)=>{try{const v=JSON.parse(localStorage.getItem(k));return v??d;}catch(e){return d;}};
+let items={},cols=BASE_COLS.slice(),db=null,user=null,assets=null,dl=null,isOwner=false,isEditor=false,myId=null,upTarget=null,q='',num={},menuFor=null,busy=false;
+let collapsed=ld('kb3_col',{}),hidCols=ld('kb3_hc',[]),hidRows=ld('kb3_hr',[]),seededCol=ld('kb3_seeded',false);
+const store=()=>{try{localStorage.setItem('kb3_col',JSON.stringify(collapsed));localStorage.setItem('kb3_hc',JSON.stringify(hidCols));localStorage.setItem('kb3_hr',JSON.stringify(hidRows));localStorage.setItem('kb3_seeded','true');}catch(e){}};
+let _c=0;const uidGen=()=>'u'+Date.now().toString(36)+(++_c).toString(36)+Math.random().toString(36).slice(2,6);
+const note=t=>{document.getElementById('modeNote').textContent=t;};
+function kids(p){return Object.values(items).filter(x=>(x.parent||'')===p&&!x.trashed&&(isOwner||!x.ownerOnly)).sort((a,b)=>(a.order-b.order)||String(a.name).localeCompare(String(b.name)));}
+const isFolder=u=>kids(u).length>0||items[u].kind==='folder';
+function alive(u){let x=items[u],g=0;while(x&&g++<50){if(x.trashed)return false;if(x.ownerOnly&&!isOwner)return false;if(!x.parent)return true;x=items[x.parent];}return false;}
+function ancestors(u){const a=[];let x=items[u];while(x&&x.parent){a.push(x.parent);x=items[x.parent];}return a;}
+function computeNums(){num={};const walk=(p,pre)=>kids(p).forEach((c,i)=>{const n=pre?pre+'.'+(i+1):String(i);num[c.uid]=n;walk(c.uid,n);});walk('','');}
+function fromNumbered(list){const map={},out={};list.forEach(n=>{map[n.id]=uidGen();});list.forEach(n=>{const p=n.id.includes('.')?n.id.slice(0,n.id.lastIndexOf('.')):'';const o=Object.assign({},n,{uid:map[n.id],parent:p?(map[p]||''):'',order:Number(n.id.split('.').pop())});delete o.id;out[o.uid]=o;});return out;}
+const ownerCls=o=>({Eric:'ow',Yui:'ow1',CZ:'ow2',JT:'ow3'}[o]||'ow0');
+const accCls=a=>String(a).includes('机密')?'ac-secret':(String(a).includes('工段')?'ac-stage':'ac-team');
+const hl=t=>{const s=esc(t);if(!q)return s;const i=s.toLowerCase().indexOf(esc(q).toLowerCase());return i<0?s:s.slice(0,i)+'<mark>'+s.slice(i,i+esc(q).length)+'</mark>'+s.slice(i+esc(q).length);};
+/* ---------- dialog ---------- */
+function dialog({title,message='',fields=[],ok='确定',danger=false}){return new Promise(res=>{
+  const ov=document.getElementById('ov'),d=document.getElementById('dlg');
+  d.innerHTML=`<h3>${esc(title)}</h3>${message?`<div class="msg">${esc(message)}</div>`:''}`+fields.map((f,i)=>{const v=esc(f.value??'');
+    if(f.type==='select')return `<label>${esc(f.label)}</label><select data-i="${i}">${f.options.map(o=>{const val=typeof o==='object'?o.v:o,lab=typeof o==='object'?o.l:o;return `<option value="${esc(val)}" ${val===f.value?'selected':''}>${esc(lab)}</option>`;}).join('')}</select>`;
+    if(f.type==='textarea')return `<label>${esc(f.label)}</label><textarea data-i="${i}">${v}</textarea>`;
+    return `<label>${esc(f.label)}</label><input data-i="${i}" value="${v}" placeholder="${esc(f.placeholder||'')}">`;}).join('')+
+    `<div class="btns"><button class="btn" id="dNo">取消</button><button class="btn ${danger?'danger':'primary'}" id="dOk">${esc(ok)}</button></div>`;
+  ov.classList.add('show');const first=d.querySelector('input,textarea,select');if(first)setTimeout(()=>first.focus(),30);
+  const collect=()=>{const o={};fields.forEach((f,i)=>{o[f.key]=d.querySelector(`[data-i="${i}"]`).value.trim();});return o;};
+  const done=v=>{ov.classList.remove('show');document.removeEventListener('keydown',kd);res(v);};
+  const kd=e=>{if(e.key==='Escape')done(null);if(e.key==='Enter'&&e.target.tagName==='INPUT')done(collect());};
+  document.addEventListener('keydown',kd);d.querySelector('#dNo').onclick=()=>done(null);d.querySelector('#dOk').onclick=()=>done(collect());});}
+/* ---------- persistence ---------- */
+let pending=[],inflight=0;
+function track(p){inflight++;pending.push(p.finally(()=>{inflight--;}));}
+async function put(u){if(!db)return;const o=Object.assign({},items[u]);track(db.collection('items').doc(u).set(o));}
+async function rm(u){if(db)track(db.collection('items').doc(u).delete());}
+const setI=(u,p)=>{items[u]=Object.assign({},items[u],p);};
+async function renorm(p){const ks=kids(p);for(let i=0;i<ks.length;i++){const want=p?i+1:i;if(ks[i].order!==want){setI(ks[i].uid,{order:want});await put(ks[i].uid);}}}
+async function saveCols(){if(db)track(db.collection('meta').doc('columns').set({cols}));}
+let undoStack=[];let flt=ld('kb3_flt',{});
+const MULTI=['owner','access','url'];
+MULTI.forEach(k=>{if(typeof flt[k]==='string')flt[k]=flt[k]?[flt[k]]:[];});
+const saveFlt=()=>{try{localStorage.setItem('kb3_flt',JSON.stringify(flt));}catch(e){}};
+const fltActive=()=>Object.values(flt).some(v=>Array.isArray(v)?v.length:v);
+const secretOf=n=>String(n.access||'').includes('机密');
+function stageOf(u){let x=items[u],g=0;while(x&&g++<50){const p=x.parent?items[x.parent]:null;if(p&&!p.parent)return x.uid;x=p;}return null;}
+const isLeader=u=>{const st=stageOf(u);return !!(st&&myId&&Array.isArray(items[st].leaders)&&items[st].leaders.includes(myId));};
+const can=u=>isOwner||(isEditor&&stageOf(u)&&stageOf(u)!==u&&isLeader(u));
+const canAdd=p=>isOwner||(isEditor&&!!p&&isLeader(p));
+const isStageFolder=u=>{const x=items[u];return !!(x&&x.parent&&items[x.parent]&&!items[x.parent].parent&&isFolder(u));};
+const canSee=n=>!secretOf(n)||isOwner||(!!myId&&Array.isArray(n.viewers)&&n.viewers.includes(myId))||isLeader(n.uid);
+const entryType=n=>!canSee(n)?'机密':(n.asset?'上传文件':(n.url?'网址':'暂无'));
+function matchF(n){for(const k in flt){const v=flt[k];if(Array.isArray(v)?!v.length:!v)continue;const fo=isFolder(n.uid);
+  if(k==='kind'){if((v==='folder')!==fo)return false;continue;}
+  if(fo&&MULTI.includes(k))return false;
+  if(k==='url'){if(!v.includes(entryType(n)))return false;continue;}
+  if(k==='owner'||k==='access'){if(!v.includes(n[k]||'（空）'))return false;continue;}
+  if(!String(n[k]??'').toLowerCase().includes(String(v).toLowerCase()))return false;}return true;}
+function updUndo(){const b=document.getElementById('undoBtn');if(!b)return;b.disabled=!undoStack.length;b.textContent='↶ 撤销'+(undoStack.length?' ('+undoStack.length+')':'');b.title=undoStack.length?'撤销：'+undoStack[undoStack.length-1].label+'（Ctrl / ⌘ + Z）':'没有可撤销的操作';}
+async function run(label,fn,noUndo){if(busy)return;busy=true;const before=JSON.parse(JSON.stringify(items)),colsB=JSON.stringify(cols);pending=[];
+  try{await fn();
+    if(!noUndo){const ent=[];const keys=new Set([...Object.keys(before),...Object.keys(items)]);keys.forEach(u=>{if(JSON.stringify(before[u]??null)!==JSON.stringify(items[u]??null))ent.push({u,prev:before[u]??null});});
+      const colChanged=colsB!==JSON.stringify(cols);if(ent.length||colChanged){undoStack.push({label,ent,cols:colChanged?JSON.parse(colsB):null});if(undoStack.length>300)undoStack.shift();}}
+    computeNums();render();busy=false;updUndo();
+    if(!db){note('未连接共享数据，改动不会保存');return;}note('保存中… '+label);const ps=pending;pending=[];
+    const res=await Promise.allSettled(ps);const bad=res.filter(r=>r.status==='rejected');note(bad.length?('保存失败 '+bad.length+' 项：'+(bad[0].reason?.message||bad[0].reason)):('✓ '+label+' · '+new Date().toLocaleTimeString()));
+  }catch(e){busy=false;note('失败：'+(e.message||e));updUndo();}}
+async function undo(){const st=undoStack.pop();if(!st){updUndo();return;}
+  await run('已撤销「'+st.label+'」',async()=>{for(const {u,prev} of st.ent){if(prev===null){delete items[u];await rm(u);}else{items[u]=prev;await put(u);}}if(st.cols){cols=st.cols;await saveCols();}},true);}
+/* ---------- render ---------- */
+function visibleRows(){const act=q||fltActive();const out=[];const walk=(p,d)=>{for(const c of kids(p)){out.push([c,d]);if(act||!collapsed[c.uid])walk(c.uid,d+1);}};walk('',0);
+  if(act){const ql=q.toLowerCase();const hit=new Set(),anc=new Set();out.forEach(([c])=>{const okQ=!q||[c.name,c.desc,c.owner,num[c.uid]].join(' ').toLowerCase().includes(ql);if(okQ&&matchF(c)){hit.add(c.uid);ancestors(c.uid).forEach(a=>anc.add(a));}});
+    return out.filter(([c])=>hit.has(c.uid)||anc.has(c.uid)).map(([c,d])=>[c,d,!hit.has(c.uid)]);}
+  return out.filter(([c])=>!hidRows.includes(c.uid));}
+function roleBar(){const lead=!isOwner&&isEditor&&!!myId&&Object.values(items).some(x=>Array.isArray(x.leaders)&&x.leaders.includes(myId));
+  const bar=document.getElementById('ownerBar');if(!bar)return;
+  if(isOwner){bar.style.display='inline-flex';return;}
+  if(lead){bar.style.display='inline-flex';bar.querySelectorAll('button').forEach(b=>{if(b.id!=='undoBtn')b.style.display='none';});if(!window.__leadNote){window.__leadNote=1;note('你是工段负责人：可在自己的工段内编辑、上传、改网址、新建、移动、删除（点「编辑」「修改」「⋯」）；其他区域只读。');}}
+  else bar.style.display='none';}
+function render(){
+  roleBar();
+  computeNums();
+  const vc=cols.filter(c=>!hidCols.includes(c.key));
+  const thEl=document.getElementById('th');const focusIn=thEl.contains(document.activeElement);
+  const files=Object.values(items).filter(x=>alive(x.uid)&&!isFolder(x.uid));const dist=k=>[...new Set(files.map(x=>x[k]||'（空）'))].sort();
+  const fcell=c=>{const v=flt[c.key]||'';
+    if(MULTI.includes(c.key)){const arr=Array.isArray(v)?v:[];const lab=arr.length?(arr.length<=2?arr.join('、'):('已选 '+arr.length+' 项')):'全部';return `<button class="fbtn ${arr.length?'on':''}" data-fm="${c.key}">${esc(lab)} ▾</button>`;}
+    if(c.key==='name')return `<div style="display:flex;gap:4px"><select class="fsel" data-f="kind" style="width:84px"><option value="">全部</option><option value="file" ${flt.kind==='file'?'selected':''}>文件</option><option value="folder" ${flt.kind==='folder'?'selected':''}>文件夹</option></select><input class="fin" data-f="name" value="${esc(v)}" placeholder="包含…"></div>`;
+    return `<input class="fin" data-f="${c.key}" value="${esc(v)}" placeholder="包含…">`;};
+  if(!focusIn)thEl.innerHTML='<tr><th style="width:140px">编号</th>'+vc.map(c=>`<th>${esc(c.label)}<span class="hb" data-hidc="${c.key}" title="隐藏此列">隐藏</span>${(isOwner&&!BASE_COLS.some(b=>b.key===c.key))?`<span class="delc" data-delc="${c.key}">删除</span>`:''}</th>`).join('')+'<th style="width:120px">操作</th></tr>'+'<tr class="flt"><th><button class="mini" data-act="clrf" '+(fltActive()?'':'disabled')+'>清除筛选</button></th>'+vc.map(c=>`<th>${fcell(c)}</th>`).join('')+'<th></th></tr>';
+  const VR=visibleRows();document.getElementById('tb').innerHTML=VR.map(([n,d,ancOnly])=>{const u=n.uid,fo=isFolder(u),kc=kids(u).length,lv=Math.min(d,4);
+    const cells=vc.map(c=>{const v=n[c.key]??'';
+      if(c.key==='name')return `<td><span class="nm">${fo?'📁':'📄'} ${hl(v)}</span>${fo?`<span class="cnt">${kc}</span>`:''}${n.ownerOnly?' <span class="pill ac-secret" title="整个文件夹及其内容只有 JT 能在本页看到">仅 JT 可见</span>':''}</td>`;
+      if(c.key==='desc')return `<td class="ds">${hl(v)}</td>`;
+      if(fo&&c.key==='owner')return `<td>${v?`<span class="pill ${ownerCls(v)}" title="负责人">${hl(v)}</span>`:''}</td>`;
+      if(fo&&(c.key==='access'||c.key==='url'))return '<td></td>';
+      if(c.key==='owner')return `<td>${v?`<span class="pill ${ownerCls(v)}">${hl(v)}</span>`:''}</td>`;
+      if(c.key==='access')return `<td>${v&&v!=='—'?`<span class="pill ${accCls(v)}">${esc(v)}</span>`:''}</td>`;
+      if(c.key==='url'){
+        if(!canSee(n))return '<td><span class="lock">🔒 机密 · 向 JT 申请</span><div class="note">'+(myId?'已识别你的身份，但不在本项/本工段的授权名单中':'未识别到你的登录身份（请确认用被分享的账号登录并刷新）')+'</div></td>';
+        const chg=can(u)?` <button class="mini" data-chgurl="${u}" title="修改入口（需二次确认）">修改</button>`+(isOwner&&secretOf(n)?` <span class="note">已授权 ${(n.viewers||[]).length} 人</span>`:''):'';
+        if(n.asset)return `<td><a class="go file" href="/_blob/${esc(n.asset)}" target="_blank">📎 文件</a>${chg}${n.assetName?`<div class="note">${esc(n.assetName)}</div>`:''}</td>`;
+        if(v)return `<td><a class="go" href="${esc(v)}" target="_blank" title="${esc(v)}">↗ 打开</a>${chg}</td>`;
+        if(can(u))return `<td><button class="mini" data-seturl="${u}">填网址</button><button class="mini" data-upload="${u}">上传文件</button></td>`;
+        return '<td><span class="note">暂无</span></td>';}
+      return `<td class="ds">${esc(v)}</td>`;}).join('');
+    return `<tr class="l${lv}${ancOnly?' anc':''}" data-row="${u}"><td class="idc" style="padding-left:${12+lv*18}px">${isOwner&&!q&&!fltActive()?`<span class="dh" data-drag="${u}" title="拖动以移动">⠿</span>`:''}<span class="tg ${kc?'':'leaf'}" data-tg="${u}">${collapsed[u]&&!q?'▶':'▼'}</span><span class="idchip">${esc(num[u])}</span></td>${cells}<td class="act">${can(u)?`<button class="mini" data-edit="${u}">编辑</button>`:''}${isOwner&&secretOf(n)&&!isFolder(u)?`<button class="mini" data-grant="${u}" title="选择谁能在本页看到这一项的入口">授权</button>`:''}${isOwner&&isStageFolder(u)?`<button class="mini" data-leaders="${u}" title="指定这个工段的负责人：可编辑本工段内全部内容，并自动看到其中的机密入口">负责人${(items[u].leaders||[]).length?' ('+items[u].leaders.length+')':''}</button>`:''}${(can(u)||canAdd(u))?`<button class="mini" data-menu="${u}" title="更多操作">⋯</button>`:''}<button class="mini" data-hidr="${u}">隐藏</button></td></tr>`;}).join('');
+  const hb=document.getElementById('hidbar');const parts=[...hidCols.map(k=>`<span class="chip-h" data-showc="${k}">列：${esc((cols.find(c=>c.key===k)||{label:k}).label)} ✕</span>`),...hidRows.filter(u=>items[u]).map(u=>`<span class="chip-h" data-showr="${u}">行：${esc(num[u]||'')} ${esc(items[u].name)} ✕</span>`)];
+  hb.className='hidbar'+(parts.length?' show':'');hb.innerHTML=parts.length?`已隐藏：${parts.join('')}<span class="chip-h" data-showall="1">全部恢复</span>`:'';
+  const fc=document.getElementById('fcount');if(fc){const all=Object.values(items).filter(x=>alive(x.uid));const nF=all.filter(x=>!isFolder(x.uid)).length,nD=all.length-nF;const act=q||fltActive();
+    if(act){const hit=VR.filter(r=>!r[2]);const hf=hit.filter(r=>!isFolder(r[0].uid)).length,hd=hit.length-hf;fc.innerHTML=`<span class="rchip on">筛选结果 <b>${hit.length}</b> 项</span><span class="rchip">文件 <b>${hf}</b></span><span class="rchip">文件夹 <b>${hd}</b></span><span class="rchip">全库共 ${all.length} 项（${nF} 个文件 · ${nD} 个文件夹）</span>`;}
+    else fc.innerHTML=`<span class="rchip">共 <b>${all.length}</b> 项 · ${nF} 个文件 · ${nD} 个文件夹</span>`;}
+  const tc=Object.values(items).filter(x=>x.trashed).length;document.getElementById('tcount').textContent=tc?`(${tc})`:'';
+}
+/* ---------- menu ---------- */
+function openMenu(u,btn){menuFor=u;const m=document.getElementById('menu'),fo=isFolder(u),it=items[u],sib=kids(it.parent||''),i=sib.findIndex(x=>x.uid===u),prev=sib[i-1];
+  m.innerHTML=(fo?'<button data-m="newfolder">新建子文件夹</button><button data-m="newfile">新建文件</button><hr>':'')+
+   `<button data-m="up" ${i<=0?'disabled':''}>上移</button><button data-m="down" ${i>=sib.length-1?'disabled':''}>下移</button>`+
+   `<button data-m="outdent" ${!it.parent?'disabled':''}>升一级（移出当前文件夹）</button><button data-m="indent" ${!(prev&&isFolder(prev.uid))?'disabled':''}>降一级（放进上方文件夹）</button>`+
+   '<button data-m="move">移动到…</button><button data-m="copy">复制</button><hr><button data-m="del" class="dg">删除…</button>';
+  if(!isOwner&&!can(u))m.innerHTML='<button data-m="newfolder">新建子文件夹</button><button data-m="newfile">新建文件</button>';
+  m.classList.add('show');const r=btn.getBoundingClientRect();const w=200,h=m.offsetHeight||320;
+  m.style.left=Math.max(8,Math.min(window.innerWidth-w-8,r.right-w))+'px';m.style.top=(r.bottom+h>window.innerHeight?Math.max(8,r.top-h):r.bottom+4)+'px';}
+const closeMenu=()=>{document.getElementById('menu').classList.remove('show');menuFor=null;};
+function folderOptions(exclude){const out=[{v:'',l:'（顶层）'}];const bad=new Set([exclude]);Object.values(items).forEach(x=>{if(ancestors(x.uid).includes(exclude))bad.add(x.uid);});
+  const walk=(p,d)=>kids(p).forEach(c=>{if(isFolder(c.uid)&&!bad.has(c.uid))out.push({v:c.uid,l:'　'.repeat(d)+num[c.uid]+' '+c.name});if(!bad.has(c.uid))walk(c.uid,d+1);});walk('',0);return isOwner?out:out.filter(o=>o.v&&canAdd(o.v));}
+const l2file=(u,np,kind)=>!!np&&!!items[np]&&!items[np].parent&&(kind?kind!=='folder':!isFolder(u));
+const L2MSG=()=>dialog({title:'第二层只放文件夹',message:'编号 n.n 这一层只放文件夹，文件放在 n.n.n 或更深。请先在这里建一个文件夹，再把文件放进去。',ok:'知道了'});
+async function newChild(p,kind){const fo=kind==='folder';if(l2file(null,p,kind)){await L2MSG();return;}const f=[{key:'name',label:'名称'},{key:'desc',label:'说明',type:'textarea'}];
+  if(!fo){f.push({key:'owner',label:'维护人'},{key:'access',label:'权限',type:'select',options:['团队内','工段','机密'],value:'团队内'});}
+  const r=await dialog({title:(fo?'新建文件夹':'新建文件')+(p?'（在 '+num[p]+' '+items[p].name+' 下）':'（顶层）'),fields:f,ok:'新建'});if(!r||!r.name)return;
+  const u=uidGen();if(p)collapsed[p]=false;store();
+  await run('已新建',async()=>{items[u]={uid:u,parent:p,order:1e9,name:r.name,desc:r.desc,owner:r.owner||'',access:fo?'':r.access,url:'',kind};await put(u);await renorm(p);});}
+async function subtree(u){const all=[u];const walk=p=>Object.values(items).filter(x=>x.parent===p).forEach(c=>{all.push(c.uid);walk(c.uid);});walk(u);return all;}
+async function doMenu(a,u){const it=items[u],p=it.parent||'';
+  if(a==='newfolder')return newChild(u,'folder');if(a==='newfile')return newChild(u,'file');
+  if(a==='up'||a==='down'){await run(a==='up'?'已上移':'已下移',async()=>{await renorm(p);const sib=kids(p),i=sib.findIndex(x=>x.uid===u),j=a==='up'?i-1:i+1;if(j<0||j>=sib.length)return;const o1=sib[i].order,o2=sib[j].order;setI(sib[i].uid,{order:o2});setI(sib[j].uid,{order:o1});await put(sib[i].uid);await put(sib[j].uid);});return;}
+  if(a==='outdent'){if(!p)return;const gp=items[p].parent||'';if(!isOwner&&!(gp&&canAdd(gp))){await dialog({title:'不能移出本工段',message:'只有 JT 能把条目移到工段之外。',ok:'知道了'});return;}if(l2file(u,gp)){await L2MSG();return;}await run('已升一级',async()=>{setI(u,{parent:gp,order:items[p].order+0.5});await put(u);await renorm(gp);await renorm(p);});return;}
+  if(a==='indent'){const sib=kids(p),i=sib.findIndex(x=>x.uid===u),prev=sib[i-1];if(!prev)return;if(l2file(u,prev.uid)){await L2MSG();return;}await run('已降一级',async()=>{setI(u,{parent:prev.uid,order:1e9});collapsed[prev.uid]=false;store();await put(u);await renorm(prev.uid);await renorm(p);});return;}
+  if(a==='move'){const r=await dialog({title:'移动「'+num[u]+' '+it.name+'」',fields:[{key:'to',label:'移到哪个文件夹',type:'select',options:folderOptions(u),value:p},{key:'pos',label:'放在',type:'select',options:[{v:'end',l:'末尾'},{v:'start',l:'开头'}],value:'end'}],ok:'移动'});if(!r)return;
+    if(l2file(u,r.to)){await L2MSG();return;}await run('已移动',async()=>{setI(u,{parent:r.to,order:r.pos==='start'?-1:1e9});if(r.to)collapsed[r.to]=false;store();await put(u);await renorm(r.to);if(r.to!==p)await renorm(p);});return;}
+  if(a==='copy'){await run('已复制',async()=>{const all=await subtree(u);const map={};all.forEach(x=>map[x]=uidGen());for(const x of all){const src=items[x];const o=Object.assign({},src,{uid:map[x],parent:x===u?p:map[src.parent]});if(x===u){o.order=src.order+0.5;o.name=src.name+'（副本）';}items[map[x]]=o;await put(map[x]);}await renorm(p);});return;}
+  if(a==='del'){const fo=isFolder(u),kc=kids(u).length;
+    if(fo&&kc){const r=await dialog({title:'删除文件夹「'+num[u]+' '+it.name+'」',message:'它下面有 '+kc+' 项。删除的东西会进回收站，可以恢复。',fields:[{key:'mode',label:'子项怎么处理',type:'select',options:[{v:'promote',l:'保留子项，上移一级（子项自然成为 '+(num[u])+' 这一层）'},{v:'all',l:'连同子项一起删除'}],value:'promote'}],ok:'删除',danger:true});if(!r)return;
+      if(r.mode==='promote'){await run('已删除，子项已上移',async()=>{const ks=kids(u);ks.forEach((c,i)=>setI(c.uid,{parent:p,order:it.order+(i+1)/1000}));setI(u,{trashed:true,trashedAt:new Date().toISOString(),trashedFrom:p});for(const c of ks)await put(c.uid);await put(u);await renorm(p);});}
+      else{await run('已删除（含子项）',async()=>{setI(u,{trashed:true,trashedAt:new Date().toISOString(),trashedFrom:p});await put(u);await renorm(p);});}
+    }else{const r=await dialog({title:'删除「'+num[u]+' '+it.name+'」？',message:'会进回收站，可以恢复。',ok:'删除',danger:true});if(!r)return;await run('已删除',async()=>{setI(u,{trashed:true,trashedAt:new Date().toISOString(),trashedFrom:p});await put(u);await renorm(p);});}
+    return;}
+}
+async function regSeen(){if(!db||!myId||isOwner)return;const ce=document.getElementById('conn');if(ce&&!ce.dataset.id){ce.dataset.id=1;ce.appendChild(document.createTextNode(' · 你的 ID：'+myId));}
+  try{const r=db.collection('seen').doc(myId);const g=await r.get();const t=g.exists?String(g.data()?.t||''):'';if(!t||Date.now()-Date.parse(t)>7*864e5)await r.set({t:new Date().toISOString()});}catch(e){}}
+async function seenIds(){if(!db||!isOwner)return[];try{return(await db.collection('seen').get()).docs.map(d=>d.id);}catch(e){return[];}}
+async function peoplePanel(u,field){const isL=field==='leaders';const ov=document.getElementById('ov'),d=document.getElementById('dlg');let ids=(items[u][field]||[]).slice();const before=JSON.stringify(ids);let hits=[],qv='';const seen=await seenIds();
+  const pick=async()=>{const r=user?await user.search(qv.trim()):[];const have=new Set(r.map(h=>h.id));const sp=seen.length&&user?await user.profiles(seen):{};const k=qv.trim().toLowerCase();seen.forEach(id=>{const n=(sp[id]&&sp[id].name)||'';if(have.has(id))return;if(!k||n.toLowerCase().includes(k)||id===qv.trim())r.push({id,name:n||('未显示姓名的成员（ID '+id.slice(0,8)+'…）')});});return r;};
+  const paint=async()=>{const ps=user?await user.profiles(ids):{};
+    d.innerHTML=`<h3>${isL?'指定工段负责人':'授权可见入口'}：${esc(num[u]+' '+items[u].name)}</h3><div class="msg">${isL?'被选中的人可以在本页编辑这个文件夹内的全部内容（上传、改网址、新建、移动、删除），并自动看到其中的机密入口。前提：你已在平台分享菜单里把他设为本页的「编辑者」；他能不能打开具体页面，仍由那个页面自己的分享设置决定。':'被选中的人在本页能看到这一项的入口；其他人仍显示「向 JT 申请」。这里只管「在本页看到入口」，能不能打开那个页面仍由该页面自己的分享设置决定。'}</div>`+
+    (ids.length?ids.map(id=>`<div class="trow"><div><b>${esc((ps[id]&&ps[id].name)||'某位成员')}</b></div><div><button class="mini" data-gdel="${esc(id)}">移除</button></div></div>`).join(''):'<div class="msg">还没有授权任何人。</div>')+
+    `<label>添加（输入姓名搜索；下面也会列出打开过本页的成员）</label><input id="gq" placeholder="姓名，或粘贴对方页首显示的 ID" value="${esc(qv)}"><div id="gres">${hits.filter(h=>!ids.includes(h.id)).map(h=>`<div class="trow"><div>${esc(h.name)}</div><div><button class="mini" data-gadd="${esc(h.id)}">添加</button></div></div>`).join('')||(qv?'<div class="note">没有搜到。请对方先打开一次本页（页首会显示「你的 ID」），再刷新本页重试；或把对方页首的 ID 粘贴到上面，点「按 ID 添加」。</div>':'')}${qv.trim().length>=6&&!ids.includes(qv.trim())?`<div class="trow"><div class="note">按 ID 添加：${esc(qv.trim())}</div><div><button class="mini" data-gadd="${esc(qv.trim())}">按 ID 添加</button></div></div>`:''}</div><div class="btns"><button class="btn" id="gNo">取消</button><button class="btn primary" id="gDone">保存</button></div>`;
+    d.querySelectorAll('[data-gdel]').forEach(b=>b.onclick=()=>{ids=ids.filter(x=>x!==b.dataset.gdel);paint();});
+    d.querySelectorAll('[data-gadd]').forEach(b=>b.onclick=()=>{if(!ids.includes(b.dataset.gadd))ids.push(b.dataset.gadd);qv='';hits=[];paint();});
+    const gq=d.querySelector('#gq');gq.oninput=async()=>{qv=gq.value;hits=await pick();const keep=gq.selectionStart;await paint();const n=d.querySelector('#gq');n.focus();try{n.setSelectionRange(keep,keep);}catch(e){}};
+    d.querySelector('#gNo').onclick=()=>ov.classList.remove('show');
+    d.querySelector('#gDone').onclick=async()=>{ov.classList.remove('show');if(JSON.stringify(ids)===before)return;await run(isL?'已更新负责人':'已更新授权',async()=>{setI(u,{[field]:ids.slice()});await put(u);});};};
+  ov.classList.add('show');hits=await pick();await paint();}
+function trashPanel(){const ov=document.getElementById('ov'),d=document.getElementById('dlg');const tr=Object.values(items).filter(x=>x.trashed).sort((a,b)=>String(b.trashedAt).localeCompare(String(a.trashedAt)));
+  d.innerHTML='<h3>回收站</h3>'+(tr.length?tr.map(x=>`<div class="trow"><div><b>${esc(x.name)}</b><div class="note">${esc((x.trashedAt||'').slice(0,16).replace('T',' '))}</div></div><div><button class="mini" data-restore="${x.uid}">恢复</button><button class="mini" data-purge="${x.uid}">彻底删除</button></div></div>`).join(''):'<div class="msg">回收站是空的。</div>')+'<div class="btns"><button class="btn" id="tClose">关闭</button></div>';
+  ov.classList.add('show');d.querySelector('#tClose').onclick=()=>ov.classList.remove('show');}
+/* ---------- events ---------- */
+document.getElementById('q').addEventListener('input',e=>{q=e.target.value.trim();render();});
+document.addEventListener('input',e=>{const f=e.target.closest('.fin');if(!f)return;flt[f.dataset.f]=f.value.trim();saveFlt();render();});
+document.addEventListener('change',e=>{const f=e.target.closest('.fsel');if(!f)return;flt[f.dataset.f]=f.value;saveFlt();f.blur();render();});
+document.addEventListener('click',async e=>{
+  const mb=e.target.closest('#menu button');if(mb){const u=menuFor;closeMenu();if(!mb.disabled&&u)await doMenu(mb.dataset.m,u);return;}
+  if(!e.target.closest('#menu')&&!e.target.closest('[data-menu]'))closeMenu();
+  const t=e.target.closest('[data-tg],[data-hidc],[data-hidr],[data-showc],[data-showr],[data-showall],[data-delc],[data-restore],[data-purge],button');if(!t)return;const ds=t.dataset;
+  if(ds.tg){collapsed[ds.tg]=!collapsed[ds.tg];store();render();return;}
+  if(ds.hidc){hidCols.push(ds.hidc);store();render();return;}
+  if(ds.hidr){hidRows.push(ds.hidr);store();render();return;}
+  if(ds.showc){hidCols=hidCols.filter(k=>k!==ds.showc);store();render();return;}
+  if(ds.showr){hidRows=hidRows.filter(k=>k!==ds.showr);store();render();return;}
+  if(ds.showall){hidCols=[];hidRows=[];store();render();return;}
+  if(ds.act==='clrf'){flt={};saveFlt();document.activeElement?.blur();render();return;}
+  if(ds.act==='expand'){collapsed={};store();render();return;}
+  if(ds.act==='collapse'){Object.keys(items).forEach(u=>{if(kids(u).length)collapsed[u]=true;});store();render();return;}
+  if(ds.act==='lv'){collapsed={};computeNums();Object.keys(items).forEach(u=>{if(num[u]&&num[u].includes('.')&&kids(u).length)collapsed[u]=true;});store();render();return;}
+  if(!isOwner){const tgt=ds.menu||ds.edit||ds.chgurl||ds.seturl||ds.upload;
+    if(ds.act==='undo'){if(isEditor)undo();return;}
+    if(!tgt||!(ds.menu?canAdd(tgt):can(tgt)))return;}
+  if(ds.grant)return peoplePanel(ds.grant,'viewers');
+  if(ds.leaders)return peoplePanel(ds.leaders,'leaders');
+  if(ds.menu){openMenu(ds.menu,t);return;}
+  if(ds.restore){const u=ds.restore,x=items[u];let p=x.trashedFrom??x.parent??'';if(p&&(!items[p]||items[p].trashed||ancestors(p).some(a=>items[a]&&items[a].trashed)))p='';
+    await run('已恢复',async()=>{setI(u,{trashed:false,parent:p,order:1e9});await put(u);await renorm(p);});trashPanel();return;}
+  if(ds.purge){const u=ds.purge;const all=await subtree(u);await run('已彻底删除',async()=>{for(const x of all){delete items[x];await rm(x);}});trashPanel();return;}
+  if(ds.act==='undo')return undo();
+  if(ds.act==='addtop')return newChild('','folder');
+  if(ds.act==='trash')return trashPanel();
+  if(ds.act==='addcol'){const r=await dialog({title:'新增一列',fields:[{key:'label',label:'列名'}],ok:'新增'});if(!r||!r.label)return;await run('已新增列',async()=>{cols=cols.concat([{key:'c'+Date.now(),label:r.label}]);await saveCols();});return;}
+  if(ds.act==='export'){computeNums();const data=JSON.stringify({exportedAt:new Date().toISOString(),cols,items:Object.values(items).map(x=>Object.assign({number:num[x.uid]||null},x))},null,1);const name='文件索引_'+new Date().toISOString().slice(0,10)+'.json';if(dl){try{await dl.save({filename:name,data});return;}catch(er){}}try{const bl=new Blob([data],{type:'application/json'});const a=document.createElement('a');a.href=URL.createObjectURL(bl);a.download=name;a.click();}catch(er){}return;}
+  if(ds.delc){const c=cols.find(x=>x.key===ds.delc);const r=await dialog({title:'删除列「'+c.label+'」？',ok:'删除',danger:true});if(!r)return;await run('已删除列',async()=>{cols=cols.filter(x=>x.key!==ds.delc);await saveCols();});return;}
+  if(ds.edit){const u=ds.edit,n=items[u],fo=isFolder(u),hasK=kids(u).length>0;
+    const f=[{key:'name',label:'名称',value:n.name},{key:'desc',label:'说明',type:'textarea',value:n.desc}];
+    if(!hasK)f.push({key:'kind',label:'类型',type:'select',options:[{v:'file',l:'文件（工具 / 程序 / 文件）'},{v:'folder',l:'文件夹'}],value:fo?'folder':'file'});
+    f.push({key:'owner',label:'维护人（文件）/ 负责人（文件夹）',value:n.owner},{key:'access',label:'权限（文件夹不显示）',type:'select',options:['团队内','工段','机密','—'],value:n.access||'团队内'});
+    if(isOwner&&!n.parent)f.push({key:'ownerOnly',label:'可见范围（仅顶层文件夹可设）',type:'select',options:[{v:'',l:'所有能打开本页的人'},{v:'1',l:'仅 JT 可见（本文件夹及其全部内容对其他人隐藏）'}],value:n.ownerOnly?'1':''});
+    cols.filter(c=>!BASE_COLS.some(b=>b.key===c.key)).forEach(c=>f.push({key:c.key,label:c.label,value:n[c.key]}));
+    const r=await dialog({title:'编辑 '+num[u],message:'入口在「入口」列点「修改」更改（需二次确认）。',fields:f,ok:'保存'});if(!r)return;if(hasK)r.kind='folder';if('ownerOnly' in r)r.ownerOnly=r.ownerOnly==='1';
+    await run('已保存',async()=>{setI(u,r);await put(u);});return;}
+  if(ds.chgurl){const u=ds.chgurl,n=items[u];const cur=n.asset?('上传文件：'+(n.assetName||n.asset)):(n.url||'（空）');
+    const r=await dialog({title:'修改入口（'+num[u]+' '+n.name+'）',message:'当前入口：'+cur,fields:[{key:'mode',label:'改成',type:'select',options:[{v:'url',l:'新的网址'},{v:'upload',l:'上传一个文件替换'},{v:'clear',l:'清空入口（变成「暂无」）'}],value:'url'},{key:'u',label:'新网址（选「新的网址」时填）',placeholder:'https://…'}],ok:'下一步'});if(!r)return;
+    if(r.mode==='url'){if(!/^https?:\/\//.test(r.u)){await dialog({title:'网址须以 http:// 或 https:// 开头',ok:'知道了'});return;}
+      const c=await dialog({title:'确认修改入口？',message:'原：'+cur+'\n新：'+r.u,ok:'确认修改',danger:true});if(!c)return;await run('已修改入口',async()=>{setI(u,{url:r.u,asset:'',assetName:''});await put(u);});return;}
+    if(r.mode==='clear'){const c=await dialog({title:'确认清空入口？',message:'原：'+cur+'\n新：（空）',ok:'确认清空',danger:true});if(!c)return;await run('已清空入口',async()=>{setI(u,{url:'',asset:'',assetName:''});await put(u);});return;}
+    if(r.mode==='upload'){if(!assets){await dialog({title:'当前环境不支持上传',ok:'知道了'});return;}upTarget=u;upReplace=cur;const fi=document.getElementById('fileIn');fi.value='';fi.click();return;}
+    return;}
+  if(ds.seturl){const u=ds.seturl;const r=await dialog({title:'填入入口网址（'+num[u]+'）',message:'请核对后再确定。之后如需更改，点入口旁的「修改」（需二次确认）。',fields:[{key:'u',label:'网址',placeholder:'https://…'}],ok:'确定'});if(!r)return;
+    if(!/^https?:\/\//.test(r.u)){await dialog({title:'网址须以 http:// 或 https:// 开头',ok:'知道了'});return;}await run('已填入入口',async()=>{setI(u,{url:r.u});await put(u);});return;}
+  if(ds.upload){if(!assets){await dialog({title:'当前环境不支持上传',ok:'知道了'});return;}upTarget=ds.upload;const fi=document.getElementById('fileIn');fi.value='';fi.click();return;}
+});
+let upReplace=null;
+document.getElementById('fileIn').addEventListener('change',async e=>{const f=e.target.files[0];if(!f||!upTarget||!assets)return;const u=upTarget;upTarget=null;const rep=upReplace;upReplace=null;
+  if(rep!==null){const c=await dialog({title:'确认修改入口？',message:'原：'+rep+'\n新：上传文件 '+f.name,ok:'确认修改',danger:true});if(!c)return;}const ext=(f.name.split('.').pop()||'').toLowerCase();const map={md:'text/markdown',json:'application/json',csv:'text/csv',txt:'text/plain',pdf:'application/pdf'};
+  await run('已上传',async()=>{const r=await assets.upload(f,map[ext]?{type:map[ext]}:{});setI(u,{asset:r.id,assetName:f.name,url:''});await put(u);});});
+
+
+/* ---------- multi-select filter popover ---------- */
+let fpKey=null;
+function optionsFor(k){const files=Object.values(items).filter(x=>alive(x.uid)&&!isFolder(x.uid));const cnt={};files.forEach(x=>{const v=k==='url'?entryType(x):(x[k]||'（空）');cnt[v]=(cnt[v]||0)+1;});
+  let keys=Object.keys(cnt).sort();if(k==='url'){keys=['网址','上传文件','暂无'].concat(cnt['机密']?['机密']:[]);}return keys.map(v=>({v,n:cnt[v]||0}));}
+function openFp(k,btn){fpKey=k;const p=document.getElementById('fp');const sel=new Set(flt[k]||[]);
+  p.innerHTML=`<div class="fh"><span>可多选</span><a data-fpclear="1">清除本列</a></div>`+optionsFor(k).map(o=>`<label><input type="checkbox" data-fpv="${esc(o.v)}" ${sel.has(o.v)?'checked':''}>${esc(o.v)}<span class="fc">${o.n}</span></label>`).join('');
+  p.classList.add('show');const r=btn.getBoundingClientRect();p.style.left=Math.max(8,Math.min(window.innerWidth-230,r.left))+'px';p.style.top=(r.bottom+4)+'px';}
+const closeFp=()=>{document.getElementById('fp').classList.remove('show');fpKey=null;};
+document.addEventListener('click',e=>{const b=e.target.closest('[data-fm]');if(b){e.stopPropagation();if(fpKey===b.dataset.fm){closeFp();}else openFp(b.dataset.fm,b);return;}
+  const c=e.target.closest('[data-fpclear]');if(c&&fpKey){flt[fpKey]=[];saveFlt();document.querySelectorAll('#fp input').forEach(i=>i.checked=false);render();return;}
+  if(!e.target.closest('#fp'))closeFp();},true);
+document.addEventListener('change',e=>{const i=e.target.closest('#fp input[data-fpv]');if(!i||!fpKey)return;const set=new Set(flt[fpKey]||[]);if(i.checked)set.add(i.dataset.fpv);else set.delete(i.dataset.fpv);flt[fpKey]=[...set];saveFlt();render();});
+document.addEventListener('keydown',e=>{if(e.key==='Escape')closeFp();});
+/* ---------- drag & drop (pointer events: mouse + touch) ---------- */
+let drag=null;
+function clearDrop(){document.querySelectorAll('tr.drop-before,tr.drop-after,tr.drop-inside').forEach(r=>r.classList.remove('drop-before','drop-after','drop-inside'));}
+function bad(src,tu){return tu===src||ancestors(tu).includes(src);}
+document.addEventListener('pointerdown',e=>{const h=e.target.closest('[data-drag]');if(!h||!isOwner||busy)return;e.preventDefault();
+  drag={u:h.dataset.drag,target:null,pos:null,sx:e.clientX,sy:e.clientY,moved:false};
+  document.querySelector(`tr[data-row="${drag.u}"]`)?.classList.add('dragging');document.body.classList.add('dragmode');
+  const g=document.getElementById('ghost');g.textContent='移动：'+(num[drag.u]||'')+' '+items[drag.u].name;});
+document.addEventListener('pointermove',e=>{if(!drag)return;e.preventDefault();drag.moved=true;const g=document.getElementById('ghost');g.style.display='block';g.style.left=(e.clientX+14)+'px';g.style.top=(e.clientY+10)+'px';
+  if(e.clientY<60)window.scrollBy(0,-12);else if(e.clientY>window.innerHeight-60)window.scrollBy(0,12);
+  clearDrop();drag.target=null;const el=document.elementFromPoint(e.clientX,e.clientY);const tr=el&&el.closest('tr[data-row]');if(!tr)return;const tu=tr.dataset.row;if(bad(drag.u,tu))return;
+  const r=tr.getBoundingClientRect(),y=(e.clientY-r.top)/r.height,fo=isFolder(tu);
+  const pos=fo?(y<.28?'before':(y>.72?'after':'inside')):(y<.5?'before':'after');
+  tr.classList.add('drop-'+pos);drag.target=tu;drag.pos=pos;
+  g.textContent=(pos==='inside'?'放进「':(pos==='before'?'放到「':'放到「'))+items[tu].name+(pos==='inside'?'」里':(pos==='before'?'」前面':'」后面'));},{passive:false});
+async function endDrag(){if(!drag)return;const d=drag;drag=null;clearDrop();document.body.classList.remove('dragmode');document.getElementById('ghost').style.display='none';
+  document.querySelectorAll('tr.dragging').forEach(r=>r.classList.remove('dragging'));
+  if(!d.moved||!d.target)return;const u=d.u,old=items[u].parent||'',tu=d.target,t=items[tu];
+  if((d.pos==='inside'&&l2file(u,tu))||(d.pos!=='inside'&&l2file(u,t.parent||''))){await L2MSG();return;}
+  await run('已移动「'+items[u].name+'」',async()=>{
+    if(d.pos==='inside'){setI(u,{parent:tu,order:1e9});collapsed[tu]=false;store();await put(u);await renorm(tu);}
+    else{const np=t.parent||'';setI(u,{parent:np,order:t.order+(d.pos==='before'?-0.5:0.5)});await put(u);await renorm(np);if(np!==old)await renorm(old);}
+    if(d.pos==='inside'&&tu!==old)await renorm(old);});}
+document.addEventListener('pointerup',endDrag);document.addEventListener('pointercancel',endDrag);
+document.addEventListener('keydown',e=>{if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==='z'&&(isOwner||isEditor)&&!document.getElementById('ov').classList.contains('show')&&!/INPUT|TEXTAREA/.test(document.activeElement?.tagName||'')){e.preventDefault();undo();}});
+function seedLocal(){items=fromNumbered(INIT_NODES);if(!seededCol){computeNums();Object.keys(items).forEach(u=>{if(num[u]&&num[u].includes('.')&&kids(u).length)collapsed[u]=true;});}}
+(async()=>{
+  seedLocal();render();
+  try{db=await claude.use('db');user=await claude.use('user');}catch(e){}
+  try{assets=await claude.use('assets');}catch(e){}try{dl=await claude.use('downloads');}catch(e){}
+  if(!db){document.getElementById('conn').textContent='· 未连接共享数据：显示初始版，不可编辑';return;}
+  try{
+    isOwner=user?await user.isOwner():false;try{myId=user?await user.id():null;}catch(e){}try{isEditor=user?await user.canEdit():false;}catch(e){}
+    if(user&&!myId){let n=0;const t=setInterval(async()=>{n++;try{myId=await user.id();}catch(e){}if(myId||n>=4){clearInterval(t);if(myId){render();regSeen();}}},1500);}
+    const sc=await db.collection('meta').doc('columns').get();if(sc.exists&&sc.data()?.cols?.length)cols=sc.data().cols.filter(c=>c.key!=='freq');
+    const it=await db.collection('items').get();
+    if(!it.docs.length&&isOwner){note('首次打开：正在迁移到新结构…');
+      let src=(await db.collection('nodes').get()).docs.map(d=>Object.assign({},d.data()||{},{id:d.id}));if(!src.length)src=INIT_NODES;
+      const built=fromNumbered(src);for(const u in built)await db.collection('items').doc(u).set(built[u]);await db.collection('meta').doc('schema').set({v:3});}
+    let first=true;
+    db.collection('items').onSnapshot(s=>{if(!s.docs.length)return;items={};s.docs.forEach(d=>{items[d.id]=Object.assign({},d.data()||{},{uid:d.id});});
+      if(inflight>0&&!first)return;if(first&&!seededCol){computeNums();Object.keys(items).forEach(u=>{if(num[u]&&num[u].includes('.')&&kids(u).length)collapsed[u]=true;});store();}first=false;if(!busy)render();},()=>{});
+    db.collection('meta').doc('columns').onSnapshot(d=>{if(d.exists&&d.data()?.cols?.length){cols=d.data().cols.filter(c=>c.key!=='freq');render();}},()=>{});
+    document.getElementById('conn').textContent='· 已连接共享数据';regSeen();
+    if(isOwner){document.getElementById('ownerBar').style.display='inline-flex';note('你是 JT：拖 ⠿ 移动；「编辑」改内容；入口旁「修改」改入口（二次确认）；「⋯」新建 / 复制 / 删除；随时可撤销。');updUndo();}else note('只读。');
+    render();
+  }catch(e){document.getElementById('conn').textContent='· 共享数据读取失败，显示初始版';}
+})();
+</script>
+
+</body></html>
+</body></html>

@@ -1,0 +1,875 @@
+<!DOCTYPE html><html lang="zh-CN"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"><title>文件索引迁移规格书</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#eef1f4;--panel:#fff;--alt:#f4f6f8;--border:#d8dee3;--accent:#2c6e8f;--text:#1f2933;--dim:#5c6670;--faint:#8b959d;}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font-family:'Noto Sans SC',-apple-system,'PingFang SC','Microsoft YaHei',sans-serif;line-height:1.65;font-size:.93rem}
+.wrap{max-width:980px;margin:0 auto;padding:28px 20px 80px}
+.wrap > h1{font-size:1.5rem;margin:0 0 4px}.sub{color:var(--dim);margin:0 0 14px}
+.wrap > h2{font-size:1.1rem;color:var(--accent);border-bottom:1px solid var(--border);padding-bottom:6px;margin:28px 0 12px}
+h3{font-size:1rem;margin:18px 0 8px}h4{font-size:.95rem;margin:14px 0 6px;color:var(--dim)}
+table{width:100%;border-collapse:collapse;background:var(--panel);font-size:.84rem;margin:10px 0 14px;min-width:560px}th,td{border:1px solid var(--border);padding:7px 9px;text-align:left;vertical-align:top}th{background:var(--alt);font-weight:600;font-size:.8rem}
+.tw{overflow-x:auto}pre{background:var(--panel);border:1px solid var(--border);border-radius:3px;padding:10px 12px;overflow-x:auto;font-family:'IBM Plex Mono',monospace;font-size:.8rem;white-space:pre-wrap}
+code{font-family:'IBM Plex Mono',monospace;font-size:.86em;background:var(--alt);padding:0 3px;border-radius:2px}
+blockquote{margin:10px 0;padding:8px 12px;border-left:3px solid var(--accent);background:var(--panel);color:var(--dim)}
+.tag{color:var(--faint);font-size:.76rem;font-family:'IBM Plex Mono',monospace}
+footer{margin-top:40px;border-top:1px solid var(--border);padding-top:14px;color:var(--faint);font-size:.78rem}
+</style>
+<style id="platform-base">
+:root{box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);}
+html{scroll-padding-top:env(safe-area-inset-top,0px);}
+img,svg{max-width:100%;}
+@media (prefers-color-scheme: dark){
+ :root:not([data-theme="light"]){
+  --c-bg:#14181c;--c-bg-grid:rgba(255,255,255,0.04);--c-panel:#1c2228;--c-panel-alt:#232a31;--c-border:#2f3841;--c-border-strong:#46525d;--c-accent:#5aa6cc;--c-accent-dim:rgba(90,166,204,0.14);--c-text:#e6eaee;--c-text-dim:#a9b3bc;--c-text-faint:#7c8791;
+  --bg:#14181c;--panel:#1c2228;--alt:#232a31;--border:#2f3841;--accent:#5aa6cc;--text:#e6eaee;--dim:#a9b3bc;--faint:#7c8791;
+ }}
+:root[data-theme="dark"]{
+  --c-bg:#14181c;--c-bg-grid:rgba(255,255,255,0.04);--c-panel:#1c2228;--c-panel-alt:#232a31;--c-border:#2f3841;--c-border-strong:#46525d;--c-accent:#5aa6cc;--c-accent-dim:rgba(90,166,204,0.14);--c-text:#e6eaee;--c-text-dim:#a9b3bc;--c-text-faint:#7c8791;
+  --bg:#14181c;--panel:#1c2228;--alt:#232a31;--border:#2f3841;--accent:#5aa6cc;--text:#e6eaee;--dim:#a9b3bc;--faint:#7c8791;
+}
+body{background-color:var(--bg,var(--c-bg));}
+.tablewrap{overflow-x:auto;-webkit-overflow-scrolling:touch;}
+</style>
+
+<style id="tools-css">
+.tools{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin:10px 0 16px}
+.tools button{border:1px solid var(--border,#d8dee3);background:var(--panel,#fff);border-radius:3px;padding:6px 12px;cursor:pointer;font-family:inherit;font-size:.82rem;color:var(--text,#1f2933)}
+.tools button:hover{border-color:var(--accent,#2c6e8f);color:var(--accent,#2c6e8f)}
+.tools .note{font-size:.76rem;color:var(--faint,#8b959d)}
+h2.sec-toggle,.sec.sec-toggle{cursor:pointer;user-select:none}
+h2.sec-toggle::before,.sec.sec-toggle::before{content:'▾';display:inline-block;width:1em;color:var(--faint,#8b959d);transition:transform .15s}
+h2.sec-toggle.collapsed::before,.sec.sec-toggle.collapsed::before{transform:rotate(-90deg)}
+.sec-hidden{display:none !important}
+.toc{background:var(--panel,#fff);border:1px solid var(--border,#d8dee3);border-radius:3px;padding:10px 14px;margin:0 0 18px;font-size:.86rem}
+.toc a{color:var(--accent,#2c6e8f);text-decoration:none;margin-right:14px;display:inline-block;margin-bottom:4px}
+@media print{.tools,.toc{display:none}.sec-hidden{display:block !important}.caps{display:block !important}.dom.open .caps,.caps{display:block !important}body{background:#fff}}
+</style>
+</head><style>.wrap table td:first-child{white-space:nowrap}code{word-break:break-all}</style><body><div class="wrap"><h1>文件索引 · 迁移规格书</h1>
+<p class="sub">给 CZ · 把《文件索引》平移到自有服务器 · 数据与交互照现状，权限按《G-Choco Quant 运营机制》A11 · v1.0 · 2026-10-25</p>
+<blockquote>
+<p>给 CZ：本规格书 +
+迁移包（《文件索引》迁移包.zip）足以在我们自己的服务器上 100%
+重建《文件索引》。<strong>数据、结构、交互照现状平移；权限按《G-Choco
+Quant
+运营机制》A11「读、写、批、部署四权分开」的目标设计实现</strong>（第 4
+节）。现状页面在 Claude
+平台上，部分权限只在浏览器里隐藏、并未在服务端强制，迁移时必须改为服务端强制（第
+4.1 节末）。</p>
+</blockquote>
+<h2>0 · 交付物与验收口径</h2>
+<div class="tw"><table>
+
+<thead>
+<tr class="header">
+<th>交付物</th>
+<th>内容</th>
+<th>用途</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>本规格书</td>
+<td>数据模型、全部交互、权限（现状与目标）、迁移步骤、验收清单</td>
+<td>照此实现</td>
+</tr>
+<tr class="even">
+<td><code>data/items.json</code></td>
+<td>全部 135 个条目（134 个在用 + 1 个在回收站），每条附
+<code>number</code>（当前编号）、<code>depth</code>（层级，0
+起）、<code>path</code>（名称路径）</td>
+<td>导入主数据</td>
+</tr>
+<tr class="odd">
+<td><code>data/tree.csv</code></td>
+<td>同一份数据的表格版，按编号排序</td>
+<td>人工核对</td>
+</tr>
+<tr class="even">
+<td><code>data/meta.json</code></td>
+<td>列定义 <code>columns</code>、数据结构版本 <code>schema</code></td>
+<td>导入</td>
+</tr>
+<tr class="odd">
+<td><code>data/seen.json</code></td>
+<td>打开过本页的编辑者 ID 与最近时间</td>
+<td>人员选择器的候选来源</td>
+</tr>
+<tr class="even">
+<td><code>data/people_map.json</code></td>
+<td>平台用户 ID → 人名</td>
+<td>迁移账号映射</td>
+</tr>
+<tr class="odd">
+<td><code>assets/</code></td>
+<td>上传过的文件原件（1 个 PDF，文件名即资产 ID）</td>
+<td>迁移上传文件</td>
+</tr>
+<tr class="even">
+<td><code>reference_index.html</code></td>
+<td>现行页面的完整源代码（2026-10-25 线上版本）</td>
+<td>参考实现；本规格书各节标注了对应函数</td>
+</tr>
+</tbody>
+</table></div>
+<p><strong>验收口径</strong>：第 6 节验收清单全部通过，且用
+<code>items.json</code> 导入后，新系统生成的编号、层级、父子关系与
+<code>tree.csv</code> 逐行一致。</p>
+<h2>1 · 它是什么</h2>
+<p>《文件索引》是 G-Choco Quant
+全部文档、工具、程序、网页的<strong>目录与唯一入口</strong>，也是各部分负责人、各文件维护人的唯一出处（《G-Choco
+Quant
+运营机制》0.5）。它不存文件内容，只存：条目在树里的位置、名称与说明、维护人、权限标签、入口（网址或上传文件）。</p>
+<p>页面是一张<strong>树形表格</strong>：每行一个条目（文件夹或文件），左侧是自动生成的编号，可展开折叠、搜索筛选、拖拽移动；有编辑权限的人可新建、改名、移动、删除、改入口、上传。</p>
+<h2>2 · 数据模型</h2>
+<h3>2.1 条目 <code>items</code>（每个条目一条记录，主键
+<code>uid</code>）</h3>
+<div class="tw"><table>
+
+<thead>
+<tr class="header">
+<th>字段</th>
+<th>类型</th>
+<th>含义与规则</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>uid</code></td>
+<td>string</td>
+<td>主键，生成后永不改变。格式不限（现行为 <code>u</code> + 时间 +
+随机串）；编号变化不影响它</td>
+</tr>
+<tr class="even">
+<td><code>parent</code></td>
+<td>string</td>
+<td>父条目的 <code>uid</code>；顶层为 <code>""</code></td>
+</tr>
+<tr class="odd">
+<td><code>order</code></td>
+<td>number</td>
+<td>同一父条目下的排序键。每次结构操作后<strong>重排</strong>为连续整数：顶层
+0,1,2…；其他层 1,2,3…（见 2.6）。插入时可临时取 ±0.5、1e9、-1
+等，重排后归整</td>
+</tr>
+<tr class="even">
+<td><code>kind</code></td>
+<td><code>"folder"</code> / <code>"file"</code></td>
+<td>类型。<strong>有子条目的一律视为文件夹</strong>（不论
+<code>kind</code>）</td>
+</tr>
+<tr class="odd">
+<td><code>name</code></td>
+<td>string</td>
+<td>名称，必填</td>
+</tr>
+<tr class="even">
+<td><code>desc</code></td>
+<td>string</td>
+<td>说明</td>
+</tr>
+<tr class="odd">
+<td><code>owner</code></td>
+<td>string</td>
+<td>文件：维护人；文件夹：负责人。现为人名文本（如
+<code>Eric</code>），<strong>迁移后改为用户 ID
+引用</strong>，显示时解析为人名</td>
+</tr>
+<tr class="even">
+<td><code>access</code></td>
+<td><code>"团队内"</code> / <code>"工段"</code> / <code>"机密"</code> /
+<code>"—"</code> / <code>""</code></td>
+<td>权限标签。文件夹不显示。<code>机密</code> 触发入口隐藏（第 4
+节）</td>
+</tr>
+<tr class="odd">
+<td><code>freq</code></td>
+<td>string</td>
+<td>更新频率（如「每周」「改动时」）。现行页面<strong>不作为列显示</strong>（代码里过滤掉了），但数据保留，迁移时保留字段</td>
+</tr>
+<tr class="even">
+<td><code>url</code></td>
+<td>string</td>
+<td>入口网址，须以 <code>http://</code> 或 <code>https://</code>
+开头；与 <code>asset</code> 互斥</td>
+</tr>
+<tr class="odd">
+<td><code>asset</code></td>
+<td>string</td>
+<td>上传文件的资产 ID；与 <code>url</code> 互斥</td>
+</tr>
+<tr class="even">
+<td><code>assetName</code></td>
+<td>string</td>
+<td>上传时的原文件名，显示用</td>
+</tr>
+<tr class="odd">
+<td><code>leaders</code></td>
+<td>string[]</td>
+<td><strong>只在第二层（编号
+n.n）文件夹上有意义</strong>：该部门的负责人用户 ID 列表（编辑授权，见第
+4 节）</td>
+</tr>
+<tr class="even">
+<td><code>viewers</code></td>
+<td>string[]</td>
+<td><strong>只在 <code>access=机密</code>
+的文件上有意义</strong>：被单独授权看到入口的用户 ID 列表</td>
+</tr>
+<tr class="odd">
+<td><code>ownerOnly</code></td>
+<td>boolean</td>
+<td><strong>只在顶层文件夹上有意义</strong>：<code>true</code>
+时该文件夹及全部子孙只对所有者（JT）可见</td>
+</tr>
+<tr class="even">
+<td><code>trashed</code></td>
+<td>boolean</td>
+<td>在回收站中</td>
+</tr>
+<tr class="odd">
+<td><code>trashedAt</code></td>
+<td>ISO 时间</td>
+<td>进回收站的时间</td>
+</tr>
+<tr class="even">
+<td><code>trashedFrom</code></td>
+<td>string</td>
+<td>进回收站时的父 <code>uid</code>，用于恢复</td>
+</tr>
+<tr class="odd">
+<td><code>c&lt;时间戳&gt;</code></td>
+<td>string</td>
+<td>用户自建列的值（键名见
+<code>meta.columns</code>）。当前数据中没有自建列</td>
+</tr>
+</tbody>
+</table></div>
+<h3>2.2 元数据 <code>meta</code></h3>
+<ul>
+<li><code>columns.cols</code>：可见列的定义与顺序，<code>[{key,label}]</code>。基础列固定为
+<code>name 名称 / desc 说明 / owner 维护人 / access 权限 / url 入口</code>，不可删除；自建列键名形如
+<code>c1739...</code>，可删除。</li>
+<li><code>schema.v</code>：数据结构版本，当前为 3。</li>
+</ul>
+<h3>2.3 访问记录 <code>seen</code></h3>
+<p>键为用户 ID，值
+<code>{t: ISO 时间}</code>。编辑者（非所有者）打开页面时写入（距上次超过
+7
+天才更新；查看者没有写权限，写入会静默失败）。用途：人员选择器里列出「打开过本页的成员」，弥补平台搜索搜不到外部受邀成员的问题。<strong>迁移后</strong>若新系统有完整的用户目录，可改为直接搜索用户目录，本集合可以废弃。</p>
+<h3>2.4 上传文件 <code>assets</code></h3>
+<p>现行存在 Claude 平台的资产库，按 <code>/_blob/&lt;资产ID&gt;</code>
+访问。允许的类型：<code>.pdf .png .jpg .jpeg .gif .webp .md .json .csv .txt</code>。当前只有
+1
+个文件（<code>b1063547…</code>，PDF），它所属的条目已在回收站。迁移时：文件存进对象存储，<code>asset</code>
+字段改存新的文件 ID 或路径，<code>assetName</code> 保留。</p>
+<h3>2.5
+每个人自己的浏览偏好（只存在本人浏览器，不进数据库，不需要审批）</h3>
+<div class="tw"><table>
+<thead>
+<tr class="header">
+<th>键（localStorage）</th>
+<th>内容</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>kb3_col</code></td>
+<td>哪些文件夹是折叠的 <code>{uid:true}</code></td>
+</tr>
+<tr class="even">
+<td><code>kb3_hc</code></td>
+<td>隐藏的列 <code>[key]</code></td>
+</tr>
+<tr class="odd">
+<td><code>kb3_hr</code></td>
+<td>隐藏的行 <code>[uid]</code></td>
+</tr>
+<tr class="even">
+<td><code>kb3_flt</code></td>
+<td>各列筛选条件</td>
+</tr>
+<tr class="odd">
+<td><code>kb3_seeded</code></td>
+<td>是否已做过「首次默认折叠」</td>
+</tr>
+</tbody>
+</table></div>
+<h3>2.6 派生规则（必须完全一致）</h3>
+<ol type="1">
+<li><strong>子条目</strong>：<code>parent</code> 等于该
+<code>uid</code>、且不在回收站、且（当前用户是所有者或该条目不是
+<code>ownerOnly</code>）的条目，按 <code>order</code> 升序、同值按
+<code>name</code> 字典序。（<code>kids()</code>）</li>
+<li><strong>编号</strong>：从根开始深度优先。顶层从 <strong>0</strong>
+起编（0, 1, 2…）；其余每层从 <strong>1</strong>
+起（<code>父编号.1</code>,
+<code>父编号.2</code>…）。编号<strong>不存储</strong>，每次渲染时由位置计算。（<code>computeNums()</code>）</li>
+<li><strong>是否文件夹</strong>：有子条目，或
+<code>kind=folder</code>。（<code>isFolder()</code>）</li>
+<li><strong>是否在用</strong>：自身及所有祖先都不在回收站，且（对非所有者）没有
+<code>ownerOnly</code> 祖先。（<code>alive()</code>）</li>
+<li><strong>所属部门文件夹</strong>：沿父链向上，找到「父条目是顶层」的那个条目，即第二层（编号
+n.n）的祖先。（<code>stageOf()</code>）</li>
+<li><strong>第二层只放文件夹</strong>：任何操作若会让一个文件落在第二层（父条目是顶层），一律拒绝，弹出提示「第二层只放文件夹：编号
+n.n 这一层只放文件夹，文件放在 n.n.n
+或更深。请先在这里建一个文件夹，再把文件放进去。」适用于新建、升一级、降一级、移动到、拖拽。（<code>l2file()</code>
+/ <code>L2MSG()</code>）</li>
+<li><strong>重排</strong>：每次结构操作后，对受影响的父条目把子条目的
+<code>order</code> 重写为连续整数（顶层 0 起，其他 1
+起）。（<code>renorm()</code>）</li>
+</ol>
+<h2>3 · 页面与交互（逐项）</h2>
+<h3>3.1 页首</h3>
+<ul>
+<li>标题「文件索引」，副标题「G-Choco Quant ·
+所有知识、工具、体系、规范、文件、代码、程序的编号与入口」，其后显示连接状态（已连接
+/ 未连接 / 读取失败）；非所有者额外显示「你的 ID：…」（便于所有者按 ID
+授权）。</li>
+<li>工具条：搜索框（搜名称、说明、维护人、编号）；「全部展开」「全部折叠」「展开到第
+2 层」。</li>
+<li>所有者额外看到：「↶ 撤销（n）」「＋ 顶层文件夹」「＋
+列」「回收站（n）」「导出 JSON」。部门负责人只看到「↶ 撤销」。</li>
+<li>状态提示区：显示当前身份说明，以及每次保存的结果（「保存中…」「✓
+已移动 · 时间」「保存失败 n 项：原因」）。</li>
+<li>「已隐藏」条：列出本人隐藏的列与行，可逐个恢复或「全部恢复」。</li>
+<li>计数条：无筛选时「共 N 项 · x 个文件 · y
+个文件夹」；有筛选或搜索时「筛选结果 n 项 / 文件 a / 文件夹 b / 全库共
+…」。</li>
+</ul>
+<h3>3.2 表格</h3>
+<ul>
+<li>列：编号 + <code>meta.columns</code> 中未被本人隐藏的列 +
+操作。表头吸顶。每个列头有「隐藏」；自建列另有「删除」（仅所有者）。</li>
+<li>表头第二行是<strong>筛选行</strong>：
+<ul>
+<li>编号列：「清除筛选」按钮（无筛选时置灰）。</li>
+<li>名称列：类型下拉（全部 / 文件 / 文件夹）+ 文本「包含…」。</li>
+<li>说明列及自建列：文本「包含…」（不区分大小写）。</li>
+<li>维护人、权限、入口三列：<strong>多选弹层</strong>，选项为当前在用文件的去重值并显示计数，空值显示为「（空）」；入口列的选项固定为「网址
+/ 上传文件 / 暂无」，有机密时再加「机密」。弹层有「清除本列」。</li>
+<li>规则：维护人、权限、入口三列的筛选只匹配文件，文件夹在这三列有筛选时不算命中；命中条目的全部祖先也显示（半透明，表示只是路径）。</li>
+</ul></li>
+<li>行：
+<ul>
+<li>缩进 <code>12 + 层级×18</code> 像素（层级最多按 4
+计）；顶层行加底色、名称加粗加大、左侧色条；第二层名称加粗。</li>
+<li>编号列：所有者且无搜索无筛选时显示拖拽柄「⠿」；展开 /
+折叠箭头（无子条目则占位隐藏）；编号徽章。</li>
+<li>名称列：📁 或 📄 +
+名称（搜索命中处高亮）；文件夹后显示子条目数；<code>ownerOnly</code>
+文件夹显示红色徽章「仅 JT 可见」。</li>
+<li>维护人：彩色胶囊（Eric 蓝、Yui 紫、CZ 绿、JT
+橙、其他灰）；文件夹的这一列标题悬停为「负责人」。</li>
+<li>权限：胶囊（机密红、工段黄、团队内灰）；文件夹不显示。</li>
+<li>入口（文件夹不显示），四种状态：
+<ol type="1">
+<li>当前用户看不到（机密且未授权）：「🔒 机密 · 向 JT
+申请」，下附说明（已识别身份但不在名单 / 未识别登录身份）。</li>
+<li>上传文件：绿色按钮「📎 文件」+ 原文件名。</li>
+<li>网址：蓝色按钮「↗ 打开」（新窗口）。</li>
+<li>暂无：有权限的人看到「填网址」「上传文件」两个按钮，其他人看到「暂无」。</li>
+</ol>
+<ul>
+<li>有权限的人在 2、3 旁还看到「修改」；所有者在机密项旁看到「已授权 n
+人」。</li>
+</ul></li>
+<li>操作列：「编辑」（有权限时）、「授权」（所有者，仅机密文件）、「负责人（n）」（所有者，仅第二层文件夹）、「⋯」（有权限时）、「隐藏」（所有人，只影响自己）。</li>
+</ul></li>
+<li>默认折叠：每个人第一次打开时，编号含「.」且有子条目的文件夹全部折叠，即只展开顶层文件夹，显示到编号
+n.n 这一层。「展开到第 2 层」按钮恢复的就是这个状态。</li>
+</ul>
+<h3>3.3 「⋯」菜单（<code>openMenu()</code> /
+<code>doMenu()</code>）</h3>
+<div class="tw"><table>
+
+<thead>
+<tr class="header">
+<th>菜单项</th>
+<th>出现条件</th>
+<th>行为</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>新建子文件夹 / 新建文件</td>
+<td>对象是文件夹</td>
+<td>对话框：名称、说明；文件另有维护人、权限（团队内 / 工段 /
+机密，默认团队内）。新条目放在末尾并展开父文件夹</td>
+</tr>
+<tr class="even">
+<td>上移 / 下移</td>
+<td>不是第一个 / 最后一个</td>
+<td>与相邻兄弟交换 <code>order</code></td>
+</tr>
+<tr class="odd">
+<td>升一级</td>
+<td>不在顶层</td>
+<td>移到祖父下、紧跟原父文件夹之后；非所有者不能移出本部门</td>
+</tr>
+<tr class="even">
+<td>降一级</td>
+<td>上方紧邻的兄弟是文件夹</td>
+<td>放进该文件夹末尾并展开它</td>
+</tr>
+<tr class="odd">
+<td>移动到…</td>
+<td>总是</td>
+<td>对话框选目标文件夹（不能选自己与自己的子孙；非所有者只能选自己有权的文件夹）与位置（末尾
+/ 开头）</td>
+</tr>
+<tr class="even">
+<td>复制</td>
+<td>总是</td>
+<td>复制整棵子树（新
+<code>uid</code>），根副本名称加「（副本）」，放在原条目之后</td>
+</tr>
+<tr class="odd">
+<td>删除…</td>
+<td>总是</td>
+<td>见 3.5</td>
+</tr>
+</tbody>
+</table></div>
+<p>非所有者对自己无权编辑、但有权新建的条目（自己部门的部门文件夹本身），菜单只有「新建子文件夹
+/ 新建文件」。</p>
+<h3>3.4 编辑与入口</h3>
+<ul>
+<li><strong>编辑</strong>（<code>data-edit</code>）：对话框字段：名称、说明、类型（仅无子条目时可改：文件
+/ 文件夹）、维护人（文件）/ 负责人（文件夹）、权限（团队内 / 工段 / 机密
+/
+—）、自建列；所有者编辑<strong>顶层文件夹</strong>时多一个「可见范围」：所有能打开本页的人
+/ 仅 JT 可见。入口不在这里改。</li>
+<li><strong>填网址</strong>：入口为空时；须以 http(s)://
+开头，否则提示。</li>
+<li><strong>修改入口</strong>（二次确认）：选「新的网址 /
+上传一个文件替换 / 清空入口」→ 再弹确认框显示「原：…
+新：…」，确认后才生效。网址与上传文件互斥，设一个就清另一个。</li>
+<li><strong>上传</strong>：选择文件 → 存入文件库 → 写
+<code>asset</code>、<code>assetName</code>，清空 <code>url</code>。</li>
+</ul>
+<h3>3.5 删除与回收站</h3>
+<ul>
+<li>删除文件或空文件夹：确认后 <code>trashed=true</code>，记
+<code>trashedAt</code>、<code>trashedFrom</code>。</li>
+<li>删除有子条目的文件夹：选择「保留子项，上移一级」（子条目移到被删文件夹原来的位置，依次排在它原来的位置上）或「连同子项一起删除」（只标记该文件夹，子孙随之不可见）。</li>
+<li>回收站（所有者）：按删除时间倒序列出；「恢复」回到
+<code>trashedFrom</code>（若原父已不存在或也在回收站，则恢复到顶层），放在末尾；「彻底删除」删除该条目及其全部子孙记录。</li>
+</ul>
+<h3>3.6
+拖拽移动（<code>pointerdown/move/up</code>，鼠标与触屏通用）</h3>
+<ul>
+<li>只有所有者、且无搜索无筛选时出现拖拽柄。</li>
+<li>拖动时显示浮动标签「移动：编号 名称」，被拖行半透明；靠近窗口上下
+60px 自动滚动。</li>
+<li>落点判定：目标是文件夹时，行高的上 28% = 放到它前面，下 28% =
+放到它后面，中间 = 放进去；目标是文件时，上半 = 前面，下半 =
+后面。落点行显示上沿线 / 下沿线 / 底色。</li>
+<li>不能拖到自己或自己的子孙上；落点违反「第二层只放文件夹」时弹提示且不移动。</li>
+</ul>
+<h3>3.7 撤销</h3>
+<ul>
+<li>每次改动（新建、编辑、移动、复制、删除、恢复、彻底删除、改入口、上传、授权、负责人、增删列）都压入撤销栈，最多
+300 步；按钮显示步数，悬停显示上一步名称。</li>
+<li>「↶ 撤销」或 Ctrl / ⌘ +
+Z（对话框打开时、或焦点在输入框时不触发）。撤销 =
+把受影响的条目恢复为改动前的完整记录（新建的则删除）。</li>
+<li>撤销栈只在本人本次打开页面期间有效。<strong>目标设计下</strong>撤销本身也是一次改动，须走第
+4.2 节流程或由部署者回滚（见 4.2）。</li>
+</ul>
+<h3>3.8 其他</h3>
+<ul>
+<li><strong>列管理</strong>（所有者）：「＋
+列」新增文本列；自建列可删除；所有人可隐藏任何列（只影响自己）。</li>
+<li><strong>导出 JSON</strong>（所有者）：导出
+<code>{exportedAt, cols, items:[…附 number]}</code>，文件名
+<code>文件索引_YYYY-MM-DD.json</code>。</li>
+<li><strong>人员选择器</strong>（「授权」「负责人」）：列出已选的人（显示姓名，可移除）；输入框按姓名搜索用户目录，同时列出打开过本页的成员；输入
+6 位以上时可「按 ID 添加」。</li>
+<li><strong>页脚说明</strong>：拖拽规则、编号规则、删除与回收站、入口三种状态、机密与「仅
+JT 可见」的含义、「隐藏」只影响自己。原文见
+<code>reference_index.html</code> 的 <code>&lt;footer&gt;</code>。</li>
+</ul>
+<h2>4 · 权限</h2>
+<h3>4.1 现状（Claude 平台上的实现）</h3>
+<div class="tw"><table>
+
+<thead>
+<tr class="header">
+<th>角色</th>
+<th>现状能做什么</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>所有者（JT）</td>
+<td>全部操作</td>
+</tr>
+<tr class="even">
+<td>部门负责人（平台「编辑者」，且在某个第二层文件夹的
+<code>leaders</code> 里）</td>
+<td>在本部门文件夹<strong>内部</strong>编辑、改入口、上传、新建、移动、复制、删除、撤销；不能改部门文件夹本身、不能移出本部门、不能拖拽</td>
+</tr>
+<tr class="odd">
+<td>其他编辑者</td>
+<td>只读</td>
+</tr>
+<tr class="even">
+<td>查看者</td>
+<td>只读</td>
+</tr>
+</tbody>
+</table></div>
+<p>机密入口：所有者、<code>viewers</code>
+名单里的人、该部门的负责人能看到；其他人看到「🔒 机密 · 向 JT
+申请」。</p>
+<p><strong>现状的漏洞，迁移时必须修正</strong>：机密入口与
+<code>ownerOnly</code>
+文件夹<strong>只是在浏览器里不显示</strong>，数据本身仍完整下发到每个能打开页面的人；部门负责人的编辑范围也只在页面上限制，平台层面任何「编辑者」都能写全部数据。新系统必须在<strong>服务端</strong>按第
+4.2 节过滤与校验：看不到的条目与入口根本不下发，越权的写入直接拒绝。</p>
+<h3>4.2 目标设计：读、写、批、部署四权分开（《G-Choco Quant
+运营机制》A11）</h3>
+<p><strong>四种权限</strong></p>
+<div class="tw"><table>
+
+<thead>
+<tr class="header">
+<th>权限</th>
+<th>含义</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>读（Read）</td>
+<td>看到条目与入口</td>
+</tr>
+<tr class="even">
+<td>写（Write）＝提议</td>
+<td>提交一个「变更请求」（新增、修改、移动、删除、改入口、上传、改权限……），写明理由；<strong>提议不改变线上数据</strong></td>
+</tr>
+<tr class="odd">
+<td>批（Approve）</td>
+<td>批准或退回变更请求，写明意见；<strong>批准不等于生效</strong></td>
+</tr>
+<tr class="even">
+<td>部署（Deploy）</td>
+<td>把已批准的变更请求应用到线上数据，并写入改动记录</td>
+</tr>
+</tbody>
+</table></div>
+<p><strong>角色与作用域</strong></p>
+<div class="tw"><table>
+
+<thead>
+<tr class="header">
+<th>角色</th>
+<th>读</th>
+<th>写（提议）</th>
+<th>批</th>
+<th>部署</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>所有者（JT）</td>
+<td>全部，含 <code>ownerOnly</code></td>
+<td>全部</td>
+<td>全部</td>
+<td>全部</td>
+</tr>
+<tr class="even">
+<td>部署者（JT 指定，可以是 Claude 或服务账号）</td>
+<td>全部（不含 <code>ownerOnly</code>，除非另授权）</td>
+<td>—</td>
+<td>—</td>
+<td>已批准的请求</td>
+</tr>
+<tr class="odd">
+<td>部门负责人（第二层文件夹的 <code>leaders</code>）</td>
+<td>全部非 <code>ownerOnly</code> 条目；本部门机密入口</td>
+<td>本部门文件夹内部</td>
+<td>本部门文件夹内部的、<strong>他人提出的</strong>请求</td>
+<td>—</td>
+</tr>
+<tr class="even">
+<td>成员（团队内）</td>
+<td>全部非 <code>ownerOnly</code> 条目；机密入口仅限
+<code>viewers</code> 授权</td>
+<td>任意位置（提议本身无害）</td>
+<td>—</td>
+<td>—</td>
+</tr>
+<tr class="odd">
+<td>外部查看者</td>
+<td>按授权</td>
+<td>—</td>
+<td>—</td>
+<td>—</td>
+</tr>
+</tbody>
+</table></div>
+<p><strong>谁批（按变更作用的范围）</strong></p>
+<div class="tw"><table>
+
+<thead>
+<tr class="header">
+<th>变更</th>
+<th>批准人</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>某部门文件夹内部的新增、修改、移动、复制、删除、改入口、上传</td>
+<td>该部门负责人；无负责人时为所有者</td>
+</tr>
+<tr class="even">
+<td>涉及第一层（中心级）或第二层（部门文件夹本身）的任何变更；跨部门移动</td>
+<td>所有者</td>
+</tr>
+<tr class="odd">
+<td>改权限相关字段：<code>access</code>、<code>viewers</code>、<code>leaders</code>、<code>ownerOnly</code></td>
+<td>所有者</td>
+</tr>
+<tr class="even">
+<td>列结构（增删列）</td>
+<td>所有者</td>
+</tr>
+<tr class="odd">
+<td>从回收站彻底删除</td>
+<td>所有者</td>
+</tr>
+</tbody>
+</table></div>
+<p><strong>规则</strong></p>
+<ol type="1">
+<li><strong>不批自己的提议</strong>。批准人本人发起的变更，视为「提议 +
+批准」合一，仍生成变更请求与改动记录；部署仍由部署者执行。</li>
+<li><strong>每个变更请求一条记录</strong>：<code>id, 提议人, 提议时间, 类型, 目标 uid, 改前快照, 改后快照, 理由, 状态, 批准人, 批准时间, 批准意见, 部署人, 部署时间</code>。状态机：<code>草稿 → 待批准 → 已批准 → 已部署</code>；分支
+<code>待批准 → 已退回</code>、<code>待批准 → 已撤回（提议人自己）</code>。</li>
+<li><strong>部署时校验</strong>：目标条目自提议以来未被改过（比对改前快照或版本号）；若已被改过，变更请求退回「待批准」并提示冲突。部署后重排受影响的父条目，再写改动记录。</li>
+<li><strong>一次操作可能牵动多条</strong>（如删除文件夹并上移子项、复制子树、拖拽导致重排），一个变更请求包含全部受影响条目，<strong>原子</strong>部署。</li>
+<li><strong>改动记录</strong>（审计日志）只增不改，所有人可读；包括被退回与撤回的请求。</li>
+<li><strong>撤销 =
+回滚</strong>：部署者可以对某条改动记录执行「回滚」，生成一个反向变更请求，按同样流程（回滚由所有者批准）。</li>
+<li><strong>服务端强制</strong>：读权限过滤在服务端完成（机密入口、<code>ownerOnly</code>
+子树不下发给无权者）；每个写入接口校验角色与作用域。</li>
+<li><strong>个人浏览偏好</strong>（折叠、隐藏行列、筛选）不属于变更，不走流程，只存本人。</li>
+<li><strong>数字类改动</strong>一律记入《决策记录》——《文件索引》本身没有数字类内容，此条留作通用。</li>
+</ol>
+<p><strong>界面上需要新增的</strong></p>
+<ul>
+<li>每个可编辑动作（新建、编辑、移动、拖拽、删除、改入口、上传、授权、负责人、增删列）提交后生成变更请求，界面上该条目显示「有
+n 条变更待批准」，不立即改变树。</li>
+<li>「变更请求」面板：按状态分页（待批准 / 已批准待部署 / 已退回 /
+已部署），显示改前改后对比、理由、提议人；批准人看到「批准 /
+退回（须填意见）」；部署者看到「部署」。</li>
+<li>「改动记录」面板：时间、条目、改了什么、提议人、批准人、部署人；所有者与部署者可「回滚」。</li>
+</ul>
+<h2>5 · 迁移步骤</h2>
+<ol type="1">
+<li>建库：按 2.1–2.4 建表；<code>uid</code>
+原样保留（所有引用都靠它）。</li>
+<li>导入 <code>items.json</code> 的 <code>items</code>
+数组：去掉附加字段
+<code>number</code>、<code>depth</code>、<code>path</code>
+后入库（这三项由系统按 2.6 计算）。</li>
+<li>账号映射：按 <code>people_map.json</code> 把
+<code>leaders</code>、<code>viewers</code>、<code>seen</code> 中的平台
+ID 换成新系统的用户
+ID；所有者（JT）直接设为超级管理员。<code>owner</code>
+字段是人名文本，按名字映射为用户 ID。</li>
+<li>上传文件：把 <code>assets/</code>
+里的文件放进对象存储，更新对应条目的 <code>asset</code>。</li>
+<li>入口网址：现有 <code>url</code> 多为 claude.ai
+页面链接。文件迁移到新服务器后，由各文件维护人按第 4.2
+节流程把入口改为新地址；在此之前保留原值。</li>
+<li>导入 <code>meta.json</code> 的列定义（注意保留「<code>freq</code>
+不显示」的行为）。</li>
+<li>计算编号，与 <code>tree.csv</code> 逐行比对编号、层级、父子关系，应
+100% 一致。</li>
+</ol>
+<h2>6 · 验收清单</h2>
+<div class="tw"><table>
+
+<thead>
+<tr class="header">
+<th>#</th>
+<th>测试</th>
+<th>期望</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>1</td>
+<td>导入后计数</td>
+<td>在用 134 项（文件与文件夹数与 <code>tree.csv</code> 一致），回收站 1
+项</td>
+</tr>
+<tr class="even">
+<td>2</td>
+<td>编号</td>
+<td>每个在用条目的编号与 <code>tree.csv</code> 一致；顶层 0 起、其他层 1
+起</td>
+</tr>
+<tr class="odd">
+<td>3</td>
+<td>展开 / 折叠 / 展开到第 2 层 / 首次默认折叠</td>
+<td>同 3.2</td>
+</tr>
+<tr class="even">
+<td>4</td>
+<td>搜索「Master」</td>
+<td>命中项高亮，祖先半透明显示，计数条正确</td>
+</tr>
+<tr class="odd">
+<td>5</td>
+<td>维护人多选「Eric」+ 类型「文件」</td>
+<td>只剩 Eric 维护的文件及其祖先</td>
+</tr>
+<tr class="even">
+<td>6</td>
+<td>入口筛选「暂无」</td>
+<td>只剩无入口的文件</td>
+</tr>
+<tr class="odd">
+<td>7</td>
+<td>隐藏一列、一行，再恢复</td>
+<td>只影响本人；刷新后保持</td>
+</tr>
+<tr class="even">
+<td>8</td>
+<td>在 n.n 层新建文件；把文件拖到 n.n 层；把文件「升一级」到 n.n 层</td>
+<td>全部被拒并弹出「第二层只放文件夹」</td>
+</tr>
+<tr class="odd">
+<td>9</td>
+<td>拖拽到文件夹中间 / 上沿 / 下沿；拖到自己的子孙</td>
+<td>分别放进 / 前 / 后；最后一项不允许</td>
+</tr>
+<tr class="even">
+<td>10</td>
+<td>删除有子项的文件夹，选「子项上移一级」</td>
+<td>子项出现在原位置，编号连续</td>
+</tr>
+<tr class="odd">
+<td>11</td>
+<td>回收站恢复：原父仍在 / 原父已删除</td>
+<td>回到原父末尾 / 回到顶层末尾</td>
+</tr>
+<tr class="even">
+<td>12</td>
+<td>复制一个文件夹</td>
+<td>整棵子树复制，根名加「（副本）」，新 uid</td>
+</tr>
+<tr class="odd">
+<td>13</td>
+<td>修改入口为新网址</td>
+<td>必须二次确认；网址不以 http(s) 开头时被拒</td>
+</tr>
+<tr class="even">
+<td>14</td>
+<td>机密文件：未授权成员登录</td>
+<td>看到「🔒 机密 · 向 JT
+申请」；<strong>接口返回里也没有该网址</strong>（服务端过滤）</td>
+</tr>
+<tr class="odd">
+<td>15</td>
+<td><code>ownerOnly</code> 文件夹（7 · JT笔记本）：非所有者登录</td>
+<td>看不到该文件夹与全部子孙；<strong>接口返回里也没有</strong>；编号由
+7 开始的这些条目对其他人不出现</td>
+</tr>
+<tr class="even">
+<td>16</td>
+<td>部门负责人在本部门内提议改名</td>
+<td>生成变更请求，树不变</td>
+</tr>
+<tr class="odd">
+<td>17</td>
+<td>同一负责人批准自己的提议</td>
+<td>被拒（须由他人或所有者批准）；若该负责人是批准人本人发起，则视为提议
++ 批准合一，仍需部署者部署</td>
+</tr>
+<tr class="even">
+<td>18</td>
+<td>所有者批准后，部署者部署</td>
+<td>树更新、编号重排、改动记录一行（提议人、批准人、部署人、改前改后）</td>
+</tr>
+<tr class="odd">
+<td>19</td>
+<td>成员提议改 <code>access</code> 为「机密」</td>
+<td>批准人只能是所有者</td>
+</tr>
+<tr class="even">
+<td>20</td>
+<td>部署前该条目已被他人改动</td>
+<td>部署失败，请求回到「待批准」并提示冲突</td>
+</tr>
+<tr class="odd">
+<td>21</td>
+<td>回滚一条改动</td>
+<td>生成反向变更请求，经所有者批准、部署者部署后恢复</td>
+</tr>
+<tr class="even">
+<td>22</td>
+<td>越权写入（直接调用接口）</td>
+<td>服务端拒绝</td>
+</tr>
+<tr class="odd">
+<td>23</td>
+<td>导出 JSON</td>
+<td>结构同 2.1，附 <code>number</code></td>
+</tr>
+<tr class="even">
+<td>24</td>
+<td>手机宽度（390px）</td>
+<td>表格可横向滚动，页面不出现整页横向滚动；拖拽可用触屏</td>
+</tr>
+</tbody>
+</table></div>
+<h2>7 · 已知问题与建议</h2>
+<ul>
+<li><strong>客户端隐藏不是权限</strong>：见 4.1
+末，必须服务端强制。</li>
+<li><strong>负责人目前只认第二层文件夹</strong>：中心级（第一层）没有负责人字段的编辑入口；<code>owner</code>
+字段在第一层文件夹上只是文本。建议新系统让第一层也能设负责人（例如风控中心、数据与知识中台），作为该中心的批准人。</li>
+<li><strong><code>owner</code>
+是自由文本</strong>：迁移时改为用户引用，避免改名后对不上。</li>
+<li><strong>资产孤儿</strong>：条目进回收站后，上传文件仍占空间；彻底删除时建议一并删除文件。</li>
+<li><strong>自定义列的键名</strong>用时间戳生成，迁移时原样保留即可。</li>
+</ul>
+<footer>文件索引迁移规格书 v1.0 · 2026-10-25</footer></div>
+<script>
+(function(){
+  const sel = document.querySelectorAll('.wrap > h2, .wrap > .sec, #paper > .sec');
+  const heads=[...sel].filter(h=>!h.closest('#ownerPanel'));
+  heads.forEach((h,i)=>{
+    h.classList.add('sec-toggle'); if(!h.id) h.id='sec'+i;
+    h.addEventListener('click',e=>{ if(e.target.tagName==='A')return; const col=h.classList.toggle('collapsed'); let n=h.nextElementSibling; while(n && !n.matches('h2,.sec')){ n.classList.toggle('sec-hidden',col); n=n.nextElementSibling; } });
+  });
+  function setAll(col){ heads.forEach(h=>{ h.classList.toggle('collapsed',col); let n=h.nextElementSibling; while(n && !n.matches('h2,.sec')){ n.classList.toggle('sec-hidden',col); n=n.nextElementSibling; } }); }
+  const bar=document.createElement('div'); bar.className='tools';
+  bar.innerHTML='<button data-act="expand">全部展开</button><button data-act="collapse">全部折叠</button><button data-act="html">保存为本地 HTML</button><button data-act="pdf">打印 / 存为 PDF</button><span class="note">点击章节标题可单独折叠</span>';
+  const anchor=document.querySelector('.wrap > header, .wrap > .sub, .wrap > h1'); if(anchor) anchor.insertAdjacentElement('afterend',bar);
+  if(heads.length>3 && !document.querySelector('.toc')){ const toc=document.createElement('nav'); toc.className='toc'; toc.innerHTML='<b style="margin-right:10px">目录</b>'+heads.map(h=>`<a href="#${h.id}">${h.textContent.replace(/^[▾▸]\s*/,'').trim()}</a>`).join(''); bar.insertAdjacentElement('afterend',toc); }
+  let dl=null; (async()=>{ try{ if(window.claude&&claude.use) dl=await claude.use('downloads'); }catch(e){} })();
+  bar.addEventListener('click',async e=>{
+    const a=e.target.closest('button'); if(!a) return;
+    if(a.dataset.act==='expand') setAll(false);
+    if(a.dataset.act==='collapse') setAll(true);
+    if(a.dataset.act==='pdf'){ setAll(false); window.print(); }
+    if(a.dataset.act==='html'){
+      setAll(false);
+      const clone=document.documentElement.cloneNode(true);
+      clone.querySelectorAll('script').forEach(s=>s.remove());
+      clone.querySelectorAll('.tools').forEach(s=>s.remove());
+      clone.querySelectorAll('select').forEach(s=>{ const t=document.createElement('span'); t.textContent=s.value; t.className=s.className; s.replaceWith(t); });
+      clone.querySelectorAll('[contenteditable]').forEach(s=>s.removeAttribute('contenteditable'));
+      const stamp=document.createElement('p'); stamp.style.cssText='color:#8b959d;font-size:.76rem'; stamp.textContent='本地快照 · 保存于 '+new Date().toLocaleString()+' · 在线版请以网页为准'; clone.querySelector('.wrap')?.prepend(stamp);
+      const html='<!DOCTYPE html>\n'+clone.outerHTML;
+      const name=(document.title||'page').replace(/[\\/:*?"<>|]/g,'_')+'_'+new Date().toISOString().slice(0,10)+'.html';
+      if(dl){ try{ await dl.save({filename:name,data:html}); return; }catch(err){} }
+      try{ const b=new Blob([html],{type:'text/html'}); const u=URL.createObjectURL(b); const l=document.createElement('a'); l.href=u; l.download=name; l.click(); }catch(err){ alert('当前环境不支持保存，请用「打印 / 存为 PDF」'); }
+    }
+  });
+})();
+</script>
+</body></html>
