@@ -461,11 +461,16 @@ class WikiNodeAccessEndpoint(BaseAPIView):
                 permission.save(update_fields=["access", "deleted_at", "updated_at"])
 
         explicit = _explicit_map(workspace)
+        effective = effective_access(node, member_id, nodes_by_id, explicit)
+        if can_view(effective):
+            from plane.utils.wiki_notify import notify_wiki
+
+            notify_wiki(workspace, node, member_id, request.user, "access")
         return Response(
             {
                 "member_id": str(member_id),
                 "explicit_access": explicit.get((node.id, member_id)) if access is not None else None,
-                "effective_access": effective_access(node, member_id, nodes_by_id, explicit),
+                "effective_access": effective,
             },
             status=status.HTTP_200_OK,
         )

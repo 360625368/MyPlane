@@ -188,6 +188,13 @@
     "keep_current": "Ponechať aktuálnu stránku",
     "take_submitted": "Použiť odoslané",
     "edit_block": "Upraviť tento blok",
-    "confirm_merge": "Potvrdiť zlúčenie"
+    "confirm_merge": "Potvrdiť zlúčenie",
+    "notice_submitted": "odoslal zmenu v {name}",
+    "notice_returned": "vrátil vašu zmenu v {name}",
+    "notice_merged": "zlúčil vašu zmenu do {name}",
+    "notice_closed": "uzavrel vašu zmenu v {name}",
+    "notice_access": "aktualizoval váš prístup k {name}",
+    "notice_locked": "uzamkol {name}",
+    "notice_archived": "archivoval {name}"
   }
 }

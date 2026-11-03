@@ -188,6 +188,13 @@
     "keep_current": "Pertahankan halaman saat ini",
     "take_submitted": "Pakai yang dikirim",
     "edit_block": "Edit blok ini",
-    "confirm_merge": "Konfirmasi penggabungan"
+    "confirm_merge": "Konfirmasi penggabungan",
+    "notice_submitted": "mengirim perubahan untuk {name}",
+    "notice_returned": "mengembalikan perubahan Anda untuk {name}",
+    "notice_merged": "menggabungkan perubahan Anda ke {name}",
+    "notice_closed": "menutup perubahan Anda untuk {name}",
+    "notice_access": "memperbarui akses Anda ke {name}",
+    "notice_locked": "mengunci {name}",
+    "notice_archived": "mengarsipkan {name}"
   }
 }

@@ -11,10 +11,22 @@ from plane.db.models import WikiChangeRequest, WikiNode
 from plane.utils.content_validator import validate_html_content
 from plane.utils.wiki_access import EDITABLE
 from plane.utils.wiki_merge import apply_resolutions, plan_merge
+from plane.utils.wiki_notify import notify_wiki
 from plane.utils.wiki_version import mark_conflicting_change_requests, record_wiki_version
 
 from .base import WikiMemberPermission, _is_creator, _not_found, _workspace_or_404
 from .document import _creator_can_publish, _file_for_reading
+
+
+def _notify_change(action, workspace, node, change, user):
+    if action == "submit":
+        notify_wiki(workspace, node, node.owned_by_id, user, "submitted")
+    elif action == "return":
+        notify_wiki(workspace, node, change.owned_by_id, user, "returned")
+    elif action == "merge":
+        notify_wiki(workspace, node, change.owned_by_id, user, "merged")
+    elif action == "close":
+        notify_wiki(workspace, node, change.owned_by_id, user, "closed")
 
 
 def _clean_description(data):
@@ -240,8 +252,10 @@ class WikiChangeRequestDetailEndpoint(BaseAPIView):
             change.merged_at = timezone.now()
             change.save()
             mark_conflicting_change_requests(node)
+            _notify_change("merge", workspace, node, change, request.user)
             return Response(_serialize_change(change, node, request.user, access), status=status.HTTP_200_OK)
         else:
             return Response({"error": "forbidden"}, status=status.HTTP_403_FORBIDDEN)
         change.save()
+        _notify_change(action, workspace, node, change, request.user)
         return Response(_serialize_change(change, node, request.user, access), status=status.HTTP_200_OK)

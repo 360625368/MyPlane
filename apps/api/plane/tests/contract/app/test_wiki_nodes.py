@@ -9,7 +9,7 @@ import pytest
 from django.utils import timezone
 from rest_framework import status
 
-from plane.db.models import User, WikiNodeVersion, WorkspaceMember
+from plane.db.models import Notification, User, WikiNodeVersion, WorkspaceMember
 from plane.utils.wiki_access import EDITABLE, INVISIBLE, VISIBLE, resolve_access
 
 
@@ -709,3 +709,207 @@ class TestWikiConflict:
         assert "Alpha draft" in published.data["description_html"]
         assert "Alpha current" not in published.data["description_html"]
         assert "Beta" in published.data["description_html"]
+
+
+def _notices(user, node_id, field=None):
+    query = Notification.objects.filter(receiver=user, entity_name="wiki", entity_identifier=node_id)
+    if field is not None:
+        query = query.filter(data__wiki__field=field)
+    return query
+
+
+@pytest.mark.contract
+class TestWikiNotifications:
+    def test_invisible_member_receives_no_content_notification(self, session_client, workspace, create_user):
+        author = _member(workspace, 15)
+        outsider = _member(workspace, 15)
+        node_id = _file(session_client, workspace, "Review notes")
+        _grant(session_client, workspace, node_id, author, "editable")
+        session_client.force_authenticate(user=author)
+        opened = session_client.post(f"/api/workspaces/{workspace.slug}/wiki/nodes/{node_id}/changes/", format="json")
+        change_id = opened.data["id"]
+        session_client.patch(
+            f"/api/workspaces/{workspace.slug}/wiki/nodes/{node_id}/changes/{change_id}/",
+            {"description_html": "<p>Proposal</p>", "description_json": {"type": "doc"}},
+            format="json",
+        )
+        submitted = session_client.post(
+            f"/api/workspaces/{workspace.slug}/wiki/nodes/{node_id}/changes/{change_id}/",
+            {"action": "submit"},
+            format="json",
+        )
+        assert submitted.status_code == status.HTTP_200_OK
+
+        session_client.force_authenticate(user=create_user)
+        inbox = session_client.get(f"/api/workspaces/{workspace.slug}/users/notifications/")
+        assert inbox.status_code == status.HTTP_200_OK
+        assert any(
+            item["entity_name"] == "wiki" and item["data"]["wiki"]["field"] == "submitted" for item in inbox.data
+        )
+        assert _notices(create_user, node_id, "submitted").count() == 1
+        assert _notices(author, node_id, "submitted").count() == 0
+        assert _notices(outsider, node_id).count() == 0
+
+        _grant(session_client, workspace, node_id, author, "invisible")
+        returned = session_client.post(
+            f"/api/workspaces/{workspace.slug}/wiki/nodes/{node_id}/changes/{change_id}/",
+            {"action": "return", "comment": "Hold"},
+            format="json",
+        )
+        assert returned.status_code == status.HTTP_200_OK
+        assert _notices(author, node_id, "returned").count() == 0
+        session_client.force_authenticate(user=author)
+        hidden = session_client.get(f"/api/workspaces/{workspace.slug}/wiki/nodes/{node_id}/")
+        assert hidden.status_code == status.HTTP_404_NOT_FOUND
+
+    def test_visible_downgrade_blocks_the_draft_but_review_continues(self, session_client, workspace, create_user):
+        author = _member(workspace, 15)
+        node_id = _file(session_client, workspace, "Shared draft")
+        _grant(session_client, workspace, node_id, author, "editable")
+        session_client.force_authenticate(user=author)
+        opened = session_client.post(f"/api/workspaces/{workspace.slug}/wiki/nodes/{node_id}/changes/", format="json")
+        change_id = opened.data["id"]
+        submitted = session_client.post(
+            f"/api/workspaces/{workspace.slug}/wiki/nodes/{node_id}/changes/{change_id}/",
+            {"action": "submit"},
+            format="json",
+        )
+        assert submitted.status_code == status.HTTP_200_OK
+        session_client.force_authenticate(user=create_user)
+        _grant(session_client, workspace, node_id, author, "visible")
+        session_client.force_authenticate(user=author)
+        blocked = session_client.patch(
+            f"/api/workspaces/{workspace.slug}/wiki/nodes/{node_id}/changes/{change_id}/",
+            {"description_html": "<p>Later</p>", "description_json": {"type": "doc"}},
+            format="json",
+        )
+        assert blocked.status_code == status.HTTP_403_FORBIDDEN
+        session_client.force_authenticate(user=create_user)
+        returned = session_client.post(
+            f"/api/workspaces/{workspace.slug}/wiki/nodes/{node_id}/changes/{change_id}/",
+            {"action": "return", "comment": "Still open"},
+            format="json",
+        )
+        assert returned.status_code == status.HTTP_200_OK
+        assert _notices(author, node_id, "returned").count() == 1
+        closed = session_client.post(
+            f"/api/workspaces/{workspace.slug}/wiki/nodes/{node_id}/changes/{change_id}/",
+            {"action": "close"},
+            format="json",
+        )
+        assert closed.status_code == status.HTTP_200_OK
+        assert _notices(author, node_id, "closed").count() == 1
+
+    def test_access_lock_and_archive_notify_only_people_who_can_view(self, session_client, workspace, create_user):
+        author = _member(workspace, 15)
+        hidden = _member(workspace, 15)
+        node_id = _file(session_client, workspace, "Guarded")
+        denied = session_client.put(
+            f"/api/workspaces/{workspace.slug}/wiki/nodes/{node_id}/access/",
+            {"member_id": str(hidden.id), "access": "invisible"},
+            format="json",
+        )
+        assert denied.status_code == status.HTTP_200_OK
+        assert _notices(hidden, node_id, "access").count() == 0
+        _grant(session_client, workspace, node_id, author, "editable")
+        assert _notices(author, node_id, "access").count() == 1
+
+        session_client.force_authenticate(user=author)
+        opened = session_client.post(f"/api/workspaces/{workspace.slug}/wiki/nodes/{node_id}/changes/", format="json")
+        change_id = opened.data["id"]
+        session_client.post(
+            f"/api/workspaces/{workspace.slug}/wiki/nodes/{node_id}/changes/{change_id}/",
+            {"action": "submit"},
+            format="json",
+        )
+        session_client.force_authenticate(user=create_user)
+        locked = session_client.post(
+            f"/api/workspaces/{workspace.slug}/wiki/nodes/{node_id}/state/",
+            {"is_locked": True},
+            format="json",
+        )
+        assert locked.status_code == status.HTTP_200_OK
+        archived = session_client.post(
+            f"/api/workspaces/{workspace.slug}/wiki/nodes/{node_id}/state/",
+            {"archived": True},
+            format="json",
+        )
+        assert archived.status_code == status.HTTP_200_OK
+        assert _notices(author, node_id, "locked").count() == 1
+        assert _notices(author, node_id, "archived").count() == 1
+        assert _notices(hidden, node_id).count() == 0
+
+    def test_folder_loses_create_but_keeps_existing_children(self, session_client, workspace, create_user):
+        author = _member(workspace, 15)
+        folder = session_client.post(
+            f"/api/workspaces/{workspace.slug}/wiki/nodes/",
+            {"parent_id": _root_id(session_client, workspace), "name": "Shared shelf", "node_type": "folder"},
+            format="json",
+        )
+        folder_id = folder.data["id"]
+        _grant(session_client, workspace, folder_id, author, "editable")
+        session_client.force_authenticate(user=author)
+        child = session_client.post(
+            f"/api/workspaces/{workspace.slug}/wiki/nodes/",
+            {"parent_id": folder_id, "name": "Kept", "node_type": "file"},
+            format="json",
+        )
+        assert child.status_code == status.HTTP_201_CREATED
+        session_client.force_authenticate(user=create_user)
+        _grant(session_client, workspace, folder_id, author, "visible")
+        session_client.force_authenticate(user=author)
+        blocked = session_client.post(
+            f"/api/workspaces/{workspace.slug}/wiki/nodes/",
+            {"parent_id": folder_id, "name": "Blocked", "node_type": "file"},
+            format="json",
+        )
+        assert blocked.status_code == status.HTTP_400_BAD_REQUEST
+        kept = session_client.get(f"/api/workspaces/{workspace.slug}/wiki/nodes/{child.data['id']}/")
+        assert kept.status_code == status.HTTP_200_OK
+
+    def test_search_recent_favorite_and_duplicate_follow_access(self, session_client, workspace, create_user):
+        reader = _member(workspace, 15)
+        node_id = _file(session_client, workspace, "Classified notes")
+        described = session_client.patch(
+            f"/api/workspaces/{workspace.slug}/wiki/nodes/{node_id}/description/",
+            {"description_html": "<p>classified phrase</p>", "description_json": {"type": "doc"}},
+            format="json",
+        )
+        assert described.status_code == status.HTTP_200_OK
+        _grant(session_client, workspace, node_id, reader, "visible")
+        session_client.force_authenticate(user=reader)
+        opened = session_client.get(f"/api/workspaces/{workspace.slug}/wiki/nodes/{node_id}/")
+        assert opened.status_code == status.HTTP_200_OK
+        found = session_client.get(f"/api/workspaces/{workspace.slug}/wiki/search/?q=classified")
+        recent = session_client.get(f"/api/workspaces/{workspace.slug}/wiki/recent/")
+        saved = session_client.post(
+            f"/api/workspaces/{workspace.slug}/user-favorites/",
+            {"entity_type": "wiki", "entity_identifier": node_id},
+            format="json",
+        )
+        assert node_id in {item["id"] for item in found.data}
+        assert node_id in {item["id"] for item in recent.data}
+        assert saved.status_code == status.HTTP_200_OK
+
+        session_client.force_authenticate(user=create_user)
+        _grant(session_client, workspace, node_id, reader, "invisible")
+        session_client.force_authenticate(user=reader)
+        hidden_search = session_client.get(f"/api/workspaces/{workspace.slug}/wiki/search/?q=classified")
+        hidden_recent = session_client.get(f"/api/workspaces/{workspace.slug}/wiki/recent/")
+        favorites = session_client.get(f"/api/workspaces/{workspace.slug}/user-favorites/")
+        hidden_row = next(item for item in favorites.data if item["entity_identifier"] == node_id)
+        assert hidden_row["entity_data"] is None
+        session_client.delete(f"/api/workspaces/{workspace.slug}/user-favorites/{saved.data['id']}/")
+        hidden_favorite = session_client.post(
+            f"/api/workspaces/{workspace.slug}/user-favorites/",
+            {"entity_type": "wiki", "entity_identifier": node_id},
+            format="json",
+        )
+        copied = session_client.post(
+            f"/api/workspaces/{workspace.slug}/wiki/nodes/{node_id}/duplicate/",
+            format="json",
+        )
+        assert hidden_search.data == []
+        assert node_id not in {item["id"] for item in hidden_recent.data}
+        assert hidden_favorite.status_code == status.HTTP_404_NOT_FOUND
+        assert copied.status_code == status.HTTP_404_NOT_FOUND

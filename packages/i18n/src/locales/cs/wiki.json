@@ -188,6 +188,13 @@
     "keep_current": "Ponechat aktuální stránku",
     "take_submitted": "Použít odeslané",
     "edit_block": "Upravit tento blok",
-    "confirm_merge": "Potvrdit sloučení"
+    "confirm_merge": "Potvrdit sloučení",
+    "notice_submitted": "odeslal změnu v {name}",
+    "notice_returned": "vrátil vaši změnu v {name}",
+    "notice_merged": "sloučil vaši změnu do {name}",
+    "notice_closed": "uzavřel vaši změnu v {name}",
+    "notice_access": "aktualizoval váš přístup k {name}",
+    "notice_locked": "uzamkl {name}",
+    "notice_archived": "archivoval {name}"
   }
 }

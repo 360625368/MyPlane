@@ -188,6 +188,13 @@
     "keep_current": "Оставить текущую страницу",
     "take_submitted": "Взять отправленное",
     "edit_block": "Изменить этот блок",
-    "confirm_merge": "Подтвердить слияние"
+    "confirm_merge": "Подтвердить слияние",
+    "notice_submitted": "отправил изменение в {name}",
+    "notice_returned": "вернул Ваше изменение в {name}",
+    "notice_merged": "объединил Ваше изменение в {name}",
+    "notice_closed": "закрыл Ваше изменение в {name}",
+    "notice_access": "обновил Ваш доступ к {name}",
+    "notice_locked": "заблокировал {name}",
+    "notice_archived": "архивировал {name}"
   }
 }

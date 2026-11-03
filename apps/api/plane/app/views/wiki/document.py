@@ -144,6 +144,8 @@ class WikiNodeStateEndpoint(BaseAPIView):
         if not _is_creator(node, request.user):
             return Response({"error": "forbidden"}, status=status.HTTP_403_FORBIDDEN)
 
+        was_locked = node.is_locked
+        was_archived = node.archived_at is not None
         if "is_locked" in request.data:
             if node.node_type != WikiNode.FILE:
                 return Response({"error": "invalid"}, status=status.HTTP_400_BAD_REQUEST)
@@ -153,6 +155,13 @@ class WikiNodeStateEndpoint(BaseAPIView):
 
             node.archived_at = timezone.now() if request.data.get("archived") else None
         node.save()
+        if node.node_type == WikiNode.FILE:
+            from plane.utils.wiki_notify import notify_open_change_authors
+
+            if node.is_locked and not was_locked:
+                notify_open_change_authors(workspace, node, request.user, "locked")
+            if node.archived_at is not None and not was_archived:
+                notify_open_change_authors(workspace, node, request.user, "archived")
         return Response(_serialize_node(node, request.user, access), status=status.HTTP_200_OK)
 
 

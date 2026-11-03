@@ -188,6 +188,13 @@
     "keep_current": "Aktuelle Seite behalten",
     "take_submitted": "Eingereichtes übernehmen",
     "edit_block": "Block bearbeiten",
-    "confirm_merge": "Zusammenführung bestätigen"
+    "confirm_merge": "Zusammenführung bestätigen",
+    "notice_submitted": "hat eine Änderung an {name} eingereicht",
+    "notice_returned": "hat Ihre Änderung an {name} zurückgegeben",
+    "notice_merged": "hat Ihre Änderung in {name} zusammengeführt",
+    "notice_closed": "hat Ihre Änderung an {name} geschlossen",
+    "notice_access": "hat Ihren Zugriff auf {name} aktualisiert",
+    "notice_locked": "hat {name} gesperrt",
+    "notice_archived": "hat {name} archiviert"
   }
 }

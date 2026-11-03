@@ -19,6 +19,7 @@ import { useWorkspace } from "@/hooks/store/use-workspace";
 // local imports
 import { NotificationContent } from "./content";
 import { NotificationOption } from "./options";
+import { WikiNotificationItem } from "./wiki-item";
 
 type TNotificationItem = {
   workspaceSlug: string;
@@ -41,6 +42,10 @@ export const NotificationItem = observer(function NotificationItem(props: TNotif
   const issueId = notification?.data?.issue?.id || undefined;
   const isUnread = notification.read_at === null;
   const workspace = getWorkspaceBySlug(workspaceSlug);
+
+  if (notification?.entity_name === "wiki") {
+    return <WikiNotificationItem workspaceSlug={workspaceSlug} notificationId={notificationId} />;
+  }
 
   const notificationField = notification?.data?.issue_activity.field || undefined;
   const notificationTriggeredBy = notification.triggered_by_details || undefined;

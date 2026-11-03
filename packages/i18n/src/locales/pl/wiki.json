@@ -188,6 +188,13 @@
     "keep_current": "Zostaw bieżącą stronę",
     "take_submitted": "Użyj zgłoszenia",
     "edit_block": "Edytuj ten blok",
-    "confirm_merge": "Potwierdź scalenie"
+    "confirm_merge": "Potwierdź scalenie",
+    "notice_submitted": "przesłał zmianę w {name}",
+    "notice_returned": "zwrócił zmianę w {name}",
+    "notice_merged": "scalił zmianę w {name}",
+    "notice_closed": "zamknął zmianę w {name}",
+    "notice_access": "zaktualizował dostęp do {name}",
+    "notice_locked": "zablokował {name}",
+    "notice_archived": "zarchiwizował {name}"
   }
 }

@@ -188,6 +188,13 @@
     "keep_current": "Huidige pagina houden",
     "take_submitted": "Ingediende versie gebruiken",
     "edit_block": "Dit blok bewerken",
-    "confirm_merge": "Samenvoegen bevestigen"
+    "confirm_merge": "Samenvoegen bevestigen",
+    "notice_submitted": "heeft een wijziging voor {name} ingediend",
+    "notice_returned": "heeft uw wijziging voor {name} teruggestuurd",
+    "notice_merged": "heeft uw wijziging samengevoegd in {name}",
+    "notice_closed": "heeft uw wijziging voor {name} gesloten",
+    "notice_access": "heeft uw toegang tot {name} bijgewerkt",
+    "notice_locked": "heeft {name} vergrendeld",
+    "notice_archived": "heeft {name} gearchiveerd"
   }
 }

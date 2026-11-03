@@ -188,6 +188,13 @@
     "keep_current": "Güncel sayfayı tut",
     "take_submitted": "Gönderileni kullan",
     "edit_block": "Bu bloğu düzenle",
-    "confirm_merge": "Birleştirmeyi onayla"
+    "confirm_merge": "Birleştirmeyi onayla",
+    "notice_submitted": "{name} için bir değişiklik gönderdi",
+    "notice_returned": "{name} için değişikliğinizi geri gönderdi",
+    "notice_merged": "değişikliğinizi {name} içine birleştirdi",
+    "notice_closed": "{name} için değişikliğinizi kapattı",
+    "notice_access": "{name} erişiminizi güncelledi",
+    "notice_locked": "{name} öğesini kilitledi",
+    "notice_archived": "{name} öğesini arşivledi"
   }
 }

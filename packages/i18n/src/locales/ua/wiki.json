@@ -188,6 +188,13 @@
     "keep_current": "Залишити поточну сторінку",
     "take_submitted": "Взяти надіслане",
     "edit_block": "Змінити цей блок",
-    "confirm_merge": "Підтвердити злиття"
+    "confirm_merge": "Підтвердити злиття",
+    "notice_submitted": "надіслав зміну до {name}",
+    "notice_returned": "повернув вашу зміну до {name}",
+    "notice_merged": "об’єднав вашу зміну в {name}",
+    "notice_closed": "закрив вашу зміну до {name}",
+    "notice_access": "оновив ваш доступ до {name}",
+    "notice_locked": "заблокував {name}",
+    "notice_archived": "архівував {name}"
   }
 }

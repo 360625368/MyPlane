@@ -188,6 +188,13 @@
     "keep_current": "Conservar la página actual",
     "take_submitted": "Usar lo enviado",
     "edit_block": "Editar este bloque",
-    "confirm_merge": "Confirmar fusión"
+    "confirm_merge": "Confirmar fusión",
+    "notice_submitted": "envió un cambio en {name}",
+    "notice_returned": "devolvió su cambio en {name}",
+    "notice_merged": "fusionó su cambio en {name}",
+    "notice_closed": "cerró su cambio en {name}",
+    "notice_access": "actualizó su acceso a {name}",
+    "notice_locked": "bloqueó {name}",
+    "notice_archived": "archivó {name}"
   }
 }

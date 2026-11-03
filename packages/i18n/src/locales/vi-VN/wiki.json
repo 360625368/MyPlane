@@ -188,6 +188,13 @@
     "keep_current": "Giữ trang hiện tại",
     "take_submitted": "Dùng nội dung đã gửi",
     "edit_block": "Sửa khối này",
-    "confirm_merge": "Xác nhận hợp nhất"
+    "confirm_merge": "Xác nhận hợp nhất",
+    "notice_submitted": "đã gửi thay đổi cho {name}",
+    "notice_returned": "đã trả lại thay đổi của bạn cho {name}",
+    "notice_merged": "đã hợp nhất thay đổi của bạn vào {name}",
+    "notice_closed": "đã đóng thay đổi của bạn cho {name}",
+    "notice_access": "đã cập nhật quyền của bạn đối với {name}",
+    "notice_locked": "đã khóa {name}",
+    "notice_archived": "đã lưu trữ {name}"
   }
 }

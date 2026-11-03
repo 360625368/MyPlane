@@ -188,6 +188,13 @@
     "keep_current": "Manter a página atual",
     "take_submitted": "Usar o enviado",
     "edit_block": "Editar este bloco",
-    "confirm_merge": "Confirmar mesclagem"
+    "confirm_merge": "Confirmar mesclagem",
+    "notice_submitted": "enviou uma alteração em {name}",
+    "notice_returned": "devolveu sua alteração em {name}",
+    "notice_merged": "mesclou sua alteração em {name}",
+    "notice_closed": "fechou sua alteração em {name}",
+    "notice_access": "atualizou seu acesso a {name}",
+    "notice_locked": "bloqueou {name}",
+    "notice_archived": "arquivou {name}"
   }
 }

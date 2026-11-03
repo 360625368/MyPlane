@@ -188,6 +188,13 @@
     "keep_current": "Tieni la pagina attuale",
     "take_submitted": "Usa la modifica inviata",
     "edit_block": "Modifica questo blocco",
-    "confirm_merge": "Conferma unione"
+    "confirm_merge": "Conferma unione",
+    "notice_submitted": "ha inviato una modifica a {name}",
+    "notice_returned": "ha restituito la Sua modifica a {name}",
+    "notice_merged": "ha unito la Sua modifica in {name}",
+    "notice_closed": "ha chiuso la Sua modifica a {name}",
+    "notice_access": "ha aggiornato il Suo accesso a {name}",
+    "notice_locked": "ha bloccato {name}",
+    "notice_archived": "ha archiviato {name}"
   }
 }

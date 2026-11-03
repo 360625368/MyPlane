@@ -188,6 +188,13 @@
     "keep_current": "Păstrează pagina curentă",
     "take_submitted": "Folosește varianta trimisă",
     "edit_block": "Editează acest bloc",
-    "confirm_merge": "Confirmă îmbinarea"
+    "confirm_merge": "Confirmă îmbinarea",
+    "notice_submitted": "a trimis o modificare pentru {name}",
+    "notice_returned": "a returnat modificarea dumneavoastră pentru {name}",
+    "notice_merged": "a îmbinat modificarea dumneavoastră în {name}",
+    "notice_closed": "a închis modificarea dumneavoastră pentru {name}",
+    "notice_access": "v-a actualizat accesul la {name}",
+    "notice_locked": "a blocat {name}",
+    "notice_archived": "a arhivat {name}"
   }
 }

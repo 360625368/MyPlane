@@ -188,6 +188,13 @@
     "keep_current": "현재 본문 유지",
     "take_submitted": "제출 내용 사용",
     "edit_block": "직접 편집",
-    "confirm_merge": "병합 확정"
+    "confirm_merge": "병합 확정",
+    "notice_submitted": "{name}에 대한 변경을 제출했습니다",
+    "notice_returned": "{name}에 대한 변경을 반려했습니다",
+    "notice_merged": "{name}에 대한 변경을 병합했습니다",
+    "notice_closed": "{name}에 대한 변경을 종료했습니다",
+    "notice_access": "{name}에 대한 권한을 업데이트했습니다",
+    "notice_locked": "{name}에 잠금을 설정했습니다",
+    "notice_archived": "{name}을 보관했습니다"
   }
 }

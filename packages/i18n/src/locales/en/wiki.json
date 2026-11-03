@@ -188,6 +188,13 @@
     "keep_current": "Keep current",
     "take_submitted": "Use submitted",
     "edit_block": "Edit this block",
-    "confirm_merge": "Confirm merge"
+    "confirm_merge": "Confirm merge",
+    "notice_submitted": "submitted a change to {name}",
+    "notice_returned": "returned your change to {name}",
+    "notice_merged": "merged your change into {name}",
+    "notice_closed": "closed your change to {name}",
+    "notice_access": "updated your access to {name}",
+    "notice_locked": "locked {name}",
+    "notice_archived": "archived {name}"
   }
 }

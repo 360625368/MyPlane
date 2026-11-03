@@ -188,6 +188,13 @@
     "keep_current": "保留目前正文",
     "take_submitted": "採用提交內容",
     "edit_block": "手動編輯",
-    "confirm_merge": "確認合併"
+    "confirm_merge": "確認合併",
+    "notice_submitted": "提交了對 {name} 的修改",
+    "notice_returned": "退回了您對 {name} 的修改",
+    "notice_merged": "合併了您對 {name} 的修改",
+    "notice_closed": "關閉了您對 {name} 的修改",
+    "notice_access": "更新了您對 {name} 的權限",
+    "notice_locked": "鎖定了 {name}",
+    "notice_archived": "封存了 {name}"
   }
 }

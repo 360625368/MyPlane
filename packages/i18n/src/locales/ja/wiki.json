@@ -188,6 +188,13 @@
     "keep_current": "現在の本文を残す",
     "take_submitted": "提出内容を採用",
     "edit_block": "手で編集",
-    "confirm_merge": "マージを確定"
+    "confirm_merge": "マージを確定",
+    "notice_submitted": "{name} への変更を提出しました",
+    "notice_returned": "{name} への変更を差し戻しました",
+    "notice_merged": "{name} への変更をマージしました",
+    "notice_closed": "{name} への変更をクローズしました",
+    "notice_access": "{name} の権限を更新しました",
+    "notice_locked": "{name} をロックしました",
+    "notice_archived": "{name} をアーカイブしました"
   }
 }

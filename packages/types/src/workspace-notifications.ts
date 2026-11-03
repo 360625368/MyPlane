@@ -27,8 +27,15 @@ export type TNotificationIssueLite = {
   state_group: string | undefined;
 };
 
+export type TWikiNotificationData = {
+  field: string | undefined;
+  node_id: string | undefined;
+  name: string | undefined;
+};
+
 export type TNotificationData = {
   issue: TNotificationIssueLite | undefined;
+  wiki?: TWikiNotificationData | undefined;
   issue_activity: {
     id: string | undefined;
     actor: string | undefined;

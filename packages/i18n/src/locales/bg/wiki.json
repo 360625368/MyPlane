@@ -188,6 +188,13 @@
     "keep_current": "Запази текущата страница",
     "take_submitted": "Използвай изпратеното",
     "edit_block": "Редактирай този блок",
-    "confirm_merge": "Потвърди сливането"
+    "confirm_merge": "Потвърди сливането",
+    "notice_submitted": "изпрати промяна в {name}",
+    "notice_returned": "върна промяната ви в {name}",
+    "notice_merged": "обедини промяната ви в {name}",
+    "notice_closed": "затвори промяната ви в {name}",
+    "notice_access": "обнови достъпа ви до {name}",
+    "notice_locked": "заключи {name}",
+    "notice_archived": "архивира {name}"
   }
 }
