@@ -109,5 +109,39 @@
     "nested_pages_download_banner": {
       "title": "As páginas aninhadas exigem um plano pago. Faça upgrade para desbloquear."
     }
+  },
+  "workspace_wiki": {
+    "title": "Wiki",
+    "new_folder": "Nova pasta",
+    "new_file": "Novo arquivo",
+    "rename": "Renomear",
+    "move": "Mover",
+    "delete": "Excluir",
+    "restore": "Restaurar",
+    "trash": "Lixeira",
+    "permissions": "Permissões",
+    "name_placeholder": "Nome",
+    "folder": "Pasta",
+    "file": "Arquivo",
+    "empty": "Esta pasta está vazia.",
+    "not_found": "Esta página não existe ou você não tem acesso.",
+    "delete_blocked": "Esta pasta ainda contém itens criados por outras pessoas.",
+    "invalid_parent": "Escolha uma pasta na qual você possa adicionar itens.",
+    "cannot_elevate": "Um item filho não pode conceder mais acesso do que a pasta superior.",
+    "forbidden": "Somente quem criou pode fazer isso.",
+    "parent_deleted": "Restaure a pasta superior primeiro.",
+    "body_later": "A edição do conteúdo chega na próxima fase. Aqui você pode organizar pastas e arquivos.",
+    "loading": "Carregando",
+    "root_permissions": "A raiz do Wiki não aceita permissões de membro.",
+    "move_destination": "Pasta de destino",
+    "sort_up": "Mover para cima",
+    "sort_down": "Mover para baixo",
+    "no_trash": "A lixeira está vazia.",
+    "access": {
+      "inherit": "Herdar",
+      "invisible": "Oculto",
+      "visible": "Visível",
+      "editable": "Editável"
+    }
   }
 }

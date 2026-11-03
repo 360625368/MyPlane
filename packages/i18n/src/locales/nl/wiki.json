@@ -109,5 +109,39 @@
     "nested_pages_download_banner": {
       "title": "Geneste pagina's vereisen een betaald abonnement. Upgrade om te ontgrendelen."
     }
+  },
+  "workspace_wiki": {
+    "title": "Wiki",
+    "new_folder": "Nieuwe map",
+    "new_file": "Nieuw bestand",
+    "rename": "Naam wijzigen",
+    "move": "Verplaatsen",
+    "delete": "Verwijderen",
+    "restore": "Herstellen",
+    "trash": "Prullenbak",
+    "permissions": "Machtigingen",
+    "name_placeholder": "Naam",
+    "folder": "Map",
+    "file": "Bestand",
+    "empty": "Deze map is leeg.",
+    "not_found": "Deze pagina bestaat niet of je hebt geen toegang.",
+    "delete_blocked": "Deze map bevat nog items die door anderen zijn gemaakt.",
+    "invalid_parent": "Kies een map waaraan je items kunt toevoegen.",
+    "cannot_elevate": "Een onderliggend item kan niet meer toegang geven dan de bovenliggende map.",
+    "forbidden": "Alleen de maker kan dit doen.",
+    "parent_deleted": "Herstel eerst de bovenliggende map.",
+    "body_later": "Inhoud bewerken komt in de volgende fase. Hier kun je mappen en bestanden ordenen.",
+    "loading": "Laden",
+    "root_permissions": "De Wiki-hoofdmap kan geen lidmachtigingen hebben.",
+    "move_destination": "Doelmap",
+    "sort_up": "Omhoog",
+    "sort_down": "Omlaag",
+    "no_trash": "De prullenbak is leeg.",
+    "access": {
+      "inherit": "Overnemen",
+      "invisible": "Onzichtbaar",
+      "visible": "Zichtbaar",
+      "editable": "Bewerkbaar"
+    }
   }
 }

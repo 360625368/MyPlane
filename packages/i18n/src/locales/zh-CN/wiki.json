@@ -109,5 +109,39 @@
     "nested_pages_download_banner": {
       "title": "嵌套页面需要付费计划。升级以解锁。"
     }
+  },
+  "workspace_wiki": {
+    "title": "Wiki",
+    "new_folder": "新建文件夹",
+    "new_file": "新建文件",
+    "rename": "重命名",
+    "move": "移动",
+    "delete": "删除",
+    "restore": "恢复",
+    "trash": "回收站",
+    "permissions": "权限",
+    "name_placeholder": "名称",
+    "folder": "文件夹",
+    "file": "文件",
+    "empty": "这个文件夹是空的。",
+    "not_found": "这个页面不存在，或你没有访问权限。",
+    "delete_blocked": "这个文件夹里还有其他人创建的内容，不能删除。",
+    "invalid_parent": "请选择一个你可以添加内容的文件夹。",
+    "cannot_elevate": "子节点不能授予比父目录更高的权限。",
+    "forbidden": "只有创建者可以执行这个操作。",
+    "parent_deleted": "请先恢复父目录。",
+    "body_later": "正文编辑会在下一期提供。现在可以在这里整理文件夹和文件。",
+    "loading": "加载中",
+    "root_permissions": "Wiki 根目录不能设置成员权限。",
+    "move_destination": "目标文件夹",
+    "sort_up": "上移",
+    "sort_down": "下移",
+    "no_trash": "回收站是空的。",
+    "access": {
+      "inherit": "继承",
+      "invisible": "不可见",
+      "visible": "可见",
+      "editable": "可编辑"
+    }
   }
 }

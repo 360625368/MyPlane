@@ -109,5 +109,39 @@
     "nested_pages_download_banner": {
       "title": "巢狀頁面需要付費方案。升級以解鎖。"
     }
+  },
+  "workspace_wiki": {
+    "title": "Wiki",
+    "new_folder": "新建資料夾",
+    "new_file": "新建檔案",
+    "rename": "重新命名",
+    "move": "移動",
+    "delete": "刪除",
+    "restore": "還原",
+    "trash": "回收筒",
+    "permissions": "權限",
+    "name_placeholder": "名稱",
+    "folder": "資料夾",
+    "file": "檔案",
+    "empty": "這個資料夾是空的。",
+    "not_found": "這個頁面不存在，或你沒有存取權限。",
+    "delete_blocked": "這個資料夾裡還有其他人建立的內容，無法刪除。",
+    "invalid_parent": "請選擇一個你可以新增內容的資料夾。",
+    "cannot_elevate": "子節點不能授予比父目錄更高的權限。",
+    "forbidden": "只有建立者可以執行這個操作。",
+    "parent_deleted": "請先還原父目錄。",
+    "body_later": "內文編輯會在下一期提供。現在可以在這裡整理資料夾和檔案。",
+    "loading": "載入中",
+    "root_permissions": "Wiki 根目錄不能設定成員權限。",
+    "move_destination": "目標資料夾",
+    "sort_up": "上移",
+    "sort_down": "下移",
+    "no_trash": "回收筒是空的。",
+    "access": {
+      "inherit": "繼承",
+      "invisible": "不可見",
+      "visible": "可見",
+      "editable": "可編輯"
+    }
   }
 }

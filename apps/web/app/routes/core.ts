@@ -104,6 +104,10 @@ export const coreRoutes: RouteConfigEntry[] = [
         layout("./(all)/[workspaceSlug]/(projects)/stickies/layout.tsx", [
           route(":workspaceSlug/stickies", "./(all)/[workspaceSlug]/(projects)/stickies/page.tsx"),
         ]),
+        layout("./(all)/[workspaceSlug]/(projects)/wiki/layout.tsx", [
+          route(":workspaceSlug/wiki", "./(all)/[workspaceSlug]/(projects)/wiki/page.tsx"),
+          route(":workspaceSlug/wiki/:nodeId", "./(all)/[workspaceSlug]/(projects)/wiki/[nodeId]/page.tsx"),
+        ]),
 
         // Workspace Views
         layout("./(all)/[workspaceSlug]/(projects)/workspace-views/layout.tsx", [

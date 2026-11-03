@@ -109,5 +109,39 @@
     "nested_pages_download_banner": {
       "title": "ネストされたページには有料プランが必要です。アップグレードしてご利用ください。"
     }
+  },
+  "workspace_wiki": {
+    "title": "Wiki",
+    "new_folder": "新しいフォルダ",
+    "new_file": "新しいファイル",
+    "rename": "名前を変更",
+    "move": "移動",
+    "delete": "削除",
+    "restore": "復元",
+    "trash": "ゴミ箱",
+    "permissions": "権限",
+    "name_placeholder": "名前",
+    "folder": "フォルダ",
+    "file": "ファイル",
+    "empty": "このフォルダは空です。",
+    "not_found": "このページは存在しないか、アクセスできません。",
+    "delete_blocked": "このフォルダには他の人が作成した項目が残っているため、削除できません。",
+    "invalid_parent": "項目を追加できるフォルダを選んでください。",
+    "cannot_elevate": "子は親フォルダより広い権限を付与できません。",
+    "forbidden": "作成者だけが実行できます。",
+    "parent_deleted": "先に親フォルダを復元してください。",
+    "body_later": "本文の編集は次の段階で追加されます。ここではフォルダとファイルを整理できます。",
+    "loading": "読み込み中",
+    "root_permissions": "Wiki のルートにはメンバー権限を設定できません。",
+    "move_destination": "移動先フォルダ",
+    "sort_up": "上へ",
+    "sort_down": "下へ",
+    "no_trash": "ゴミ箱は空です。",
+    "access": {
+      "inherit": "継承",
+      "invisible": "非表示",
+      "visible": "表示のみ",
+      "editable": "編集可"
+    }
   }
 }

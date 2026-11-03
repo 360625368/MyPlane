@@ -109,5 +109,39 @@
     "nested_pages_download_banner": {
       "title": "Halaman bertingkat memerlukan paket berbayar. Tingkatkan untuk membukanya."
     }
+  },
+  "workspace_wiki": {
+    "title": "Wiki",
+    "new_folder": "Folder baru",
+    "new_file": "File baru",
+    "rename": "Ubah nama",
+    "move": "Pindahkan",
+    "delete": "Hapus",
+    "restore": "Pulihkan",
+    "trash": "Sampah",
+    "permissions": "Izin",
+    "name_placeholder": "Nama",
+    "folder": "Folder",
+    "file": "File",
+    "empty": "Folder ini kosong.",
+    "not_found": "Halaman ini tidak ada atau Anda tidak memiliki akses.",
+    "delete_blocked": "Folder ini masih berisi item yang dibuat orang lain.",
+    "invalid_parent": "Pilih folder tempat Anda dapat menambahkan item.",
+    "cannot_elevate": "Item anak tidak dapat memberi akses yang lebih tinggi daripada folder induk.",
+    "forbidden": "Hanya pembuat yang dapat melakukan ini.",
+    "parent_deleted": "Pulihkan folder induk terlebih dahulu.",
+    "body_later": "Pengeditan isi hadir di fase berikutnya. Di sini Anda dapat mengatur folder dan file.",
+    "loading": "Memuat",
+    "root_permissions": "Akar Wiki tidak dapat diberi izin anggota.",
+    "move_destination": "Folder tujuan",
+    "sort_up": "Naikkan",
+    "sort_down": "Turunkan",
+    "no_trash": "Sampah kosong.",
+    "access": {
+      "inherit": "Warisi",
+      "invisible": "Tersembunyi",
+      "visible": "Terlihat",
+      "editable": "Dapat diedit"
+    }
   }
 }

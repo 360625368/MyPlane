@@ -109,5 +109,39 @@
     "nested_pages_download_banner": {
       "title": "İç içe sayfalar ücretli bir plan gerektirir. Açmak için yükseltin."
     }
+  },
+  "workspace_wiki": {
+    "title": "Wiki",
+    "new_folder": "Yeni klasör",
+    "new_file": "Yeni dosya",
+    "rename": "Yeniden adlandır",
+    "move": "Taşı",
+    "delete": "Sil",
+    "restore": "Geri yükle",
+    "trash": "Çöp kutusu",
+    "permissions": "İzinler",
+    "name_placeholder": "Ad",
+    "folder": "Klasör",
+    "file": "Dosya",
+    "empty": "Bu klasör boş.",
+    "not_found": "Bu sayfa yok veya erişimin yok.",
+    "delete_blocked": "Bu klasörde başka kişilerin oluşturduğu öğeler var.",
+    "invalid_parent": "Öğe ekleyebileceğin bir klasör seç.",
+    "cannot_elevate": "Bir alt öğe, üst klasörden daha fazla erişim veremez.",
+    "forbidden": "Bunu yalnızca oluşturan kişi yapabilir.",
+    "parent_deleted": "Önce üst klasörü geri yükle.",
+    "body_later": "İçerik düzenleme sonraki aşamada gelecek. Burada klasörleri ve dosyaları düzenleyebilirsin.",
+    "loading": "Yükleniyor",
+    "root_permissions": "Wiki köküne üye izni verilemez.",
+    "move_destination": "Hedef klasör",
+    "sort_up": "Yukarı taşı",
+    "sort_down": "Aşağı taşı",
+    "no_trash": "Çöp kutusu boş.",
+    "access": {
+      "inherit": "Devral",
+      "invisible": "Görünmez",
+      "visible": "Görünür",
+      "editable": "Düzenlenebilir"
+    }
   }
 }

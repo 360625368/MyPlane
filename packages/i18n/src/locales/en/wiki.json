@@ -109,5 +109,39 @@
     "nested_pages_download_banner": {
       "title": "Nested pages require a paid plan. Upgrade to unlock."
     }
+  },
+  "workspace_wiki": {
+    "title": "Wiki",
+    "new_folder": "New folder",
+    "new_file": "New file",
+    "rename": "Rename",
+    "move": "Move",
+    "delete": "Delete",
+    "restore": "Restore",
+    "trash": "Trash",
+    "permissions": "Permissions",
+    "name_placeholder": "Name",
+    "folder": "Folder",
+    "file": "File",
+    "empty": "This folder is empty.",
+    "not_found": "This page doesn't exist or you don't have access.",
+    "delete_blocked": "This folder still contains items created by other people.",
+    "invalid_parent": "Choose a folder you can add items to.",
+    "cannot_elevate": "A child cannot grant more access than the parent folder.",
+    "forbidden": "Only the creator can do that.",
+    "parent_deleted": "Restore the parent folder first.",
+    "body_later": "Document editing arrives in the next phase. You can organize folders and files here.",
+    "loading": "Loading",
+    "root_permissions": "The Wiki root does not have member permissions.",
+    "move_destination": "Destination folder",
+    "sort_up": "Move up",
+    "sort_down": "Move down",
+    "no_trash": "Trash is empty.",
+    "access": {
+      "inherit": "Inherit",
+      "invisible": "Hidden",
+      "visible": "Can view",
+      "editable": "Can edit"
+    }
   }
 }

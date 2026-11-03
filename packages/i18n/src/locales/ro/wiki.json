@@ -109,5 +109,39 @@
     "nested_pages_download_banner": {
       "title": "Paginile imbricate necesită un plan plătit. Actualizează pentru a debloca."
     }
+  },
+  "workspace_wiki": {
+    "title": "Wiki",
+    "new_folder": "Folder nou",
+    "new_file": "Fișier nou",
+    "rename": "Redenumește",
+    "move": "Mută",
+    "delete": "Șterge",
+    "restore": "Restaurează",
+    "trash": "Coș",
+    "permissions": "Permisiuni",
+    "name_placeholder": "Nume",
+    "folder": "Folder",
+    "file": "Fișier",
+    "empty": "Acest folder este gol.",
+    "not_found": "Această pagină nu există sau nu ai acces.",
+    "delete_blocked": "Acest folder conține încă elemente create de alte persoane.",
+    "invalid_parent": "Alege un folder în care poți adăuga elemente.",
+    "cannot_elevate": "Un element copil nu poate acorda mai mult acces decât folderul părinte.",
+    "forbidden": "Doar persoana care l-a creat poate face asta.",
+    "parent_deleted": "Restaurează mai întâi folderul părinte.",
+    "body_later": "Editarea conținutului vine în faza următoare. Aici poți organiza foldere și fișiere.",
+    "loading": "Se încarcă",
+    "root_permissions": "Rădăcina Wiki nu poate avea permisiuni pentru membri.",
+    "move_destination": "Folder destinație",
+    "sort_up": "Mută în sus",
+    "sort_down": "Mută în jos",
+    "no_trash": "Coșul este gol.",
+    "access": {
+      "inherit": "Moștenește",
+      "invisible": "Invizibil",
+      "visible": "Vizibil",
+      "editable": "Editabil"
+    }
   }
 }

@@ -109,5 +109,39 @@
     "nested_pages_download_banner": {
       "title": "Vnořené stránky vyžadují placený plán. Upgradujte pro jejich odemčení."
     }
+  },
+  "workspace_wiki": {
+    "title": "Wiki",
+    "new_folder": "Nová složka",
+    "new_file": "Nový soubor",
+    "rename": "Přejmenovat",
+    "move": "Přesunout",
+    "delete": "Smazat",
+    "restore": "Obnovit",
+    "trash": "Koš",
+    "permissions": "Oprávnění",
+    "name_placeholder": "Název",
+    "folder": "Složka",
+    "file": "Soubor",
+    "empty": "Tato složka je prázdná.",
+    "not_found": "Tato stránka neexistuje nebo k ní nemáte přístup.",
+    "delete_blocked": "Tato složka stále obsahuje položky vytvořené jinými lidmi.",
+    "invalid_parent": "Vyberte složku, do které můžete přidávat položky.",
+    "cannot_elevate": "Podřízená položka nemůže udělit vyšší přístup než nadřazená složka.",
+    "forbidden": "To může udělat jen osoba, která položku vytvořila.",
+    "parent_deleted": "Nejdříve obnovte nadřazenou složku.",
+    "body_later": "Úpravy obsahu přijdou v další fázi. Tady můžete uspořádat složky a soubory.",
+    "loading": "Načítání",
+    "root_permissions": "Kořen Wiki nemůže mít oprávnění členů.",
+    "move_destination": "Cílová složka",
+    "sort_up": "Posunout nahoru",
+    "sort_down": "Posunout dolů",
+    "no_trash": "Koš je prázdný.",
+    "access": {
+      "inherit": "Zdědit",
+      "invisible": "Neviditelný",
+      "visible": "Viditelný",
+      "editable": "Upravitelný"
+    }
   }
 }

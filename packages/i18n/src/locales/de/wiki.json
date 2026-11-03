@@ -109,5 +109,39 @@
     "nested_pages_download_banner": {
       "title": "Verschachtelte Seiten erfordern einen kostenpflichtigen Plan. Führen Sie ein Upgrade durch, um sie freizuschalten."
     }
+  },
+  "workspace_wiki": {
+    "title": "Wiki",
+    "new_folder": "Neuer Ordner",
+    "new_file": "Neue Datei",
+    "rename": "Umbenennen",
+    "move": "Verschieben",
+    "delete": "Löschen",
+    "restore": "Wiederherstellen",
+    "trash": "Papierkorb",
+    "permissions": "Berechtigungen",
+    "name_placeholder": "Name",
+    "folder": "Ordner",
+    "file": "Datei",
+    "empty": "Dieser Ordner ist leer.",
+    "not_found": "Diese Seite ist nicht vorhanden oder du hast keinen Zugriff.",
+    "delete_blocked": "Dieser Ordner enthält noch Elemente anderer Personen und kann nicht gelöscht werden.",
+    "invalid_parent": "Wähle einen Ordner, in dem du Elemente hinzufügen kannst.",
+    "cannot_elevate": "Ein Unterelement kann nicht mehr Zugriff gewähren als der übergeordnete Ordner.",
+    "forbidden": "Nur die erstellende Person kann das tun.",
+    "parent_deleted": "Stelle zuerst den übergeordneten Ordner wieder her.",
+    "body_later": "Die Bearbeitung von Inhalten kommt in der nächsten Phase. Hier kannst du Ordner und Dateien ordnen.",
+    "loading": "Wird geladen",
+    "root_permissions": "Für die Wiki-Wurzel können keine Mitgliederberechtigungen festgelegt werden.",
+    "move_destination": "Zielordner",
+    "sort_up": "Nach oben",
+    "sort_down": "Nach unten",
+    "no_trash": "Der Papierkorb ist leer.",
+    "access": {
+      "inherit": "Übernehmen",
+      "invisible": "Unsichtbar",
+      "visible": "Sichtbar",
+      "editable": "Bearbeitbar"
+    }
   }
 }

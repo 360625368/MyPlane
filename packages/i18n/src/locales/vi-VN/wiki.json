@@ -109,5 +109,39 @@
     "nested_pages_download_banner": {
       "title": "Trang lồng nhau yêu cầu gói trả phí. Nâng cấp để mở khóa."
     }
+  },
+  "workspace_wiki": {
+    "title": "Wiki",
+    "new_folder": "Thư mục mới",
+    "new_file": "Tệp mới",
+    "rename": "Đổi tên",
+    "move": "Di chuyển",
+    "delete": "Xóa",
+    "restore": "Khôi phục",
+    "trash": "Thùng rác",
+    "permissions": "Quyền",
+    "name_placeholder": "Tên",
+    "folder": "Thư mục",
+    "file": "Tệp",
+    "empty": "Thư mục này trống.",
+    "not_found": "Trang này không tồn tại hoặc bạn không có quyền truy cập.",
+    "delete_blocked": "Thư mục này vẫn còn mục do người khác tạo.",
+    "invalid_parent": "Hãy chọn thư mục mà bạn có thể thêm mục vào.",
+    "cannot_elevate": "Mục con không thể cấp quyền cao hơn thư mục cha.",
+    "forbidden": "Chỉ người tạo mới làm được việc này.",
+    "parent_deleted": "Hãy khôi phục thư mục cha trước.",
+    "body_later": "Phần chỉnh sửa nội dung sẽ có ở giai đoạn sau. Bạn có thể sắp xếp thư mục và tệp tại đây.",
+    "loading": "Đang tải",
+    "root_permissions": "Không thể đặt quyền thành viên cho thư mục gốc Wiki.",
+    "move_destination": "Thư mục đích",
+    "sort_up": "Lên",
+    "sort_down": "Xuống",
+    "no_trash": "Thùng rác trống.",
+    "access": {
+      "inherit": "Kế thừa",
+      "invisible": "Ẩn",
+      "visible": "Xem",
+      "editable": "Chỉnh sửa"
+    }
   }
 }

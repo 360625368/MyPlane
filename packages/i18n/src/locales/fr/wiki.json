@@ -109,5 +109,39 @@
     "nested_pages_download_banner": {
       "title": "Les pages imbriquées nécessitent un forfait payant. Mettez à niveau pour débloquer."
     }
+  },
+  "workspace_wiki": {
+    "title": "Wiki",
+    "new_folder": "Nouveau dossier",
+    "new_file": "Nouveau fichier",
+    "rename": "Renommer",
+    "move": "Déplacer",
+    "delete": "Supprimer",
+    "restore": "Restaurer",
+    "trash": "Corbeille",
+    "permissions": "Autorisations",
+    "name_placeholder": "Nom",
+    "folder": "Dossier",
+    "file": "Fichier",
+    "empty": "Ce dossier est vide.",
+    "not_found": "Cette page n'existe pas ou vous n'y avez pas accès.",
+    "delete_blocked": "Ce dossier contient encore des éléments créés par d'autres personnes.",
+    "invalid_parent": "Choisissez un dossier dans lequel vous pouvez ajouter des éléments.",
+    "cannot_elevate": "Un élément enfant ne peut pas accorder plus d'accès que le dossier parent.",
+    "forbidden": "Seule la personne qui a créé l'élément peut le faire.",
+    "parent_deleted": "Restaurez d'abord le dossier parent.",
+    "body_later": "La modification du contenu arrivera à la phase suivante. Vous pouvez organiser les dossiers et les fichiers ici.",
+    "loading": "Chargement",
+    "root_permissions": "La racine Wiki ne peut pas recevoir d'autorisations de membre.",
+    "move_destination": "Dossier de destination",
+    "sort_up": "Monter",
+    "sort_down": "Descendre",
+    "no_trash": "La corbeille est vide.",
+    "access": {
+      "inherit": "Hériter",
+      "invisible": "Invisible",
+      "visible": "Visible",
+      "editable": "Modifiable"
+    }
   }
 }

@@ -109,5 +109,39 @@
     "nested_pages_download_banner": {
       "title": "Vnorené stránky vyžadujú platený plán. Upgradujte a odomknite ich."
     }
+  },
+  "workspace_wiki": {
+    "title": "Wiki",
+    "new_folder": "Nový priečinok",
+    "new_file": "Nový súbor",
+    "rename": "Premenovať",
+    "move": "Presunúť",
+    "delete": "Odstrániť",
+    "restore": "Obnoviť",
+    "trash": "Kôš",
+    "permissions": "Povolenia",
+    "name_placeholder": "Názov",
+    "folder": "Priečinok",
+    "file": "Súbor",
+    "empty": "Tento priečinok je prázdny.",
+    "not_found": "Táto stránka neexistuje alebo k nej nemáte prístup.",
+    "delete_blocked": "Tento priečinok stále obsahuje položky vytvorené inými ľuďmi.",
+    "invalid_parent": "Vyberte priečinok, do ktorého môžete pridávať položky.",
+    "cannot_elevate": "Podradená položka nemôže udeliť vyšší prístup ako nadradený priečinok.",
+    "forbidden": "Toto môže urobiť len osoba, ktorá položku vytvorila.",
+    "parent_deleted": "Najprv obnovte nadradený priečinok.",
+    "body_later": "Úpravy obsahu prídu v ďalšej fáze. Tu môžete usporiadať priečinky a súbory.",
+    "loading": "Načítava sa",
+    "root_permissions": "Koreň Wiki nemôže mať povolenia členov.",
+    "move_destination": "Cieľový priečinok",
+    "sort_up": "Posunúť nahor",
+    "sort_down": "Posunúť nadol",
+    "no_trash": "Kôš je prázdny.",
+    "access": {
+      "inherit": "Zdediť",
+      "invisible": "Neviditeľný",
+      "visible": "Viditeľný",
+      "editable": "Upraviteľný"
+    }
   }
 }

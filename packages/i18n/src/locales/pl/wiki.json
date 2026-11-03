@@ -109,5 +109,39 @@
     "nested_pages_download_banner": {
       "title": "Zagnieżdżone strony wymagają planu płatnego. Uaktualnij, aby odblokować."
     }
+  },
+  "workspace_wiki": {
+    "title": "Wiki",
+    "new_folder": "Nowy folder",
+    "new_file": "Nowy plik",
+    "rename": "Zmień nazwę",
+    "move": "Przenieś",
+    "delete": "Usuń",
+    "restore": "Przywróć",
+    "trash": "Kosz",
+    "permissions": "Uprawnienia",
+    "name_placeholder": "Nazwa",
+    "folder": "Folder",
+    "file": "Plik",
+    "empty": "Ten folder jest pusty.",
+    "not_found": "Ta strona nie istnieje albo nie masz do niej dostępu.",
+    "delete_blocked": "Ten folder nadal zawiera elementy utworzone przez inne osoby.",
+    "invalid_parent": "Wybierz folder, do którego możesz dodawać elementy.",
+    "cannot_elevate": "Element podrzędny nie może nadać większego dostępu niż folder nadrzędny.",
+    "forbidden": "Tylko osoba, która to utworzyła, może to zrobić.",
+    "parent_deleted": "Najpierw przywróć folder nadrzędny.",
+    "body_later": "Edycja treści pojawi się w kolejnej fazie. Tutaj możesz porządkować foldery i pliki.",
+    "loading": "Ładowanie",
+    "root_permissions": "Katalog główny Wiki nie obsługuje uprawnień członków.",
+    "move_destination": "Folder docelowy",
+    "sort_up": "W górę",
+    "sort_down": "W dół",
+    "no_trash": "Kosz jest pusty.",
+    "access": {
+      "inherit": "Dziedzicz",
+      "invisible": "Niewidoczny",
+      "visible": "Widoczny",
+      "editable": "Edytowalny"
+    }
   }
 }

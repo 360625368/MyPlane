@@ -109,5 +109,39 @@
     "nested_pages_download_banner": {
       "title": "Las páginas anidadas requieren un plan de pago. Mejora para desbloquearlas."
     }
+  },
+  "workspace_wiki": {
+    "title": "Wiki",
+    "new_folder": "Nueva carpeta",
+    "new_file": "Nuevo archivo",
+    "rename": "Cambiar nombre",
+    "move": "Mover",
+    "delete": "Eliminar",
+    "restore": "Restaurar",
+    "trash": "Papelera",
+    "permissions": "Permisos",
+    "name_placeholder": "Nombre",
+    "folder": "Carpeta",
+    "file": "Archivo",
+    "empty": "Esta carpeta está vacía.",
+    "not_found": "Esta página no existe o no tienes acceso.",
+    "delete_blocked": "Esta carpeta todavía contiene elementos creados por otras personas.",
+    "invalid_parent": "Elige una carpeta en la que puedas añadir elementos.",
+    "cannot_elevate": "Un elemento hijo no puede conceder más acceso que la carpeta superior.",
+    "forbidden": "Solo quien lo creó puede hacerlo.",
+    "parent_deleted": "Restaura primero la carpeta superior.",
+    "body_later": "La edición del contenido llegará en la siguiente fase. Aquí puedes organizar carpetas y archivos.",
+    "loading": "Cargando",
+    "root_permissions": "La raíz de Wiki no admite permisos de miembro.",
+    "move_destination": "Carpeta de destino",
+    "sort_up": "Subir",
+    "sort_down": "Bajar",
+    "no_trash": "La papelera está vacía.",
+    "access": {
+      "inherit": "Heredar",
+      "invisible": "Oculto",
+      "visible": "Visible",
+      "editable": "Editable"
+    }
   }
 }
