@@ -11,6 +11,7 @@ import { useTranslation } from "@plane/i18n";
 import type { TTranslationKeys } from "@plane/i18n";
 import { PageHead } from "@/components/core/page-title";
 import { WikiDocument } from "@/components/wiki/wiki-document";
+import { useWikiHeaderActions } from "@/components/wiki/wiki-header-actions";
 import { WikiLogoControl, wikiLogo } from "@/components/wiki/wiki-logo";
 import type { TWikiAccess, TWikiMemberAccess, TWikiNode, TWikiNodeType, TWikiTrashNode } from "@/services/wiki.service";
 import { WikiService } from "@/services/wiki.service";
@@ -60,7 +61,13 @@ function descendantIds(nodeId: string, nodes: TWikiNode[]) {
 
 export function WikiHeader() {
   const { t } = useTranslation();
-  return <span className="text-body-sm-medium">{t("sidebar.wiki")}</span>;
+  const actions = useWikiHeaderActions();
+  return (
+    <div className="flex w-full items-center justify-between gap-2">
+      <span className="text-body-sm-medium">{t("sidebar.wiki")}</span>
+      {actions}
+    </div>
+  );
 }
 
 export function WikiExplorer({ workspaceSlug, nodeId }: Props) {
@@ -334,12 +341,24 @@ export function WikiExplorer({ workspaceSlug, nodeId }: Props) {
             root && renderNode(root, 0)
           )}
         </aside>
-        <section className="flex min-w-0 flex-1 flex-col gap-4 overflow-y-auto p-6">
+        <section
+          className={`flex min-h-0 min-w-0 flex-1 flex-col ${
+            selected && !missing && selected.node_type === "file" ? "overflow-hidden" : "gap-4 overflow-y-auto p-6"
+          }`}
+        >
           {loading && <p className="text-body-sm-regular text-tertiary">{t("workspace_wiki.loading")}</p>}
           {!loading && (missing || !selected) && (
             <p className="text-body-sm-regular">{t("workspace_wiki.not_found")}</p>
           )}
-          {selected && !missing && (
+          {selected && !missing && selected.node_type === "file" && (
+            <WikiDocument
+              workspaceSlug={workspaceSlug}
+              nodeId={selected.id}
+              destinations={destinations.map((node) => ({ id: node.id, name: node.name }))}
+              onChanged={load}
+            />
+          )}
+          {selected && !missing && selected.node_type !== "file" && (
             <>
               <div className="flex flex-wrap items-center gap-2">
                 {selected.is_creator && !selected.is_root && (
@@ -375,9 +394,6 @@ export function WikiExplorer({ workspaceSlug, nodeId }: Props) {
                 >
                   {selected.archived_at ? t("workspace_wiki.unarchive") : t("workspace_wiki.archive")}
                 </button>
-              )}
-              {selected.node_type === "file" && (
-                <WikiDocument workspaceSlug={workspaceSlug} nodeId={selected.id} onChanged={load} />
               )}
               {selected.can_create_child && (
                 <form

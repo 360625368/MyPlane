@@ -143,7 +143,7 @@ export class WikiService extends APIService {
   async saveDescription(
     workspaceSlug: string,
     nodeId: string,
-    data: { description_html: string; description_json: object }
+    data: { description_html: string; description_json: object; base_html?: string }
   ): Promise<TWikiNode> {
     return this.patch(`/api/workspaces/${workspaceSlug}/wiki/nodes/${nodeId}/description/`, data)
       .then((response) => response?.data)

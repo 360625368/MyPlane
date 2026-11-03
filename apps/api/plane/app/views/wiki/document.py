@@ -65,6 +65,9 @@ class WikiNodeDescriptionEndpoint(BaseAPIView):
             description_json = {}
         if not isinstance(description_json, (dict, list)):
             return Response({"error": "invalid"}, status=status.HTTP_400_BAD_REQUEST)
+        base_html = request.data.get("base_html", None)
+        if isinstance(base_html, str) and base_html != (node.description_html or ""):
+            return Response({"error": "conflict"}, status=status.HTTP_409_CONFLICT)
 
         previous_html = node.description_html
         node.description_html = clean_html or "<p></p>"

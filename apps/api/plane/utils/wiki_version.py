@@ -52,6 +52,7 @@ def record_wiki_version(node, previous_html, user_id, change_request=None):
     if (
         change_request is None
         and latest
+        and latest.change_request_id is None
         and str(latest.owned_by_id) == str(user_id)
         and (timezone.now() - latest.last_saved_at).total_seconds() <= VERSION_COALESCE_SECONDS
     ):

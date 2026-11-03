@@ -490,6 +490,64 @@ class TestWikiChangeRequest:
         versions = session_client.get(f"/api/workspaces/{workspace.slug}/wiki/nodes/{node_id}/versions/")
         assert change_id in {version["change_request"] for version in versions.data}
 
+    def test_stale_editor_save_cannot_overwrite_a_merge(self, session_client, workspace, create_user):
+        other = _member(workspace, 15)
+        node_id = _file(session_client, workspace, "Stale")
+        session_client.patch(
+            f"/api/workspaces/{workspace.slug}/wiki/nodes/{node_id}/description/",
+            {"description_html": "<p>Published</p>", "description_json": {"type": "doc"}},
+            format="json",
+        )
+        _grant(session_client, workspace, node_id, other, "editable")
+        session_client.force_authenticate(user=other)
+        opened = session_client.post(f"/api/workspaces/{workspace.slug}/wiki/nodes/{node_id}/changes/", format="json")
+        change_id = opened.data["id"]
+        session_client.patch(
+            f"/api/workspaces/{workspace.slug}/wiki/nodes/{node_id}/changes/{change_id}/",
+            {"description_html": "<p>Proposal</p>", "description_json": {"type": "doc"}},
+            format="json",
+        )
+        session_client.post(
+            f"/api/workspaces/{workspace.slug}/wiki/nodes/{node_id}/changes/{change_id}/",
+            {"action": "submit"},
+            format="json",
+        )
+        session_client.force_authenticate(user=create_user)
+        merged = session_client.post(
+            f"/api/workspaces/{workspace.slug}/wiki/nodes/{node_id}/changes/{change_id}/",
+            {"action": "merge"},
+            format="json",
+        )
+        assert merged.status_code == status.HTTP_200_OK
+        published = session_client.get(f"/api/workspaces/{workspace.slug}/wiki/nodes/{node_id}/")
+        stale = session_client.patch(
+            f"/api/workspaces/{workspace.slug}/wiki/nodes/{node_id}/description/",
+            {
+                "description_html": "<p>Published</p>",
+                "description_json": {"type": "doc"},
+                "base_html": "<p>Published</p>",
+            },
+            format="json",
+        )
+        assert stale.status_code == status.HTTP_409_CONFLICT
+        published = session_client.get(f"/api/workspaces/{workspace.slug}/wiki/nodes/{node_id}/")
+        assert "Proposal" in published.data["description_html"]
+
+        saved = session_client.patch(
+            f"/api/workspaces/{workspace.slug}/wiki/nodes/{node_id}/description/",
+            {
+                "description_html": "<p>After</p>",
+                "description_json": {"type": "doc"},
+                "base_html": published.data["description_html"],
+            },
+            format="json",
+        )
+        assert saved.status_code == status.HTTP_200_OK
+        versions = session_client.get(f"/api/workspaces/{workspace.slug}/wiki/nodes/{node_id}/versions/")
+        merge_version = next(version for version in versions.data if version["change_request"] == change_id)
+        assert "Proposal" in merge_version["description_html"]
+        assert any("After" in version["description_html"] for version in versions.data)
+
     def test_visible_member_cannot_open_a_change_and_stale_merge_is_blocked(
         self, session_client, workspace, create_user
     ):

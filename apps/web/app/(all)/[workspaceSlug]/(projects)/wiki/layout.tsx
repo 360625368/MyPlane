@@ -8,14 +8,15 @@ import { Outlet } from "react-router";
 import { AppHeader } from "@/components/core/app-header";
 import { ContentWrapper } from "@/components/core/content-wrapper";
 import { WikiHeader } from "@/components/wiki/wiki-explorer";
+import { WikiHeaderActionsProvider } from "@/components/wiki/wiki-header-actions";
 
 export default function WorkspaceWikiLayout() {
   return (
-    <>
+    <WikiHeaderActionsProvider>
       <AppHeader header={<WikiHeader />} />
       <ContentWrapper>
         <Outlet />
       </ContentWrapper>
-    </>
+    </WikiHeaderActionsProvider>
   );
 }

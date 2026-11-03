@@ -5,9 +5,13 @@
  */
 
 import { useEffect, useRef, useState } from "react";
+import { Button } from "@makeplane/propel/components/button";
 import { useTranslation } from "@plane/i18n";
 import type { JSONContent } from "@plane/types";
+import type { EditorRefApi } from "@plane/editor";
 import { DocumentEditor } from "@/components/editor/document/editor";
+import { useWikiEditorRef } from "@/components/wiki/wiki-editor-toolbar";
+import { usePageFilters } from "@/hooks/use-page-filters";
 import { useWorkspace } from "@/hooks/store/use-workspace";
 import type { TWikiChange, TWikiMergePlan, TWikiNode } from "@/services/wiki.service";
 import { WikiService } from "@/services/wiki.service";
@@ -24,7 +28,10 @@ type Props = {
   workspaceSlug: string;
   node: TWikiNode;
   publishedHtml: string;
+  onBeforeMerge?: () => Promise<void>;
   onMerged: () => Promise<void>;
+  onMergeSettled?: () => void;
+  onActiveEditor?: (editor: EditorRefApi | null) => void;
 };
 
 function composedDocument(
@@ -97,27 +104,27 @@ function WikiConflictResolve({
             <p className="text-body-sm-regular">{conflict.draft_text || t("workspace_wiki.conflict_empty")}</p>
           </div>
           <div className="flex flex-wrap gap-2 md:col-span-3">
-            <button
-              type="button"
-              className="text-caption-sm-medium"
+            <Button
+              variant={choices[conflict.id] === "current" ? "primary" : "secondary"}
+              size="sm"
+              stretch="auto"
+              label={t("workspace_wiki.keep_current")}
               onClick={() => setChoices({ ...choices, [conflict.id]: "current" })}
-            >
-              {t("workspace_wiki.keep_current")}
-            </button>
-            <button
-              type="button"
-              className="text-caption-sm-medium"
+            />
+            <Button
+              variant={choices[conflict.id] === "draft" ? "primary" : "secondary"}
+              size="sm"
+              stretch="auto"
+              label={t("workspace_wiki.take_submitted")}
               onClick={() => setChoices({ ...choices, [conflict.id]: "draft" })}
-            >
-              {t("workspace_wiki.take_submitted")}
-            </button>
-            <button
-              type="button"
-              className="text-caption-sm-medium"
+            />
+            <Button
+              variant={choices[conflict.id] === "custom" ? "primary" : "secondary"}
+              size="sm"
+              stretch="auto"
+              label={t("workspace_wiki.edit_block")}
               onClick={() => setChoices({ ...choices, [conflict.id]: "custom" })}
-            >
-              {t("workspace_wiki.edit_block")}
-            </button>
+            />
             {choices[conflict.id] === "custom" && (
               <input
                 value={customText[conflict.id] || ""}
@@ -142,10 +149,12 @@ function WikiConflictResolve({
           latest.current = { json: description, html: html || "<p></p>" };
         }}
       />
-      <button
-        type="button"
-        className="w-fit text-caption-sm-medium"
+      <Button
+        variant="primary"
+        size="sm"
+        stretch="auto"
         disabled={!ready}
+        label={t("workspace_wiki.confirm_merge")}
         onClick={() => {
           if (!ready) return;
           const result = latest.current;
@@ -165,15 +174,23 @@ function WikiConflictResolve({
             ...(result ? { description_json: result.json, description_html: result.html } : {}),
           });
         }}
-      >
-        {t("workspace_wiki.confirm_merge")}
-      </button>
+      />
     </div>
   );
 }
 
-export function WikiChanges({ workspaceSlug, node, publishedHtml, onMerged }: Props) {
+export function WikiChanges({
+  workspaceSlug,
+  node,
+  publishedHtml,
+  onBeforeMerge,
+  onMerged,
+  onMergeSettled,
+  onActiveEditor,
+}: Props) {
   const { t } = useTranslation();
+  const draftEditor = useWikiEditorRef();
+  const { fontSize, fontStyle } = usePageFilters();
   const { getWorkspaceBySlug } = useWorkspace();
   const workspaceId = getWorkspaceBySlug(workspaceSlug)?.id ?? "";
   const [changes, setChanges] = useState<TWikiChange[]>([]);
@@ -181,6 +198,7 @@ export function WikiChanges({ workspaceSlug, node, publishedHtml, onMerged }: Pr
   const [comment, setComment] = useState("");
   const [message, setMessage] = useState("");
   const saveTimer = useRef<number | null>(null);
+  const pendingDraft = useRef<{ html: string; json: object } | null>(null);
   const canStart = node.access === "editable" && !node.is_creator && !node.is_locked && !node.archived_at;
 
   const load = async () => {
@@ -210,6 +228,11 @@ export function WikiChanges({ workspaceSlug, node, publishedHtml, onMerged }: Pr
   const openChanges = changes.filter((change) => OPEN_STATUSES.has(change.status));
   const active = openChanges.find((change) => change.id === selectedId) ?? openChanges[0];
 
+  useEffect(() => {
+    onActiveEditor?.(active?.can_edit ? draftEditor.editor : null);
+    return () => onActiveEditor?.(null);
+  }, [active?.can_edit, draftEditor.editor, onActiveEditor]);
+
   const run = async (action: () => Promise<void>) => {
     setMessage("");
     try {
@@ -221,6 +244,31 @@ export function WikiChanges({ workspaceSlug, node, publishedHtml, onMerged }: Pr
     }
   };
 
+  const flushDraft = async () => {
+    if (saveTimer.current) window.clearTimeout(saveTimer.current);
+    const pending = pendingDraft.current;
+    if (!pending || !active?.can_edit) return;
+    pendingDraft.current = null;
+    await wikiService.saveChange(workspaceSlug, node.id, active.id, {
+      description_html: pending.html,
+      description_json: pending.json,
+    });
+  };
+
+  const mergeChange = (payload?: Parameters<WikiService["actOnChange"]>[4]) => {
+    if (!active) return;
+    const changeId = active.id;
+    void run(async () => {
+      try {
+        await onBeforeMerge?.();
+        await wikiService.actOnChange(workspaceSlug, node.id, changeId, "merge", payload);
+        await onMerged();
+      } finally {
+        onMergeSettled?.();
+      }
+    });
+  };
+
   if (!node.is_creator && openChanges.length === 0 && !canStart) return null;
   if (node.is_creator && openChanges.length === 0) return null;
 
@@ -230,25 +278,25 @@ export function WikiChanges({ workspaceSlug, node, publishedHtml, onMerged }: Pr
       {node.is_creator ? (
         <div className="flex flex-wrap gap-2">
           {openChanges.map((change) => (
-            <button
+            <Button
               key={change.id}
-              type="button"
-              className="text-caption-sm-medium"
+              variant={active?.id === change.id ? "secondary" : "ghost"}
+              size="sm"
+              stretch="auto"
+              label={`${change.author_name} · ${t(`workspace_wiki.change_status.${change.status}`)}`}
               onClick={() => setSelectedId(change.id)}
-            >
-              {change.author_name} · {t(`workspace_wiki.change_status.${change.status}`)}
-            </button>
+            />
           ))}
         </div>
       ) : (
         openChanges.length === 0 && (
-          <button
-            type="button"
-            className="w-fit text-caption-sm-medium"
+          <Button
+            variant="primary"
+            size="sm"
+            stretch="auto"
+            label={t("workspace_wiki.start_change")}
             onClick={() => void run(() => wikiService.openChange(workspaceSlug, node.id).then(() => undefined))}
-          >
-            {t("workspace_wiki.start_change")}
-          </button>
+          />
         )
       )}
       {active && (
@@ -260,57 +308,53 @@ export function WikiChanges({ workspaceSlug, node, publishedHtml, onMerged }: Pr
           <p className="text-caption-sm-medium text-tertiary">{t("workspace_wiki.published_unchanged")}</p>
           <div className="flex flex-wrap gap-2">
             {active.can_submit && (
-              <button
-                type="button"
-                className="text-caption-sm-medium"
+              <Button
+                variant="primary"
+                size="sm"
+                stretch="auto"
+                label={t("workspace_wiki.submit_change")}
                 onClick={() =>
-                  void run(() =>
-                    wikiService.actOnChange(workspaceSlug, node.id, active.id, "submit").then(() => undefined)
-                  )
+                  void run(async () => {
+                    await flushDraft();
+                    await wikiService.actOnChange(workspaceSlug, node.id, active.id, "submit");
+                  })
                 }
-              >
-                {t("workspace_wiki.submit_change")}
-              </button>
+              />
             )}
             {active.can_withdraw && (
-              <button
-                type="button"
-                className="text-caption-sm-medium"
+              <Button
+                variant="secondary"
+                size="sm"
+                stretch="auto"
+                label={t("workspace_wiki.withdraw_change")}
                 onClick={() =>
                   void run(() =>
                     wikiService.actOnChange(workspaceSlug, node.id, active.id, "withdraw").then(() => undefined)
                   )
                 }
-              >
-                {t("workspace_wiki.withdraw_change")}
-              </button>
+              />
             )}
             {active.can_close && (
-              <button
-                type="button"
-                className="text-caption-sm-medium"
+              <Button
+                variant="secondary"
+                size="sm"
+                stretch="auto"
+                label={t("workspace_wiki.close_change")}
                 onClick={() =>
                   void run(() =>
                     wikiService.actOnChange(workspaceSlug, node.id, active.id, "close").then(() => undefined)
                   )
                 }
-              >
-                {t("workspace_wiki.close_change")}
-              </button>
+              />
             )}
             {active.can_merge && !active.merge_plan?.conflicts.length && (
-              <button
-                type="button"
-                className="text-caption-sm-medium"
-                onClick={() =>
-                  void run(async () => {
-                    await wikiService.actOnChange(workspaceSlug, node.id, active.id, "merge");
-                    await onMerged();
-                  })
-                }
-              >
-                {t("workspace_wiki.merge_change")}
-              </button>
+              <Button
+                variant="primary"
+                size="sm"
+                stretch="auto"
+                label={t("workspace_wiki.merge_change")}
+                onClick={() => mergeChange()}
+              />
             )}
           </div>
           {active.can_return && (
@@ -333,9 +377,13 @@ export function WikiChanges({ workspaceSlug, node, publishedHtml, onMerged }: Pr
                 placeholder={t("workspace_wiki.change_comment")}
                 className="h-8 min-w-48 rounded-md border border-subtle bg-layer-1 px-2 text-body-sm-regular"
               />
-              <button type="submit" className="text-caption-sm-medium">
-                {t("workspace_wiki.return_change")}
-              </button>
+              <Button
+                variant="secondary"
+                size="sm"
+                stretch="auto"
+                type="submit"
+                label={t("workspace_wiki.return_change")}
+              />
             </form>
           )}
           {active.can_merge && active.merge_plan && active.merge_plan.conflicts.length > 0 && (
@@ -343,34 +391,36 @@ export function WikiChanges({ workspaceSlug, node, publishedHtml, onMerged }: Pr
               workspaceId={workspaceId}
               workspaceSlug={workspaceSlug}
               plan={active.merge_plan}
-              onConfirm={(payload) =>
-                run(async () => {
-                  await wikiService.actOnChange(workspaceSlug, node.id, active.id, "merge", payload);
-                  await onMerged();
-                })
-              }
+              onConfirm={(payload) => mergeChange(payload)}
             />
           )}
           <div className="min-h-40">
             {active.can_edit ? (
               <DocumentEditor
                 key={`${active.id}-edit`}
+                ref={draftEditor.ref}
+                handleEditorReady={draftEditor.handleEditorReady}
                 editable
                 id={active.id}
                 value={editorValue(active.description_json, active.description_html)}
                 workspaceId={workspaceId}
                 workspaceSlug={workspaceSlug}
-                displayConfig={{ wideLayout: Boolean(node.view_props?.full_width) }}
+                displayConfig={{ fontSize, fontStyle, wideLayout: Boolean(node.view_props?.full_width) }}
                 searchMentionCallback={async (payload) => workspaceService.searchEntity(workspaceSlug, payload)}
                 uploadFile={async () => ""}
                 duplicateFile={async () => ""}
-                onChange={(description, html) => {
+                onChange={(description, html, options) => {
+                  if (options?.isMigrationUpdate) return;
+                  pendingDraft.current = { html: html || "<p></p>", json: description };
                   if (saveTimer.current) window.clearTimeout(saveTimer.current);
                   saveTimer.current = window.setTimeout(() => {
+                    const pending = pendingDraft.current;
+                    pendingDraft.current = null;
+                    if (!pending) return;
                     void wikiService
                       .saveChange(workspaceSlug, node.id, active.id, {
-                        description_html: html || "<p></p>",
-                        description_json: description,
+                        description_html: pending.html,
+                        description_json: pending.json,
                       })
                       .then(() => setMessage(t("workspace_wiki.change_saved")))
                       .catch(() => setMessage(t("workspace_wiki.forbidden")));
@@ -385,7 +435,7 @@ export function WikiChanges({ workspaceSlug, node, publishedHtml, onMerged }: Pr
                 value={editorValue(active.description_json, active.description_html)}
                 workspaceId={workspaceId}
                 workspaceSlug={workspaceSlug}
-                displayConfig={{ wideLayout: Boolean(node.view_props?.full_width) }}
+                displayConfig={{ fontSize, fontStyle, wideLayout: Boolean(node.view_props?.full_width) }}
               />
             )}
           </div>
