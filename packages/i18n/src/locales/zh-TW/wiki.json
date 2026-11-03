@@ -180,6 +180,14 @@
       "conflict": "衝突",
       "merged": "已合併",
       "closed": "已關閉"
-    }
+    },
+    "conflict_baseline": "基線",
+    "conflict_current": "目前正文",
+    "conflict_submitted": "提交內容",
+    "conflict_empty": "空",
+    "keep_current": "保留目前正文",
+    "take_submitted": "採用提交內容",
+    "edit_block": "手動編輯",
+    "confirm_merge": "確認合併"
   }
 }

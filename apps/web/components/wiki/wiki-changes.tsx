@@ -9,7 +9,7 @@ import { useTranslation } from "@plane/i18n";
 import type { JSONContent } from "@plane/types";
 import { DocumentEditor } from "@/components/editor/document/editor";
 import { useWorkspace } from "@/hooks/store/use-workspace";
-import type { TWikiChange, TWikiNode } from "@/services/wiki.service";
+import type { TWikiChange, TWikiMergePlan, TWikiNode } from "@/services/wiki.service";
 import { WikiService } from "@/services/wiki.service";
 import { WorkspaceService } from "@/services/workspace.service";
 
@@ -23,10 +23,156 @@ const editorValue = (json?: object, html?: string): JSONContent | string =>
 type Props = {
   workspaceSlug: string;
   node: TWikiNode;
+  publishedHtml: string;
   onMerged: () => Promise<void>;
 };
 
-export function WikiChanges({ workspaceSlug, node, onMerged }: Props) {
+function composedDocument(
+  plan: TWikiMergePlan,
+  choices: Record<string, "current" | "draft" | "custom">,
+  customText: Record<string, string>
+) {
+  const content = plan.blocks.flatMap((entry) => {
+    if (!entry.conflict) return entry.block ? [entry.block] : [];
+    if (choices[entry.id] === "current") return entry.current ? [entry.current] : [];
+    if (choices[entry.id] === "draft") return entry.draft ? [entry.draft] : [];
+    if (choices[entry.id] === "custom") {
+      const text = customText[entry.id] || "";
+      return [
+        {
+          type: "paragraph",
+          attrs: { id: entry.id },
+          content: text ? [{ type: "text", text }] : [],
+        },
+      ];
+    }
+    return entry.current ? [entry.current] : [];
+  });
+  return { type: "doc", content };
+}
+
+function WikiConflictResolve({
+  workspaceId,
+  workspaceSlug,
+  plan,
+  onConfirm,
+}: {
+  workspaceId: string;
+  workspaceSlug: string;
+  plan: TWikiMergePlan;
+  onConfirm: (payload: {
+    resolutions: { id: string; choice: "current" | "draft" | "custom"; block?: object }[];
+    description_html?: string;
+    description_json?: object;
+  }) => Promise<void>;
+}) {
+  const { t } = useTranslation();
+  const [choices, setChoices] = useState<Record<string, "current" | "draft" | "custom">>({});
+  const [customText, setCustomText] = useState<Record<string, string>>({});
+  const latest = useRef<{ json: object; html: string } | null>(null);
+  const document = composedDocument(plan, choices, customText);
+  const ready = plan.conflicts.every((conflict) => choices[conflict.id]);
+  const choiceKey = plan.conflicts
+    .map((conflict) => `${conflict.id}:${choices[conflict.id] || ""}:${customText[conflict.id] || ""}`)
+    .join("|");
+
+  useEffect(() => {
+    latest.current = null;
+  }, [choiceKey]);
+
+  return (
+    <div className="flex flex-col gap-3">
+      {plan.conflicts.map((conflict) => (
+        <div key={conflict.id} className="grid gap-2 md:grid-cols-3">
+          <div className="rounded-md border border-subtle p-2">
+            <p className="text-caption-sm-medium text-tertiary">{t("workspace_wiki.conflict_baseline")}</p>
+            <p className="text-body-sm-regular">{conflict.baseline_text || t("workspace_wiki.conflict_empty")}</p>
+          </div>
+          <div className="rounded-md border border-subtle p-2">
+            <p className="text-caption-sm-medium text-tertiary">{t("workspace_wiki.conflict_current")}</p>
+            <p className="text-body-sm-regular">{conflict.current_text || t("workspace_wiki.conflict_empty")}</p>
+          </div>
+          <div className="rounded-md border border-subtle p-2">
+            <p className="text-caption-sm-medium text-tertiary">{t("workspace_wiki.conflict_submitted")}</p>
+            <p className="text-body-sm-regular">{conflict.draft_text || t("workspace_wiki.conflict_empty")}</p>
+          </div>
+          <div className="flex flex-wrap gap-2 md:col-span-3">
+            <button
+              type="button"
+              className="text-caption-sm-medium"
+              onClick={() => setChoices({ ...choices, [conflict.id]: "current" })}
+            >
+              {t("workspace_wiki.keep_current")}
+            </button>
+            <button
+              type="button"
+              className="text-caption-sm-medium"
+              onClick={() => setChoices({ ...choices, [conflict.id]: "draft" })}
+            >
+              {t("workspace_wiki.take_submitted")}
+            </button>
+            <button
+              type="button"
+              className="text-caption-sm-medium"
+              onClick={() => setChoices({ ...choices, [conflict.id]: "custom" })}
+            >
+              {t("workspace_wiki.edit_block")}
+            </button>
+            {choices[conflict.id] === "custom" && (
+              <input
+                value={customText[conflict.id] || ""}
+                onChange={(event) => setCustomText({ ...customText, [conflict.id]: event.target.value })}
+                className="h-8 min-w-48 rounded-md border border-subtle bg-layer-1 px-2 text-body-sm-regular"
+              />
+            )}
+          </div>
+        </div>
+      ))}
+      <DocumentEditor
+        key={choiceKey}
+        editable
+        id={`merge-${choiceKey}`}
+        value={document}
+        workspaceId={workspaceId}
+        workspaceSlug={workspaceSlug}
+        uploadFile={async () => ""}
+        duplicateFile={async () => ""}
+        searchMentionCallback={async () => ({})}
+        onChange={(description, html) => {
+          latest.current = { json: description, html: html || "<p></p>" };
+        }}
+      />
+      <button
+        type="button"
+        className="w-fit text-caption-sm-medium"
+        disabled={!ready}
+        onClick={() => {
+          if (!ready) return;
+          const result = latest.current;
+          void onConfirm({
+            resolutions: plan.conflicts.map((conflict) => ({
+              id: conflict.id,
+              choice: choices[conflict.id],
+              block:
+                choices[conflict.id] === "custom"
+                  ? {
+                      type: "paragraph",
+                      attrs: { id: conflict.id },
+                      content: customText[conflict.id] ? [{ type: "text", text: customText[conflict.id] }] : [],
+                    }
+                  : undefined,
+            })),
+            ...(result ? { description_json: result.json, description_html: result.html } : {}),
+          });
+        }}
+      >
+        {t("workspace_wiki.confirm_merge")}
+      </button>
+    </div>
+  );
+}
+
+export function WikiChanges({ workspaceSlug, node, publishedHtml, onMerged }: Props) {
   const { t } = useTranslation();
   const { getWorkspaceBySlug } = useWorkspace();
   const workspaceId = getWorkspaceBySlug(workspaceSlug)?.id ?? "";
@@ -52,7 +198,7 @@ export function WikiChanges({ workspaceSlug, node, onMerged }: Props) {
     return () => {
       cancelled = true;
     };
-  }, [node.id, workspaceSlug]);
+  }, [node.id, publishedHtml, workspaceSlug]);
 
   useEffect(
     () => () => {
@@ -152,7 +298,7 @@ export function WikiChanges({ workspaceSlug, node, onMerged }: Props) {
                 {t("workspace_wiki.close_change")}
               </button>
             )}
-            {active.can_merge && (
+            {active.can_merge && !active.merge_plan?.conflicts.length && (
               <button
                 type="button"
                 className="text-caption-sm-medium"
@@ -175,7 +321,7 @@ export function WikiChanges({ workspaceSlug, node, onMerged }: Props) {
                 if (!comment.trim()) return;
                 void run(() =>
                   wikiService
-                    .actOnChange(workspaceSlug, node.id, active.id, "return", comment.trim())
+                    .actOnChange(workspaceSlug, node.id, active.id, "return", { comment: comment.trim() })
                     .then(() => undefined)
                 );
                 setComment("");
@@ -191,6 +337,19 @@ export function WikiChanges({ workspaceSlug, node, onMerged }: Props) {
                 {t("workspace_wiki.return_change")}
               </button>
             </form>
+          )}
+          {active.can_merge && active.merge_plan && active.merge_plan.conflicts.length > 0 && (
+            <WikiConflictResolve
+              workspaceId={workspaceId}
+              workspaceSlug={workspaceSlug}
+              plan={active.merge_plan}
+              onConfirm={(payload) =>
+                run(async () => {
+                  await wikiService.actOnChange(workspaceSlug, node.id, active.id, "merge", payload);
+                  await onMerged();
+                })
+              }
+            />
           )}
           <div className="min-h-40">
             {active.can_edit ? (

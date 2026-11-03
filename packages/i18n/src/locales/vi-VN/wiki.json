@@ -180,6 +180,14 @@
       "conflict": "Xung đột",
       "merged": "Đã hợp nhất",
       "closed": "Đã đóng"
-    }
+    },
+    "conflict_baseline": "Nền",
+    "conflict_current": "Trang hiện tại",
+    "conflict_submitted": "Thay đổi đã gửi",
+    "conflict_empty": "Trống",
+    "keep_current": "Giữ trang hiện tại",
+    "take_submitted": "Dùng nội dung đã gửi",
+    "edit_block": "Sửa khối này",
+    "confirm_merge": "Xác nhận hợp nhất"
   }
 }

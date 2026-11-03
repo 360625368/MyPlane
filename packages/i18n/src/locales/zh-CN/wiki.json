@@ -180,6 +180,14 @@
       "conflict": "冲突",
       "merged": "已合并",
       "closed": "已关闭"
-    }
+    },
+    "conflict_baseline": "基线",
+    "conflict_current": "当前正文",
+    "conflict_submitted": "提交内容",
+    "conflict_empty": "空",
+    "keep_current": "保留当前正文",
+    "take_submitted": "采用提交内容",
+    "edit_block": "手工编辑",
+    "confirm_merge": "确认合并"
   }
 }

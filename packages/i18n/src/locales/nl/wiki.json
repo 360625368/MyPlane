@@ -180,6 +180,14 @@
       "conflict": "Conflict",
       "merged": "Samengevoegd",
       "closed": "Gesloten"
-    }
+    },
+    "conflict_baseline": "Basis",
+    "conflict_current": "Huidige pagina",
+    "conflict_submitted": "Ingediende wijziging",
+    "conflict_empty": "Leeg",
+    "keep_current": "Huidige pagina houden",
+    "take_submitted": "Ingediende versie gebruiken",
+    "edit_block": "Dit blok bewerken",
+    "confirm_merge": "Samenvoegen bevestigen"
   }
 }

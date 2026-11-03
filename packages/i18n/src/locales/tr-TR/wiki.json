@@ -180,6 +180,14 @@
       "conflict": "Çakışma",
       "merged": "Birleştirildi",
       "closed": "Kapatıldı"
-    }
+    },
+    "conflict_baseline": "Taban",
+    "conflict_current": "Güncel sayfa",
+    "conflict_submitted": "Gönderilen değişiklik",
+    "conflict_empty": "Boş",
+    "keep_current": "Güncel sayfayı tut",
+    "take_submitted": "Gönderileni kullan",
+    "edit_block": "Bu bloğu düzenle",
+    "confirm_merge": "Birleştirmeyi onayla"
   }
 }

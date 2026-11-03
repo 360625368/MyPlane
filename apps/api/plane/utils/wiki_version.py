@@ -5,21 +5,43 @@
 from django.utils import timezone
 
 from plane.db.models import WikiChangeRequest, WikiNodeVersion
+from plane.utils.wiki_merge import plan_merge
 
 VERSION_COALESCE_SECONDS = 600
 VERSION_LIMIT = 20
 
 
 def mark_conflicting_change_requests(node):
-    """Leave open drafts intact, and mark them when the published body moved past their baseline."""
-    WikiChangeRequest.objects.filter(
+    """Leave open drafts intact. Mark a request only when the same block changed on both sides."""
+    reviews = WikiChangeRequest.objects.filter(
         node=node,
         status__in=(
             WikiChangeRequest.DRAFT,
             WikiChangeRequest.IN_REVIEW,
             WikiChangeRequest.CHANGES_REQUESTED,
+            WikiChangeRequest.CONFLICT,
         ),
-    ).exclude(baseline_html=node.description_html).update(status=WikiChangeRequest.CONFLICT)
+    )
+    for change in reviews:
+        if change.baseline_html == node.description_html:
+            if change.status == WikiChangeRequest.CONFLICT:
+                change.status = WikiChangeRequest.IN_REVIEW
+                change.save(update_fields=["status", "updated_at"])
+            continue
+        plan = plan_merge(
+            change.baseline_json,
+            change.baseline_html,
+            node.description_json,
+            node.description_html,
+            change.description_json,
+            change.description_html,
+        )
+        if plan["conflicts"] and change.status != WikiChangeRequest.CONFLICT:
+            change.status = WikiChangeRequest.CONFLICT
+            change.save(update_fields=["status", "updated_at"])
+        elif not plan["conflicts"] and change.status == WikiChangeRequest.CONFLICT:
+            change.status = WikiChangeRequest.IN_REVIEW
+            change.save(update_fields=["status", "updated_at"])
 
 
 def record_wiki_version(node, previous_html, user_id, change_request=None):

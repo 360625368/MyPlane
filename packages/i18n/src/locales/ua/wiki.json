@@ -180,6 +180,14 @@
       "conflict": "Конфлікт",
       "merged": "Злито",
       "closed": "Закрито"
-    }
+    },
+    "conflict_baseline": "База",
+    "conflict_current": "Поточна сторінка",
+    "conflict_submitted": "Надіслана зміна",
+    "conflict_empty": "Порожньо",
+    "keep_current": "Залишити поточну сторінку",
+    "take_submitted": "Взяти надіслане",
+    "edit_block": "Змінити цей блок",
+    "confirm_merge": "Підтвердити злиття"
   }
 }

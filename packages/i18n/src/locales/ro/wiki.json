@@ -180,6 +180,14 @@
       "conflict": "Conflict",
       "merged": "Îmbinat",
       "closed": "Închis"
-    }
+    },
+    "conflict_baseline": "Bază",
+    "conflict_current": "Pagina curentă",
+    "conflict_submitted": "Modificarea trimisă",
+    "conflict_empty": "Gol",
+    "keep_current": "Păstrează pagina curentă",
+    "take_submitted": "Folosește varianta trimisă",
+    "edit_block": "Editează acest bloc",
+    "confirm_merge": "Confirmă îmbinarea"
   }
 }

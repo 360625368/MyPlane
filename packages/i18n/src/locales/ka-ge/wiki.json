@@ -180,6 +180,14 @@
       "conflict": "კონფლიქტი",
       "merged": "შერწყმულია",
       "closed": "დახურულია"
-    }
+    },
+    "conflict_baseline": "საფუძველი",
+    "conflict_current": "მიმდინარე გვერდი",
+    "conflict_submitted": "გაგზავნილი ცვლილება",
+    "conflict_empty": "ცარიელი",
+    "keep_current": "მიმდინარე გვერდის დატოვება",
+    "take_submitted": "გაგზავნილის გამოყენება",
+    "edit_block": "ამ ბლოკის ჩასწორება",
+    "confirm_merge": "შერწყმის დადასტურება"
   }
 }

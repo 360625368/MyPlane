@@ -180,6 +180,14 @@
       "conflict": "Conflict",
       "merged": "Merged",
       "closed": "Closed"
-    }
+    },
+    "conflict_baseline": "Baseline",
+    "conflict_current": "Current page",
+    "conflict_submitted": "Submitted change",
+    "conflict_empty": "Empty",
+    "keep_current": "Keep current",
+    "take_submitted": "Use submitted",
+    "edit_block": "Edit this block",
+    "confirm_merge": "Confirm merge"
   }
 }

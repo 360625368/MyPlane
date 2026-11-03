@@ -10,6 +10,7 @@ from plane.app.views.base import BaseAPIView
 from plane.db.models import WikiChangeRequest, WikiNode
 from plane.utils.content_validator import validate_html_content
 from plane.utils.wiki_access import EDITABLE
+from plane.utils.wiki_merge import apply_resolutions, plan_merge
 from plane.utils.wiki_version import mark_conflicting_change_requests, record_wiki_version
 
 from .base import WikiMemberPermission, _is_creator, _not_found, _workspace_or_404
@@ -42,14 +43,27 @@ def _load_request(node, user, change_id):
     return None
 
 
+def _merge_plan(change, node):
+    if change.baseline_html == node.description_html:
+        return None
+    return plan_merge(
+        change.baseline_json,
+        change.baseline_html,
+        node.description_json,
+        node.description_html,
+        change.description_json,
+        change.description_html,
+    )
+
+
 def _serialize_change(change, node, user, access):
     author = change.owned_by_id == user.id
     creator = _is_creator(node, user)
     editable_author = author and _author_can_edit(node, user, access)
     editable_statuses = (WikiChangeRequest.DRAFT, WikiChangeRequest.CHANGES_REQUESTED)
     open_status = change.status in WikiChangeRequest.OPEN_STATUSES
-    baseline_matches = change.baseline_html == node.description_html
     publishable = creator and not node.is_locked and not node.archived_at
+    merge_plan = _merge_plan(change, node) if publishable or author else None
     return {
         "id": str(change.id),
         "node_id": str(node.id),
@@ -65,7 +79,8 @@ def _serialize_change(change, node, user, access):
         "can_withdraw": author and change.status == WikiChangeRequest.IN_REVIEW,
         "can_close": (author or creator) and open_status,
         "can_return": publishable and change.status in (WikiChangeRequest.IN_REVIEW, WikiChangeRequest.CONFLICT),
-        "can_merge": publishable and change.status == WikiChangeRequest.IN_REVIEW and baseline_matches,
+        "can_merge": publishable and change.status in (WikiChangeRequest.IN_REVIEW, WikiChangeRequest.CONFLICT),
+        "merge_plan": merge_plan,
     }
 
 
@@ -188,14 +203,37 @@ class WikiChangeRequestDetailEndpoint(BaseAPIView):
             blocked = _creator_can_publish(node, request.user)
             if blocked:
                 return blocked
-            if change.status == WikiChangeRequest.CONFLICT or change.baseline_html != node.description_html:
-                if change.status == WikiChangeRequest.IN_REVIEW:
-                    change.status = WikiChangeRequest.CONFLICT
-                    change.save(update_fields=["status", "updated_at"])
-                return Response({"error": "conflict"}, status=status.HTTP_409_CONFLICT)
+            if change.baseline_html == node.description_html:
+                merged_html = change.description_html
+                merged_json = change.description_json
+            else:
+                plan = plan_merge(
+                    change.baseline_json,
+                    change.baseline_html,
+                    node.description_json,
+                    node.description_html,
+                    change.description_json,
+                    change.description_html,
+                )
+                if plan["conflicts"]:
+                    applied = apply_resolutions(plan, request.data.get("resolutions"))
+                    if applied is None:
+                        if change.status != WikiChangeRequest.CONFLICT:
+                            change.status = WikiChangeRequest.CONFLICT
+                            change.save(update_fields=["status", "updated_at"])
+                        return Response({"error": "conflict", "merge_plan": plan}, status=status.HTTP_409_CONFLICT)
+                    merged_json, merged_html = applied
+                    if "description_html" in request.data and "description_json" in request.data:
+                        cleaned_html, cleaned_json, invalid = _clean_description(request.data)
+                        if invalid:
+                            return invalid
+                        merged_html, merged_json = cleaned_html, cleaned_json
+                else:
+                    merged_html = plan["html"]
+                    merged_json = plan["json"]
             previous_html = node.description_html
-            node.description_html = change.description_html
-            node.description_json = change.description_json
+            node.description_html = merged_html
+            node.description_json = merged_json
             node.save()
             record_wiki_version(node, previous_html, request.user.id, change_request=change)
             change.status = WikiChangeRequest.MERGED

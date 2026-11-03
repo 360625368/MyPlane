@@ -180,6 +180,14 @@
       "conflict": "Konflikt",
       "merged": "Zlúčené",
       "closed": "Zavreté"
-    }
+    },
+    "conflict_baseline": "Základ",
+    "conflict_current": "Aktuálna stránka",
+    "conflict_submitted": "Odoslaná zmena",
+    "conflict_empty": "Prázdne",
+    "keep_current": "Ponechať aktuálnu stránku",
+    "take_submitted": "Použiť odoslané",
+    "edit_block": "Upraviť tento blok",
+    "confirm_merge": "Potvrdiť zlúčenie"
   }
 }

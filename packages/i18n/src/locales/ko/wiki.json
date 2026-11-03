@@ -180,6 +180,14 @@
       "conflict": "충돌",
       "merged": "병합됨",
       "closed": "닫힘"
-    }
+    },
+    "conflict_baseline": "기준",
+    "conflict_current": "현재 본문",
+    "conflict_submitted": "제출 내용",
+    "conflict_empty": "비어 있음",
+    "keep_current": "현재 본문 유지",
+    "take_submitted": "제출 내용 사용",
+    "edit_block": "직접 편집",
+    "confirm_merge": "병합 확정"
   }
 }

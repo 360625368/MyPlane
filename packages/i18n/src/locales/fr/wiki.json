@@ -180,6 +180,14 @@
       "conflict": "Conflit",
       "merged": "Fusionné",
       "closed": "Fermé"
-    }
+    },
+    "conflict_baseline": "Base",
+    "conflict_current": "Page actuelle",
+    "conflict_submitted": "Modification soumise",
+    "conflict_empty": "Vide",
+    "keep_current": "Garder la page actuelle",
+    "take_submitted": "Adopter la soumission",
+    "edit_block": "Modifier ce bloc",
+    "confirm_merge": "Confirmer la fusion"
   }
 }

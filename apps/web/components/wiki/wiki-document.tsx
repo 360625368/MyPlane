@@ -38,6 +38,7 @@ export const WikiDocument = observer(function WikiDocument({ workspaceSlug, node
   const [showVersions, setShowVersions] = useState(false);
   const [preview, setPreview] = useState<TWikiVersion | null>(null);
   const [message, setMessage] = useState("");
+  const [publishedHtml, setPublishedHtml] = useState("");
   const favorite = entityMap[nodeId];
 
   useEffect(() => {
@@ -45,7 +46,10 @@ export const WikiDocument = observer(function WikiDocument({ workspaceSlug, node
     setPreview(null);
     setShowVersions(false);
     void wikiService.retrieve(workspaceSlug, nodeId).then((detail) => {
-      if (!cancelled) setNode(detail);
+      if (!cancelled) {
+        setNode(detail);
+        setPublishedHtml(detail.description_html || "");
+      }
       return undefined;
     });
     return () => {
@@ -70,7 +74,9 @@ export const WikiDocument = observer(function WikiDocument({ workspaceSlug, node
   const canPropose = node.access === "editable" && !node.is_creator && !node.is_locked && !node.archived_at;
 
   const refresh = async () => {
-    setNode(await wikiService.retrieve(workspaceSlug, nodeId));
+    const detail = await wikiService.retrieve(workspaceSlug, nodeId);
+    setNode(detail);
+    setPublishedHtml(detail.description_html || "");
     await onChanged();
   };
 
@@ -213,7 +219,10 @@ export const WikiDocument = observer(function WikiDocument({ workspaceSlug, node
                     description_html: html || "<p></p>",
                     description_json: description,
                   })
-                  .then(() => setMessage(t("workspace_wiki.saved")))
+                  .then((saved) => {
+                    setPublishedHtml(saved.description_html || "");
+                    return setMessage(t("workspace_wiki.saved"));
+                  })
                   .catch(() => setMessage(t("workspace_wiki.read_only")));
               }, 700);
             }}
@@ -230,7 +239,7 @@ export const WikiDocument = observer(function WikiDocument({ workspaceSlug, node
           />
         )}
       </div>
-      <WikiChanges workspaceSlug={workspaceSlug} node={node} onMerged={refresh} />
+      <WikiChanges workspaceSlug={workspaceSlug} node={node} publishedHtml={publishedHtml} onMerged={refresh} />
       {message && <p className="text-caption-sm-medium text-tertiary">{message}</p>}
     </div>
   );

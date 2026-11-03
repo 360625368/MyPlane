@@ -180,6 +180,14 @@
       "conflict": "Конфликт",
       "merged": "Слято",
       "closed": "Затворено"
-    }
+    },
+    "conflict_baseline": "База",
+    "conflict_current": "Текуща страница",
+    "conflict_submitted": "Изпратена промяна",
+    "conflict_empty": "Празно",
+    "keep_current": "Запази текущата страница",
+    "take_submitted": "Използвай изпратеното",
+    "edit_block": "Редактирай този блок",
+    "confirm_merge": "Потвърди сливането"
   }
 }

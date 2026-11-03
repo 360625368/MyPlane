@@ -238,9 +238,17 @@ export class WikiService extends APIService {
     nodeId: string,
     changeId: string,
     action: "submit" | "withdraw" | "close" | "return" | "merge",
-    comment?: string
+    extra?: {
+      comment?: string;
+      resolutions?: { id: string; choice: "current" | "draft" | "custom"; block?: object }[];
+      description_html?: string;
+      description_json?: object;
+    }
   ): Promise<TWikiChange> {
-    return this.post(`/api/workspaces/${workspaceSlug}/wiki/nodes/${nodeId}/changes/${changeId}/`, { action, comment })
+    return this.post(`/api/workspaces/${workspaceSlug}/wiki/nodes/${nodeId}/changes/${changeId}/`, {
+      action,
+      ...extra,
+    })
       .then((response) => response?.data)
       .catch((error) => {
         throw error?.response?.data;
@@ -259,6 +267,25 @@ export type TWikiVersion = {
 
 export type TWikiChangeStatus = "draft" | "in_review" | "changes_requested" | "conflict" | "merged" | "closed";
 
+export type TWikiMergeBlock = {
+  id: string;
+  conflict: boolean;
+  block: object | null;
+  baseline?: object | null;
+  current?: object | null;
+  draft?: object | null;
+  baseline_text?: string;
+  current_text?: string;
+  draft_text?: string;
+};
+
+export type TWikiMergePlan = {
+  blocks: TWikiMergeBlock[];
+  conflicts: TWikiMergeBlock[];
+  json: object;
+  html: string;
+};
+
 export type TWikiChange = {
   id: string;
   node_id: string;
@@ -274,4 +301,5 @@ export type TWikiChange = {
   can_close: boolean;
   can_return: boolean;
   can_merge: boolean;
+  merge_plan: TWikiMergePlan | null;
 };

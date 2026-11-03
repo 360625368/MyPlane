@@ -180,6 +180,14 @@
       "conflict": "Konflikt",
       "merged": "Scalono",
       "closed": "Zamknięte"
-    }
+    },
+    "conflict_baseline": "Baza",
+    "conflict_current": "Bieżąca strona",
+    "conflict_submitted": "Zgłoszona zmiana",
+    "conflict_empty": "Pusto",
+    "keep_current": "Zostaw bieżącą stronę",
+    "take_submitted": "Użyj zgłoszenia",
+    "edit_block": "Edytuj ten blok",
+    "confirm_merge": "Potwierdź scalenie"
   }
 }

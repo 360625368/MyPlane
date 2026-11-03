@@ -596,3 +596,116 @@ class TestWikiChangeRequest:
         assert merged.status_code == status.HTTP_200_OK
         published = session_client.get(f"/api/workspaces/{workspace.slug}/wiki/nodes/{node_id}/")
         assert "Ready" in published.data["description_html"]
+
+
+def _paragraph(block_id, text):
+    return {"type": "paragraph", "attrs": {"id": block_id}, "content": [{"type": "text", "text": text}]}
+
+
+def _doc(*blocks):
+    return {"type": "doc", "content": list(blocks)}
+
+
+@pytest.mark.contract
+class TestWikiConflict:
+    def test_disjoint_block_edits_merge_automatically(self, session_client, workspace, create_user):
+        other = _member(workspace, 15)
+        node_id = _file(session_client, workspace, "Blocks")
+        baseline = _doc(_paragraph("a", "Alpha"), _paragraph("b", "Beta"))
+        session_client.patch(
+            f"/api/workspaces/{workspace.slug}/wiki/nodes/{node_id}/description/",
+            {"description_html": "<p>Alpha</p><p>Beta</p>", "description_json": baseline},
+            format="json",
+        )
+        _grant(session_client, workspace, node_id, other, "editable")
+        session_client.force_authenticate(user=other)
+        opened = session_client.post(f"/api/workspaces/{workspace.slug}/wiki/nodes/{node_id}/changes/", format="json")
+        change_id = opened.data["id"]
+        session_client.patch(
+            f"/api/workspaces/{workspace.slug}/wiki/nodes/{node_id}/changes/{change_id}/",
+            {
+                "description_html": "<p>Alpha</p><p>Beta draft</p>",
+                "description_json": _doc(_paragraph("a", "Alpha"), _paragraph("b", "Beta draft")),
+            },
+            format="json",
+        )
+        session_client.post(
+            f"/api/workspaces/{workspace.slug}/wiki/nodes/{node_id}/changes/{change_id}/",
+            {"action": "submit"},
+            format="json",
+        )
+        session_client.force_authenticate(user=create_user)
+        session_client.patch(
+            f"/api/workspaces/{workspace.slug}/wiki/nodes/{node_id}/description/",
+            {
+                "description_html": "<p>Alpha current</p><p>Beta</p>",
+                "description_json": _doc(_paragraph("a", "Alpha current"), _paragraph("b", "Beta")),
+            },
+            format="json",
+        )
+        merged = session_client.post(
+            f"/api/workspaces/{workspace.slug}/wiki/nodes/{node_id}/changes/{change_id}/",
+            {"action": "merge"},
+            format="json",
+        )
+        assert merged.status_code == status.HTTP_200_OK
+        published = session_client.get(f"/api/workspaces/{workspace.slug}/wiki/nodes/{node_id}/")
+        assert "Alpha current" in published.data["description_html"]
+        assert "Beta draft" in published.data["description_html"]
+
+    def test_overlapping_block_stays_blocked_until_the_creator_chooses(self, session_client, workspace, create_user):
+        other = _member(workspace, 15)
+        node_id = _file(session_client, workspace, "Overlap")
+        baseline = _doc(_paragraph("a", "Alpha"), _paragraph("b", "Beta"))
+        session_client.patch(
+            f"/api/workspaces/{workspace.slug}/wiki/nodes/{node_id}/description/",
+            {"description_html": "<p>Alpha</p><p>Beta</p>", "description_json": baseline},
+            format="json",
+        )
+        _grant(session_client, workspace, node_id, other, "editable")
+        session_client.force_authenticate(user=other)
+        opened = session_client.post(f"/api/workspaces/{workspace.slug}/wiki/nodes/{node_id}/changes/", format="json")
+        change_id = opened.data["id"]
+        session_client.patch(
+            f"/api/workspaces/{workspace.slug}/wiki/nodes/{node_id}/changes/{change_id}/",
+            {
+                "description_html": "<p>Alpha draft</p><p>Beta</p>",
+                "description_json": _doc(_paragraph("a", "Alpha draft"), _paragraph("b", "Beta")),
+            },
+            format="json",
+        )
+        session_client.post(
+            f"/api/workspaces/{workspace.slug}/wiki/nodes/{node_id}/changes/{change_id}/",
+            {"action": "submit"},
+            format="json",
+        )
+        session_client.force_authenticate(user=create_user)
+        session_client.patch(
+            f"/api/workspaces/{workspace.slug}/wiki/nodes/{node_id}/description/",
+            {
+                "description_html": "<p>Alpha current</p><p>Beta</p>",
+                "description_json": _doc(_paragraph("a", "Alpha current"), _paragraph("b", "Beta")),
+            },
+            format="json",
+        )
+        blocked = session_client.post(
+            f"/api/workspaces/{workspace.slug}/wiki/nodes/{node_id}/changes/{change_id}/",
+            {"action": "merge"},
+            format="json",
+        )
+        assert blocked.status_code == status.HTTP_409_CONFLICT
+        resolved = session_client.post(
+            f"/api/workspaces/{workspace.slug}/wiki/nodes/{node_id}/changes/{change_id}/",
+            {
+                "action": "merge",
+                "resolutions": [{"id": "a", "choice": "draft"}],
+                "description_html": "<p>Alpha draft</p><p>Beta</p>",
+                "description_json": _doc(_paragraph("a", "Alpha draft"), _paragraph("b", "Beta")),
+            },
+            format="json",
+        )
+        assert resolved.status_code == status.HTTP_200_OK
+        published = session_client.get(f"/api/workspaces/{workspace.slug}/wiki/nodes/{node_id}/")
+        assert "Alpha draft" in published.data["description_html"]
+        assert "Alpha current" not in published.data["description_html"]
+        assert "Beta" in published.data["description_html"]

@@ -180,6 +180,14 @@
       "conflict": "Konflik",
       "merged": "Digabung",
       "closed": "Ditutup"
-    }
+    },
+    "conflict_baseline": "Dasar",
+    "conflict_current": "Halaman saat ini",
+    "conflict_submitted": "Perubahan yang dikirim",
+    "conflict_empty": "Kosong",
+    "keep_current": "Pertahankan halaman saat ini",
+    "take_submitted": "Pakai yang dikirim",
+    "edit_block": "Edit blok ini",
+    "confirm_merge": "Konfirmasi penggabungan"
   }
 }

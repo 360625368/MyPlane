@@ -180,6 +180,14 @@
       "conflict": "競合",
       "merged": "マージ済み",
       "closed": "クローズ"
-    }
+    },
+    "conflict_baseline": "ベースライン",
+    "conflict_current": "現在の本文",
+    "conflict_submitted": "提出内容",
+    "conflict_empty": "空",
+    "keep_current": "現在の本文を残す",
+    "take_submitted": "提出内容を採用",
+    "edit_block": "手で編集",
+    "confirm_merge": "マージを確定"
   }
 }
