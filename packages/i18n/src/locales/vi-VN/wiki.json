@@ -142,6 +142,24 @@
       "invisible": "Ẩn",
       "visible": "Xem",
       "editable": "Chỉnh sửa"
-    }
+    },
+    "lock": "Khóa",
+    "unlock": "Mở khóa",
+    "archive": "Lưu trữ",
+    "unarchive": "Bỏ lưu trữ",
+    "duplicate": "Nhân bản",
+    "versions": "Phiên bản",
+    "restore_version": "Khôi phục phiên bản này",
+    "search_placeholder": "Tìm trong Wiki",
+    "recent": "Gần đây",
+    "favorite": "Yêu thích",
+    "unfavorite": "Bỏ yêu thích",
+    "wide": "Rộng",
+    "color": "Màu",
+    "read_only": "Chỉ đọc",
+    "locked": "Tệp này đã bị khóa.",
+    "archived_banner": "Tệp này đã được lưu trữ.",
+    "no_results": "Không có kết quả.",
+    "icon": "Biểu tượng"
   }
 }

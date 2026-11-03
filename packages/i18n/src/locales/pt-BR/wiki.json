@@ -142,6 +142,24 @@
       "invisible": "Oculto",
       "visible": "Visível",
       "editable": "Editável"
-    }
+    },
+    "lock": "Bloquear",
+    "unlock": "Desbloquear",
+    "archive": "Arquivar",
+    "unarchive": "Desarquivar",
+    "duplicate": "Duplicar",
+    "versions": "Versões",
+    "restore_version": "Restaurar esta versão",
+    "search_placeholder": "Pesquisar no Wiki",
+    "recent": "Recentes",
+    "favorite": "Favorito",
+    "unfavorite": "Remover favorito",
+    "wide": "Largo",
+    "color": "Cor",
+    "read_only": "Somente leitura",
+    "locked": "Este arquivo está bloqueado.",
+    "archived_banner": "Este arquivo está arquivado.",
+    "no_results": "Nenhum resultado.",
+    "icon": "Ícone"
   }
 }

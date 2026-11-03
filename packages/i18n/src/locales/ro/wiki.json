@@ -142,6 +142,24 @@
       "invisible": "Invizibil",
       "visible": "Vizibil",
       "editable": "Editabil"
-    }
+    },
+    "lock": "Blochează",
+    "unlock": "Deblochează",
+    "archive": "Arhivează",
+    "unarchive": "Dezarhivează",
+    "duplicate": "Duplică",
+    "versions": "Versiuni",
+    "restore_version": "Restaurează această versiune",
+    "search_placeholder": "Caută în Wiki",
+    "recent": "Recente",
+    "favorite": "Favorit",
+    "unfavorite": "Elimină favoritul",
+    "wide": "Lat",
+    "color": "Culoare",
+    "read_only": "Doar citire",
+    "locked": "Acest fișier este blocat.",
+    "archived_banner": "Acest fișier este arhivat.",
+    "no_results": "Niciun rezultat.",
+    "icon": "Pictogramă"
   }
 }

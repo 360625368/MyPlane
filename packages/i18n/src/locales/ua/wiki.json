@@ -142,6 +142,24 @@
       "invisible": "Приховано",
       "visible": "Перегляд",
       "editable": "Редагування"
-    }
+    },
+    "lock": "Заблокувати",
+    "unlock": "Розблокувати",
+    "archive": "Архівувати",
+    "unarchive": "Повернути з архіву",
+    "duplicate": "Дублювати",
+    "versions": "Версії",
+    "restore_version": "Відновити цю версію",
+    "search_placeholder": "Шукати у Wiki",
+    "recent": "Нещодавні",
+    "favorite": "Обране",
+    "unfavorite": "Прибрати з обраного",
+    "wide": "Широкий",
+    "color": "Колір",
+    "read_only": "Лише читання",
+    "locked": "Цей файл заблоковано.",
+    "archived_banner": "Цей файл в архіві.",
+    "no_results": "Нічого не знайдено.",
+    "icon": "Піктограма"
   }
 }

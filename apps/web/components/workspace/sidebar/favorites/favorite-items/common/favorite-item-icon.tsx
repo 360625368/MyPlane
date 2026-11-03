@@ -14,6 +14,7 @@ import { Logo } from "@plane/blocks/emoji-icon-picker";
 
 const ICON_MAP: Record<string, React.FC<ISvgIcons> | IconGlyph> = {
   page: PagesOutline,
+  wiki: PagesOutline,
   project: ProjectsOutline,
   view: ViewsOutline,
   module: ModuleOutline,

@@ -142,6 +142,24 @@
       "invisible": "不可见",
       "visible": "可见",
       "editable": "可编辑"
-    }
+    },
+    "lock": "锁定",
+    "unlock": "解锁",
+    "archive": "归档",
+    "unarchive": "取消归档",
+    "duplicate": "复制",
+    "versions": "版本",
+    "restore_version": "恢复此版本",
+    "search_placeholder": "搜索 Wiki",
+    "recent": "最近访问",
+    "favorite": "收藏",
+    "unfavorite": "取消收藏",
+    "wide": "宽屏",
+    "color": "颜色",
+    "read_only": "只读",
+    "locked": "这个文件已锁定。",
+    "archived_banner": "这个文件已归档。",
+    "no_results": "没有结果。",
+    "icon": "图标"
   }
 }

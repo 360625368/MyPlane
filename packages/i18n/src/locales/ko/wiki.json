@@ -142,6 +142,24 @@
       "invisible": "숨김",
       "visible": "보기",
       "editable": "편집"
-    }
+    },
+    "lock": "잠금",
+    "unlock": "잠금 해제",
+    "archive": "보관",
+    "unarchive": "보관 해제",
+    "duplicate": "복제",
+    "versions": "버전",
+    "restore_version": "이 버전 복원",
+    "search_placeholder": "Wiki 검색",
+    "recent": "최근 방문",
+    "favorite": "즐겨찾기",
+    "unfavorite": "즐겨찾기 해제",
+    "wide": "넓게",
+    "color": "색",
+    "read_only": "읽기 전용",
+    "locked": "이 파일은 잠겨 있습니다.",
+    "archived_banner": "이 파일은 보관되었습니다.",
+    "no_results": "결과가 없습니다.",
+    "icon": "아이콘"
   }
 }

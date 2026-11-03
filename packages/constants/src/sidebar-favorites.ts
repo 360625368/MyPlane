@@ -32,4 +32,8 @@ export const FAVORITE_ITEM_LINKS: {
     itemLevel: "project",
     getLink: (favorite) => `pages/${favorite.entity_identifier}`,
   },
+  wiki: {
+    itemLevel: "workspace",
+    getLink: (favorite) => `wiki/${favorite.entity_identifier}`,
+  },
 };

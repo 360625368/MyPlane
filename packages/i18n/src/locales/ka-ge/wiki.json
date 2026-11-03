@@ -142,6 +142,24 @@
       "invisible": "უჩინარი",
       "visible": "ხილვადი",
       "editable": "რედაქტირებადი"
-    }
+    },
+    "lock": "დაბლოკვა",
+    "unlock": "განბლოკვა",
+    "archive": "არქივში გადატანა",
+    "unarchive": "არქივიდან დაბრუნება",
+    "duplicate": "დუბლირება",
+    "versions": "ვერსიები",
+    "restore_version": "ამ ვერსიის აღდგენა",
+    "search_placeholder": "Wiki-ში ძიება",
+    "recent": "ბოლოს ნანახი",
+    "favorite": "რჩეული",
+    "unfavorite": "რჩეულიდან ამოღება",
+    "wide": "ფართო",
+    "color": "ფერი",
+    "read_only": "მხოლოდ წაკითხვა",
+    "locked": "ეს ფაილი დაბლოკილია.",
+    "archived_banner": "ეს ფაილი დაარქივებულია.",
+    "no_results": "შედეგი არ არის.",
+    "icon": "ხატულა"
   }
 }

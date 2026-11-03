@@ -142,6 +142,24 @@
       "invisible": "Unsichtbar",
       "visible": "Sichtbar",
       "editable": "Bearbeitbar"
-    }
+    },
+    "lock": "Sperren",
+    "unlock": "Entsperren",
+    "archive": "Archivieren",
+    "unarchive": "Archivierung aufheben",
+    "duplicate": "Duplizieren",
+    "versions": "Versionen",
+    "restore_version": "Diese Version wiederherstellen",
+    "search_placeholder": "Wiki durchsuchen",
+    "recent": "Zuletzt besucht",
+    "favorite": "Favorit",
+    "unfavorite": "Favorit entfernen",
+    "wide": "Breit",
+    "color": "Farbe",
+    "read_only": "Nur lesen",
+    "locked": "Diese Datei ist gesperrt.",
+    "archived_banner": "Diese Datei ist archiviert.",
+    "no_results": "Keine Ergebnisse.",
+    "icon": "Symbol"
   }
 }

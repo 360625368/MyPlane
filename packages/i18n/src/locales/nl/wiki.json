@@ -142,6 +142,24 @@
       "invisible": "Onzichtbaar",
       "visible": "Zichtbaar",
       "editable": "Bewerkbaar"
-    }
+    },
+    "lock": "Vergrendelen",
+    "unlock": "Ontgrendelen",
+    "archive": "Archiveren",
+    "unarchive": "Dearchiveren",
+    "duplicate": "Dupliceren",
+    "versions": "Versies",
+    "restore_version": "Deze versie herstellen",
+    "search_placeholder": "Zoek in Wiki",
+    "recent": "Recent",
+    "favorite": "Favoriet",
+    "unfavorite": "Favoriet verwijderen",
+    "wide": "Breed",
+    "color": "Kleur",
+    "read_only": "Alleen lezen",
+    "locked": "Dit bestand is vergrendeld.",
+    "archived_banner": "Dit bestand is gearchiveerd.",
+    "no_results": "Geen resultaten.",
+    "icon": "Pictogram"
   }
 }

@@ -4,8 +4,15 @@
 
 from django.conf import settings
 from django.db import models
+from django.utils import timezone
+
+from plane.utils.html_processor import strip_tags
 
 from .base import BaseModel
+
+
+def get_wiki_view_props():
+    return {"full_width": False}
 
 
 class WikiNode(BaseModel):
@@ -33,6 +40,14 @@ class WikiNode(BaseModel):
         blank=True,
     )
     sort_order = models.FloatField(default=DEFAULT_SORT_ORDER)
+    description_json = models.JSONField(default=dict, blank=True)
+    description_html = models.TextField(blank=True, default="<p></p>")
+    description_stripped = models.TextField(blank=True, null=True)
+    color = models.CharField(max_length=255, blank=True)
+    logo_props = models.JSONField(default=dict)
+    view_props = models.JSONField(default=get_wiki_view_props)
+    is_locked = models.BooleanField(default=False)
+    archived_at = models.DateTimeField(null=True, blank=True)
 
     class Meta:
         verbose_name = "Wiki Node"
@@ -47,8 +62,41 @@ class WikiNode(BaseModel):
             )
         ]
 
+    def save(self, *args, **kwargs):
+        html = self.description_html
+        self.description_stripped = None if (html == "" or html is None) else strip_tags(html)
+        super().save(*args, **kwargs)
+
     def __str__(self):
         return self.name
+
+
+class WikiNodeVersion(BaseModel):
+    workspace = models.ForeignKey("db.Workspace", on_delete=models.CASCADE, related_name="wiki_node_versions")
+    node = models.ForeignKey(WikiNode, on_delete=models.CASCADE, related_name="versions")
+    owned_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="wiki_node_versions",
+    )
+    last_saved_at = models.DateTimeField(default=timezone.now)
+    description_json = models.JSONField(default=dict, blank=True)
+    description_html = models.TextField(blank=True, default="<p></p>")
+    description_stripped = models.TextField(blank=True, null=True)
+
+    class Meta:
+        verbose_name = "Wiki Node Version"
+        verbose_name_plural = "Wiki Node Versions"
+        db_table = "wiki_node_versions"
+        ordering = ("-last_saved_at",)
+
+    def save(self, *args, **kwargs):
+        html = self.description_html
+        self.description_stripped = None if (html == "" or html is None) else strip_tags(html)
+        super().save(*args, **kwargs)
+
+    def __str__(self):
+        return f"{self.node_id} {self.last_saved_at}"
 
 
 class WikiNodePermission(BaseModel):

@@ -114,7 +114,13 @@ def _serialize_node(node, user, access):
         "can_manage_access": creator and not node.is_root,
         "can_rename": creator and not node.is_root,
         "can_move": creator and not node.is_root,
-        "can_create_child": node.node_type == WikiNode.FOLDER and can_create_child(access),
+        "can_create_child": node.node_type == WikiNode.FOLDER and can_create_child(access) and not node.archived_at,
+        "is_locked": node.is_locked,
+        "archived_at": node.archived_at,
+        "logo_props": node.logo_props,
+        "color": node.color,
+        "view_props": node.view_props,
+        "can_edit_body": creator and node.node_type == WikiNode.FILE and not node.is_locked and not node.archived_at,
     }
 
 
@@ -151,6 +157,41 @@ def _descendant_ids(node_id, nodes_by_id):
     return found
 
 
+def _archived_branch_ids(nodes_by_id):
+    hidden = {node.id for node in nodes_by_id.values() if node.archived_at}
+    changed = True
+    while changed:
+        changed = False
+        for node in nodes_by_id.values():
+            if node.parent_id in hidden and node.id not in hidden:
+                hidden.add(node.id)
+                changed = True
+    return hidden
+
+
+def _remember_visit(workspace, user, node):
+    from plane.db.models import UserRecentVisit
+
+    visit = UserRecentVisit.objects.filter(
+        workspace=workspace,
+        user=user,
+        entity_name="wiki",
+        entity_identifier=node.id,
+    ).first()
+    if visit is None:
+        UserRecentVisit.objects.create(
+            workspace=workspace,
+            user=user,
+            entity_name="wiki",
+            entity_identifier=node.id,
+        )
+        return
+    from django.utils import timezone
+
+    visit.visited_at = timezone.now()
+    visit.save(update_fields=["visited_at", "updated_at"])
+
+
 def _eligible_member(workspace, member_id):
     return WorkspaceMember.objects.filter(
         workspace=workspace,
@@ -171,18 +212,31 @@ class WikiNodeEndpoint(BaseAPIView):
         if node_id is None:
             nodes_by_id = _load_nodes(workspace)
             explicit = _explicit_map(workspace)
+            archived_only = request.query_params.get("archived") == "1"
+            hidden = _archived_branch_ids(nodes_by_id)
             visible = []
             for node in nodes_by_id.values():
                 access = effective_access(node, request.user.id, nodes_by_id, explicit)
-                if can_view(access):
-                    visible.append(_serialize_node(node, request.user, access))
+                if not can_view(access):
+                    continue
+                if archived_only:
+                    if node.archived_at is None:
+                        continue
+                elif node.id in hidden:
+                    continue
+                visible.append(_serialize_node(node, request.user, access))
             visible.sort(key=lambda item: (item["sort_order"], item["name"]))
             return Response(visible, status=status.HTTP_200_OK)
 
         node, access, _, _ = _visible_node(workspace, request.user, node_id)
         if node is None:
             return _not_found()
-        return Response(_serialize_node(node, request.user, access), status=status.HTTP_200_OK)
+        if node.node_type == WikiNode.FILE:
+            _remember_visit(workspace, request.user, node)
+        payload = _serialize_node(node, request.user, access)
+        payload["description_html"] = node.description_html
+        payload["description_json"] = node.description_json
+        return Response(payload, status=status.HTTP_200_OK)
 
     def post(self, request, slug):
         workspace, error = _workspace_or_404(slug)
@@ -234,12 +288,20 @@ class WikiNodeEndpoint(BaseAPIView):
                 return _not_found()
             if (
                 parent.node_type != WikiNode.FOLDER
+                or parent.archived_at
                 or not can_create_child(parent_access)
                 or parent.id == node.id
                 or parent.id in _descendant_ids(node.id, nodes_by_id)
             ):
                 return Response({"error": "invalid_parent"}, status=status.HTTP_400_BAD_REQUEST)
             node.parent = parent
+        if "logo_props" in request.data and isinstance(request.data.get("logo_props"), dict):
+            node.logo_props = request.data.get("logo_props")
+        if node.node_type == WikiNode.FILE and not node.is_locked and not node.archived_at:
+            if "color" in request.data:
+                node.color = str(request.data.get("color") or "")[:255]
+            if "view_props" in request.data and isinstance(request.data.get("view_props"), dict):
+                node.view_props = request.data.get("view_props")
         node.save()
         nodes_by_id[node.id] = node
         access = effective_access(node, request.user.id, nodes_by_id, explicit)

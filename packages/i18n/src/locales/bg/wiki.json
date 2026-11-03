@@ -142,6 +142,24 @@
       "invisible": "Скрит",
       "visible": "Видим",
       "editable": "Редактируем"
-    }
+    },
+    "lock": "Заключване",
+    "unlock": "Отключване",
+    "archive": "Архивиране",
+    "unarchive": "Разархивиране",
+    "duplicate": "Дублиране",
+    "versions": "Версии",
+    "restore_version": "Възстановяване на тази версия",
+    "search_placeholder": "Търсене в Wiki",
+    "recent": "Скорошни",
+    "favorite": "Любими",
+    "unfavorite": "Премахване от любими",
+    "wide": "Широк",
+    "color": "Цвят",
+    "read_only": "Само за четене",
+    "locked": "Този файл е заключен.",
+    "archived_banner": "Този файл е архивиран.",
+    "no_results": "Няма резултати.",
+    "icon": "Икона"
   }
 }

@@ -142,6 +142,24 @@
       "invisible": "Tersembunyi",
       "visible": "Terlihat",
       "editable": "Dapat diedit"
-    }
+    },
+    "lock": "Kunci",
+    "unlock": "Buka kunci",
+    "archive": "Arsipkan",
+    "unarchive": "Batalkan arsip",
+    "duplicate": "Duplikat",
+    "versions": "Versi",
+    "restore_version": "Pulihkan versi ini",
+    "search_placeholder": "Cari di Wiki",
+    "recent": "Terbaru",
+    "favorite": "Favorit",
+    "unfavorite": "Hapus favorit",
+    "wide": "Lebar",
+    "color": "Warna",
+    "read_only": "Hanya baca",
+    "locked": "File ini terkunci.",
+    "archived_banner": "File ini diarsipkan.",
+    "no_results": "Tidak ada hasil.",
+    "icon": "Ikon"
   }
 }

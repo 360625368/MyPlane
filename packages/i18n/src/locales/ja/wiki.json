@@ -142,6 +142,24 @@
       "invisible": "非表示",
       "visible": "表示のみ",
       "editable": "編集可"
-    }
+    },
+    "lock": "ロック",
+    "unlock": "ロック解除",
+    "archive": "アーカイブ",
+    "unarchive": "アーカイブ解除",
+    "duplicate": "複製",
+    "versions": "バージョン",
+    "restore_version": "このバージョンを復元",
+    "search_placeholder": "Wiki を検索",
+    "recent": "最近のアクセス",
+    "favorite": "お気に入り",
+    "unfavorite": "お気に入りを解除",
+    "wide": "ワイド",
+    "color": "色",
+    "read_only": "読み取り専用",
+    "locked": "このファイルはロックされています。",
+    "archived_banner": "このファイルはアーカイブされています。",
+    "no_results": "結果はありません。",
+    "icon": "アイコン"
   }
 }

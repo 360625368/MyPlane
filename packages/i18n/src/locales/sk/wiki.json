@@ -142,6 +142,24 @@
       "invisible": "Neviditeľný",
       "visible": "Viditeľný",
       "editable": "Upraviteľný"
-    }
+    },
+    "lock": "Zamknúť",
+    "unlock": "Odomknúť",
+    "archive": "Archivovať",
+    "unarchive": "Zrušiť archiváciu",
+    "duplicate": "Duplikovať",
+    "versions": "Verzie",
+    "restore_version": "Obnoviť túto verziu",
+    "search_placeholder": "Hľadať vo Wiki",
+    "recent": "Nedávne",
+    "favorite": "Obľúbené",
+    "unfavorite": "Odobrať z obľúbených",
+    "wide": "Široké",
+    "color": "Farba",
+    "read_only": "Len na čítanie",
+    "locked": "Tento súbor je zamknutý.",
+    "archived_banner": "Tento súbor je archivovaný.",
+    "no_results": "Žiadne výsledky.",
+    "icon": "Ikona"
   }
 }

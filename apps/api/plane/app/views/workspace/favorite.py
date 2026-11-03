@@ -15,6 +15,7 @@ from plane.app.views.base import BaseAPIView
 from plane.db.models import UserFavorite, Workspace
 from plane.app.serializers import UserFavoriteSerializer
 from plane.app.serializers.favorite import get_entity_model_and_serializer, get_favorite_entities
+from plane.utils.wiki_favorite import visible_wiki_favorite
 from plane.app.permissions import allow_permission, ROLE
 
 
@@ -59,17 +60,26 @@ class WorkspaceFavoriteEndpoint(BaseAPIView):
             if serializer.is_valid():
                 project_id = request.data.get("project_id", None)
                 entity_type = serializer.validated_data.get("entity_type")
-                entity_model, _ = get_entity_model_and_serializer(entity_type)
-                # An entity favorite must point at an entity in this workspace that the user can see
-                if entity_model:
-                    get_favorite_entities(entity_type, request.user.id, project_id).get(
-                        pk=serializer.validated_data.get("entity_identifier"), workspace=workspace
+                save_kwargs = {
+                    "user_id": request.user.id,
+                    "workspace": workspace,
+                    "project_id": project_id,
+                }
+                if entity_type == "wiki":
+                    entity = visible_wiki_favorite(
+                        serializer.validated_data.get("entity_identifier"), request.user.id, workspace.id
                     )
-                serializer.save(
-                    user_id=request.user.id,
-                    workspace=workspace,
-                    project_id=project_id,
-                )
+                    if entity is None:
+                        return Response({"error": "not_found"}, status=status.HTTP_404_NOT_FOUND)
+                    save_kwargs["name"] = entity["name"]
+                else:
+                    entity_model, _ = get_entity_model_and_serializer(entity_type)
+                    # An entity favorite must point at an entity in this workspace that the user can see
+                    if entity_model:
+                        get_favorite_entities(entity_type, request.user.id, project_id).get(
+                            pk=serializer.validated_data.get("entity_identifier"), workspace=workspace
+                        )
+                serializer.save(**save_kwargs)
                 return Response(serializer.data, status=status.HTTP_200_OK)
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         except IntegrityError:

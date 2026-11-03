@@ -142,6 +142,24 @@
       "invisible": "不可見",
       "visible": "可見",
       "editable": "可編輯"
-    }
+    },
+    "lock": "鎖定",
+    "unlock": "解除鎖定",
+    "archive": "封存",
+    "unarchive": "取消封存",
+    "duplicate": "複製",
+    "versions": "版本",
+    "restore_version": "還原此版本",
+    "search_placeholder": "搜尋 Wiki",
+    "recent": "最近存取",
+    "favorite": "收藏",
+    "unfavorite": "取消收藏",
+    "wide": "寬螢幕",
+    "color": "顏色",
+    "read_only": "唯讀",
+    "locked": "這個檔案已鎖定。",
+    "archived_banner": "這個檔案已封存。",
+    "no_results": "沒有結果。",
+    "icon": "圖示"
   }
 }

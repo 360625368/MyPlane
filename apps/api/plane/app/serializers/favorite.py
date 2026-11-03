@@ -16,6 +16,7 @@ from plane.db.models import (
     ProjectMember,
     WorkspaceMember,
 )
+from plane.utils.wiki_favorite import visible_wiki_favorite
 
 
 class ProjectFavoriteLiteSerializer(serializers.ModelSerializer):
@@ -121,6 +122,9 @@ class UserFavoriteSerializer(serializers.ModelSerializer):
     def get_entity_data(self, obj):
         entity_type = obj.entity_type
         entity_identifier = obj.entity_identifier
+
+        if entity_type == "wiki":
+            return visible_wiki_favorite(entity_identifier, obj.user_id, obj.workspace_id)
 
         entity_model, entity_serializer = get_entity_model_and_serializer(entity_type)
         if entity_model and entity_serializer:

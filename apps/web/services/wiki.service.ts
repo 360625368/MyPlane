@@ -25,6 +25,14 @@ export type TWikiNode = {
   can_rename: boolean;
   can_move: boolean;
   can_create_child: boolean;
+  is_locked: boolean;
+  archived_at: string | null;
+  logo_props: Record<string, unknown>;
+  color: string;
+  view_props: { full_width?: boolean };
+  can_edit_body: boolean;
+  description_html?: string;
+  description_json?: object;
 };
 
 export type TWikiTrashNode = {
@@ -48,8 +56,9 @@ export class WikiService extends APIService {
     super(API_BASE_URL);
   }
 
-  async list(workspaceSlug: string): Promise<TWikiNode[]> {
-    return this.get(`/api/workspaces/${workspaceSlug}/wiki/nodes/`)
+  async list(workspaceSlug: string, archived = false): Promise<TWikiNode[]> {
+    const suffix = archived ? "?archived=1" : "";
+    return this.get(`/api/workspaces/${workspaceSlug}/wiki/nodes/${suffix}`)
       .then((response) => response?.data)
       .catch((error) => {
         throw error?.response?.data;
@@ -78,7 +87,7 @@ export class WikiService extends APIService {
   async update(
     workspaceSlug: string,
     nodeId: string,
-    data: Partial<Pick<TWikiNode, "name" | "parent_id" | "sort_order">>
+    data: Partial<Pick<TWikiNode, "name" | "parent_id" | "sort_order" | "color" | "logo_props" | "view_props">>
   ): Promise<TWikiNode> {
     return this.patch(`/api/workspaces/${workspaceSlug}/wiki/nodes/${nodeId}/`, data)
       .then((response) => response?.data)
@@ -130,4 +139,76 @@ export class WikiService extends APIService {
         throw error?.response?.data;
       });
   }
+
+  async saveDescription(
+    workspaceSlug: string,
+    nodeId: string,
+    data: { description_html: string; description_json: object }
+  ): Promise<TWikiNode> {
+    return this.patch(`/api/workspaces/${workspaceSlug}/wiki/nodes/${nodeId}/description/`, data)
+      .then((response) => response?.data)
+      .catch((error) => {
+        throw error?.response?.data;
+      });
+  }
+
+  async versions(workspaceSlug: string, nodeId: string): Promise<TWikiVersion[]> {
+    return this.get(`/api/workspaces/${workspaceSlug}/wiki/nodes/${nodeId}/versions/`)
+      .then((response) => response?.data)
+      .catch((error) => {
+        throw error?.response?.data;
+      });
+  }
+
+  async restoreVersion(workspaceSlug: string, nodeId: string, versionId: string): Promise<TWikiNode> {
+    return this.post(`/api/workspaces/${workspaceSlug}/wiki/nodes/${nodeId}/versions/`, { version_id: versionId })
+      .then((response) => response?.data)
+      .catch((error) => {
+        throw error?.response?.data;
+      });
+  }
+
+  async updateState(
+    workspaceSlug: string,
+    nodeId: string,
+    data: { is_locked?: boolean; archived?: boolean }
+  ): Promise<TWikiNode> {
+    return this.post(`/api/workspaces/${workspaceSlug}/wiki/nodes/${nodeId}/state/`, data)
+      .then((response) => response?.data)
+      .catch((error) => {
+        throw error?.response?.data;
+      });
+  }
+
+  async duplicate(workspaceSlug: string, nodeId: string): Promise<TWikiNode> {
+    return this.post(`/api/workspaces/${workspaceSlug}/wiki/nodes/${nodeId}/duplicate/`)
+      .then((response) => response?.data)
+      .catch((error) => {
+        throw error?.response?.data;
+      });
+  }
+
+  async search(workspaceSlug: string, query: string): Promise<TWikiNode[]> {
+    return this.get(`/api/workspaces/${workspaceSlug}/wiki/search/`, { params: { q: query } })
+      .then((response) => response?.data)
+      .catch((error) => {
+        throw error?.response?.data;
+      });
+  }
+
+  async recent(workspaceSlug: string): Promise<TWikiNode[]> {
+    return this.get(`/api/workspaces/${workspaceSlug}/wiki/recent/`)
+      .then((response) => response?.data)
+      .catch((error) => {
+        throw error?.response?.data;
+      });
+  }
 }
+
+export type TWikiVersion = {
+  id: string;
+  owned_by: string;
+  last_saved_at: string;
+  description_html: string;
+  description_json: object;
+};

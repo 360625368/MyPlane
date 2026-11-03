@@ -49,7 +49,7 @@ from .issue import (
 from .module import Module, ModuleIssue, ModuleLink, ModuleMember, ModuleUserProperties
 from .notification import EmailNotificationLog, Notification, UserNotificationPreference
 from .page import Page, PageLabel, PageLog, ProjectPage, PageVersion
-from .wiki import WikiNode, WikiNodePermission
+from .wiki import WikiNode, WikiNodePermission, WikiNodeVersion
 from .project import (
     Project,
     ProjectBaseModel,

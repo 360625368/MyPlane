@@ -142,6 +142,24 @@
       "invisible": "Görünmez",
       "visible": "Görünür",
       "editable": "Düzenlenebilir"
-    }
+    },
+    "lock": "Kilitle",
+    "unlock": "Kilidi aç",
+    "archive": "Arşivle",
+    "unarchive": "Arşivden çıkar",
+    "duplicate": "Çoğalt",
+    "versions": "Sürümler",
+    "restore_version": "Bu sürümü geri yükle",
+    "search_placeholder": "Wiki'de ara",
+    "recent": "Son kullanılanlar",
+    "favorite": "Sık kullanılan",
+    "unfavorite": "Sık kullanılanlardan kaldır",
+    "wide": "Geniş",
+    "color": "Renk",
+    "read_only": "Salt okunur",
+    "locked": "Bu dosya kilitli.",
+    "archived_banner": "Bu dosya arşivlendi.",
+    "no_results": "Sonuç yok.",
+    "icon": "Simge"
   }
 }

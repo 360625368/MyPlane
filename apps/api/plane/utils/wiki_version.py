@@ -1,0 +1,41 @@
+# Copyright (c) 2023-present Plane Software, Inc. and contributors
+# SPDX-License-Identifier: AGPL-3.0-only
+# See the LICENSE file for details.
+
+from django.utils import timezone
+
+from plane.db.models import WikiNodeVersion
+
+VERSION_COALESCE_SECONDS = 600
+VERSION_LIMIT = 20
+
+
+def record_wiki_version(node, previous_html, user_id):
+    """Keep a published-body snapshot, coalescing the same author's recent saves."""
+    if previous_html == node.description_html:
+        return None
+    latest = WikiNodeVersion.objects.filter(node=node).order_by("-last_saved_at").first()
+    if (
+        latest
+        and str(latest.owned_by_id) == str(user_id)
+        and (timezone.now() - latest.last_saved_at).total_seconds() <= VERSION_COALESCE_SECONDS
+    ):
+        latest.description_html = node.description_html
+        latest.description_json = node.description_json
+        latest.description_stripped = node.description_stripped
+        latest.save(update_fields=["description_html", "description_json", "description_stripped", "updated_at"])
+        return latest
+
+    version = WikiNodeVersion.objects.create(
+        workspace_id=node.workspace_id,
+        node=node,
+        owned_by_id=user_id,
+        description_html=node.description_html,
+        description_json=node.description_json,
+        description_stripped=node.description_stripped,
+        last_saved_at=timezone.now(),
+    )
+    overflow = WikiNodeVersion.objects.filter(node=node).order_by("-last_saved_at")[VERSION_LIMIT:]
+    for stale in overflow:
+        stale.delete()
+    return version

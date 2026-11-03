@@ -3,11 +3,13 @@
 # See the LICENSE file for details.
 
 import uuid
+from datetime import timedelta
 
 import pytest
+from django.utils import timezone
 from rest_framework import status
 
-from plane.db.models import User, WorkspaceMember
+from plane.db.models import User, WikiNodeVersion, WorkspaceMember
 from plane.utils.wiki_access import EDITABLE, INVISIBLE, VISIBLE, resolve_access
 
 
@@ -260,3 +262,160 @@ class TestWikiNodes:
         restored = session_client.post(f"/api/workspaces/{workspace.slug}/wiki/nodes/{node['id']}/restore/")
         assert restored.status_code == status.HTTP_200_OK
         assert restored.data["name"] == "Published"
+
+
+def _age_latest_version(node_id):
+    version = WikiNodeVersion.objects.filter(node_id=node_id).order_by("-last_saved_at").first()
+    version.last_saved_at = timezone.now() - timedelta(seconds=700)
+    version.save(update_fields=["last_saved_at"])
+    return version
+
+
+@pytest.mark.contract
+class TestWikiDocument:
+    def test_creator_publishes_immediately_and_can_restore_a_version(self, session_client, workspace, create_user):
+        other = _member(workspace, 15)
+        created = session_client.post(
+            f"/api/workspaces/{workspace.slug}/wiki/nodes/",
+            {"parent_id": _root_id(session_client, workspace), "name": "Notes", "node_type": "file"},
+            format="json",
+        )
+        node_id = created.data["id"]
+        saved = session_client.patch(
+            f"/api/workspaces/{workspace.slug}/wiki/nodes/{node_id}/description/",
+            {"description_html": "<p>Hello</p>", "description_json": {"type": "doc"}},
+            format="json",
+        )
+        assert saved.status_code == status.HTTP_200_OK
+        assert "Hello" in saved.data["description_html"]
+        first = _age_latest_version(node_id)
+
+        session_client.patch(
+            f"/api/workspaces/{workspace.slug}/wiki/nodes/{node_id}/description/",
+            {"description_html": "<p>Goodbye</p>", "description_json": {"type": "doc"}},
+            format="json",
+        )
+        _age_latest_version(node_id)
+        restored = session_client.post(
+            f"/api/workspaces/{workspace.slug}/wiki/nodes/{node_id}/versions/",
+            {"version_id": str(first.id)},
+            format="json",
+        )
+        assert restored.status_code == status.HTTP_200_OK
+        assert "Hello" in restored.data["description_html"]
+
+        session_client.put(
+            f"/api/workspaces/{workspace.slug}/wiki/nodes/{node_id}/access/",
+            {"member_id": str(other.id), "access": "visible"},
+            format="json",
+        )
+        session_client.force_authenticate(user=other)
+        denied = session_client.patch(
+            f"/api/workspaces/{workspace.slug}/wiki/nodes/{node_id}/description/",
+            {"description_html": "<p>Nope</p>", "description_json": {}},
+            format="json",
+        )
+        assert denied.status_code == status.HTTP_403_FORBIDDEN
+
+        session_client.force_authenticate(user=create_user)
+        session_client.put(
+            f"/api/workspaces/{workspace.slug}/wiki/nodes/{node_id}/access/",
+            {"member_id": str(other.id), "access": "editable"},
+            format="json",
+        )
+        session_client.force_authenticate(user=other)
+        still_denied = session_client.patch(
+            f"/api/workspaces/{workspace.slug}/wiki/nodes/{node_id}/description/",
+            {"description_html": "<p>Nope</p>", "description_json": {}},
+            format="json",
+        )
+        assert still_denied.status_code == status.HTTP_403_FORBIDDEN
+
+    def test_locked_or_archived_files_leave_the_tree_and_reject_saves(self, session_client, workspace):
+        created = session_client.post(
+            f"/api/workspaces/{workspace.slug}/wiki/nodes/",
+            {"parent_id": _root_id(session_client, workspace), "name": "Locked", "node_type": "file"},
+            format="json",
+        )
+        node_id = created.data["id"]
+        locked = session_client.post(
+            f"/api/workspaces/{workspace.slug}/wiki/nodes/{node_id}/state/",
+            {"is_locked": True},
+            format="json",
+        )
+        assert locked.status_code == status.HTTP_200_OK
+        blocked = session_client.patch(
+            f"/api/workspaces/{workspace.slug}/wiki/nodes/{node_id}/description/",
+            {"description_html": "<p>Hello</p>", "description_json": {}},
+            format="json",
+        )
+        assert blocked.status_code == status.HTTP_400_BAD_REQUEST
+
+        session_client.post(
+            f"/api/workspaces/{workspace.slug}/wiki/nodes/{node_id}/state/",
+            {"is_locked": False, "archived": True},
+            format="json",
+        )
+        listing = session_client.get(f"/api/workspaces/{workspace.slug}/wiki/nodes/")
+        assert node_id not in {node["id"] for node in listing.data}
+        archived = session_client.get(f"/api/workspaces/{workspace.slug}/wiki/nodes/?archived=1")
+        assert node_id in {node["id"] for node in archived.data}
+
+    def test_search_hides_private_files_and_duplicate_starts_fresh(self, session_client, workspace, create_user):
+        other = _member(workspace, 15)
+        created = session_client.post(
+            f"/api/workspaces/{workspace.slug}/wiki/nodes/",
+            {"parent_id": _root_id(session_client, workspace), "name": "Secret manual", "node_type": "file"},
+            format="json",
+        )
+        node_id = created.data["id"]
+        session_client.patch(
+            f"/api/workspaces/{workspace.slug}/wiki/nodes/{node_id}/description/",
+            {"description_html": "<p>classified</p>", "description_json": {}},
+            format="json",
+        )
+        session_client.force_authenticate(user=other)
+        hidden = session_client.get(f"/api/workspaces/{workspace.slug}/wiki/search/?q=classified")
+        assert node_id not in {node["id"] for node in hidden.data}
+
+        session_client.force_authenticate(user=create_user)
+        session_client.put(
+            f"/api/workspaces/{workspace.slug}/wiki/nodes/{node_id}/access/",
+            {"member_id": str(other.id), "access": "visible"},
+            format="json",
+        )
+        session_client.force_authenticate(user=other)
+        found = session_client.get(f"/api/workspaces/{workspace.slug}/wiki/search/?q=classified")
+        assert node_id in {node["id"] for node in found.data}
+        copied = session_client.post(f"/api/workspaces/{workspace.slug}/wiki/nodes/{node_id}/duplicate/", format="json")
+        assert copied.status_code == status.HTTP_201_CREATED
+        assert copied.data["is_creator"] is True
+
+        session_client.force_authenticate(user=create_user)
+        invisible_copy = session_client.get(f"/api/workspaces/{workspace.slug}/wiki/nodes/{copied.data['id']}/")
+        assert invisible_copy.status_code == status.HTTP_404_NOT_FOUND
+
+    def test_favorite_uses_the_file_name_and_hides_private_files(self, session_client, workspace, create_user):
+        other = _member(workspace, 15)
+        created = session_client.post(
+            f"/api/workspaces/{workspace.slug}/wiki/nodes/",
+            {"parent_id": _root_id(session_client, workspace), "name": "Field notes", "node_type": "file"},
+            format="json",
+        )
+        node_id = created.data["id"]
+        session_client.force_authenticate(user=other)
+        hidden = session_client.post(
+            f"/api/workspaces/{workspace.slug}/user-favorites/",
+            {"entity_type": "wiki", "entity_identifier": node_id},
+            format="json",
+        )
+        assert hidden.status_code == status.HTTP_404_NOT_FOUND
+
+        session_client.force_authenticate(user=create_user)
+        saved = session_client.post(
+            f"/api/workspaces/{workspace.slug}/user-favorites/",
+            {"entity_type": "wiki", "entity_identifier": node_id},
+            format="json",
+        )
+        assert saved.status_code == status.HTTP_200_OK
+        assert saved.data["entity_data"]["name"] == "Field notes"

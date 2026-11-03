@@ -142,6 +142,24 @@
       "invisible": "Hidden",
       "visible": "Can view",
       "editable": "Can edit"
-    }
+    },
+    "lock": "Lock",
+    "unlock": "Unlock",
+    "archive": "Archive",
+    "unarchive": "Unarchive",
+    "duplicate": "Duplicate",
+    "versions": "Versions",
+    "restore_version": "Restore this version",
+    "search_placeholder": "Search wiki",
+    "recent": "Recent",
+    "favorite": "Favorite",
+    "unfavorite": "Remove favorite",
+    "wide": "Wide",
+    "color": "Color",
+    "read_only": "Read only",
+    "locked": "This file is locked.",
+    "archived_banner": "This file is archived.",
+    "no_results": "No results.",
+    "icon": "Icon"
   }
 }
