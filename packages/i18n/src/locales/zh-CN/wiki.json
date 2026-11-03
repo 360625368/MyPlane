@@ -160,6 +160,26 @@
     "locked": "这个文件已锁定。",
     "archived_banner": "这个文件已归档。",
     "no_results": "没有结果。",
-    "icon": "图标"
+    "icon": "图标",
+    "change_request": "变更请求",
+    "start_change": "建议修改",
+    "submit_change": "提交",
+    "withdraw_change": "撤回",
+    "close_change": "关闭",
+    "return_change": "退回",
+    "merge_change": "合并",
+    "change_comment": "意见",
+    "change_saved": "草案已保存",
+    "change_conflict": "已发布正文已变化，合并前需要先解决冲突。",
+    "published_unchanged": "这份草案不会改变已发布正文。",
+    "from_change": "来自变更请求",
+    "change_status": {
+      "draft": "草稿",
+      "in_review": "待审阅",
+      "changes_requested": "需修改",
+      "conflict": "冲突",
+      "merged": "已合并",
+      "closed": "已关闭"
+    }
   }
 }

@@ -9,7 +9,7 @@ from plane.app.views.base import BaseAPIView
 from plane.db.models import UserRecentVisit, WikiNode, WikiNodeVersion
 from plane.utils.content_validator import validate_html_content
 from plane.utils.wiki_access import can_create_child, can_view
-from plane.utils.wiki_version import record_wiki_version
+from plane.utils.wiki_version import mark_conflicting_change_requests, record_wiki_version
 
 from .base import (
     WikiMemberPermission,
@@ -70,7 +70,9 @@ class WikiNodeDescriptionEndpoint(BaseAPIView):
         node.description_html = clean_html or "<p></p>"
         node.description_json = description_json
         node.save()
-        record_wiki_version(node, previous_html, request.user.id)
+        if previous_html != node.description_html:
+            record_wiki_version(node, previous_html, request.user.id)
+            mark_conflicting_change_requests(node)
         payload = _serialize_node(node, request.user, access)
         payload["description_html"] = node.description_html
         payload["description_json"] = node.description_json
@@ -96,6 +98,7 @@ class WikiNodeVersionEndpoint(BaseAPIView):
                     "last_saved_at": version.last_saved_at,
                     "description_html": version.description_html,
                     "description_json": version.description_json,
+                    "change_request": str(version.change_request_id) if version.change_request_id else None,
                 }
                 for version in versions
             ],
@@ -119,7 +122,9 @@ class WikiNodeVersionEndpoint(BaseAPIView):
         node.description_html = version.description_html
         node.description_json = version.description_json
         node.save()
-        record_wiki_version(node, previous_html, request.user.id)
+        if previous_html != node.description_html:
+            record_wiki_version(node, previous_html, request.user.id)
+            mark_conflicting_change_requests(node)
         payload = _serialize_node(node, request.user, access)
         payload["description_html"] = node.description_html
         payload["description_json"] = node.description_json

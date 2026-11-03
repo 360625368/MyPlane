@@ -160,6 +160,26 @@
     "locked": "Tệp này đã bị khóa.",
     "archived_banner": "Tệp này đã được lưu trữ.",
     "no_results": "Không có kết quả.",
-    "icon": "Biểu tượng"
+    "icon": "Biểu tượng",
+    "change_request": "Yêu cầu thay đổi",
+    "start_change": "Đề xuất chỉnh sửa",
+    "submit_change": "Gửi",
+    "withdraw_change": "Rút lại",
+    "close_change": "Đóng",
+    "return_change": "Trả lại",
+    "merge_change": "Hợp nhất",
+    "change_comment": "Nhận xét",
+    "change_saved": "Đã lưu bản nháp",
+    "change_conflict": "Trang đã xuất bản đã thay đổi. Hãy giải quyết xung đột trước khi hợp nhất.",
+    "published_unchanged": "Bản nháp này không thay đổi trang đã xuất bản.",
+    "from_change": "Từ yêu cầu thay đổi",
+    "change_status": {
+      "draft": "Bản nháp",
+      "in_review": "Đang duyệt",
+      "changes_requested": "Cần chỉnh sửa",
+      "conflict": "Xung đột",
+      "merged": "Đã hợp nhất",
+      "closed": "Đã đóng"
+    }
   }
 }

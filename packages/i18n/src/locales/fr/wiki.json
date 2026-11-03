@@ -160,6 +160,26 @@
     "locked": "Ce fichier est verrouillé.",
     "archived_banner": "Ce fichier est archivé.",
     "no_results": "Aucun résultat.",
-    "icon": "Icône"
+    "icon": "Icône",
+    "change_request": "Demande de modification",
+    "start_change": "Proposer une modification",
+    "submit_change": "Soumettre",
+    "withdraw_change": "Retirer",
+    "close_change": "Fermer",
+    "return_change": "Renvoyer",
+    "merge_change": "Fusionner",
+    "change_comment": "Commentaire",
+    "change_saved": "Brouillon enregistré",
+    "change_conflict": "La page publiée a changé. Résous le conflit avant de fusionner.",
+    "published_unchanged": "Ce brouillon ne modifie pas la page publiée.",
+    "from_change": "Issu d'une demande",
+    "change_status": {
+      "draft": "Brouillon",
+      "in_review": "En revue",
+      "changes_requested": "Modifications demandées",
+      "conflict": "Conflit",
+      "merged": "Fusionné",
+      "closed": "Fermé"
+    }
   }
 }

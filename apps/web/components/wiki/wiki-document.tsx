@@ -9,6 +9,7 @@ import { observer } from "mobx-react";
 import { useTranslation } from "@plane/i18n";
 import type { JSONContent } from "@plane/types";
 import { DocumentEditor } from "@/components/editor/document/editor";
+import { WikiChanges } from "@/components/wiki/wiki-changes";
 import { useFavorite } from "@/hooks/store/use-favorite";
 import { useWorkspace } from "@/hooks/store/use-workspace";
 import type { TWikiNode, TWikiVersion } from "@/services/wiki.service";
@@ -66,6 +67,7 @@ export const WikiDocument = observer(function WikiDocument({ workspaceSlug, node
     ? editorValue(preview.description_json, preview.description_html)
     : editorValue(node.description_json, node.description_html);
   const editable = node.can_edit_body && preview === null;
+  const canPropose = node.access === "editable" && !node.is_creator && !node.is_locked && !node.archived_at;
 
   const refresh = async () => {
     setNode(await wikiService.retrieve(workspaceSlug, nodeId));
@@ -75,7 +77,7 @@ export const WikiDocument = observer(function WikiDocument({ workspaceSlug, node
   return (
     <div className="flex min-h-0 flex-1 flex-col gap-3">
       {node.is_locked && <p className="text-body-sm-regular text-tertiary">{t("workspace_wiki.locked")}</p>}
-      {!editable && !node.is_locked && !node.archived_at && (
+      {!editable && !canPropose && !node.is_locked && !node.archived_at && (
         <p className="text-body-sm-regular text-tertiary">{t("workspace_wiki.read_only")}</p>
       )}
       <div className="flex flex-wrap gap-2">
@@ -168,6 +170,7 @@ export const WikiDocument = observer(function WikiDocument({ workspaceSlug, node
             <div key={version.id} className="flex items-center gap-2">
               <button type="button" className="text-caption-sm-medium" onClick={() => setPreview(version)}>
                 {new Date(version.last_saved_at).toLocaleString()}
+                {version.change_request ? ` · ${t("workspace_wiki.from_change")}` : ""}
               </button>
               {node.can_edit_body && (
                 <button
@@ -227,6 +230,7 @@ export const WikiDocument = observer(function WikiDocument({ workspaceSlug, node
           />
         )}
       </div>
+      <WikiChanges workspaceSlug={workspaceSlug} node={node} onMerged={refresh} />
       {message && <p className="text-caption-sm-medium text-tertiary">{message}</p>}
     </div>
   );

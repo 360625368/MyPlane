@@ -160,6 +160,26 @@
     "locked": "File ini terkunci.",
     "archived_banner": "File ini diarsipkan.",
     "no_results": "Tidak ada hasil.",
-    "icon": "Ikon"
+    "icon": "Ikon",
+    "change_request": "Permintaan perubahan",
+    "start_change": "Usulkan suntingan",
+    "submit_change": "Kirim",
+    "withdraw_change": "Tarik kembali",
+    "close_change": "Tutup",
+    "return_change": "Kembalikan",
+    "merge_change": "Gabungkan",
+    "change_comment": "Komentar",
+    "change_saved": "Draf disimpan",
+    "change_conflict": "Halaman yang diterbitkan berubah. Selesaikan konflik sebelum menggabungkan.",
+    "published_unchanged": "Draf ini tidak mengubah halaman yang diterbitkan.",
+    "from_change": "Dari permintaan perubahan",
+    "change_status": {
+      "draft": "Draf",
+      "in_review": "Ditinjau",
+      "changes_requested": "Perlu perubahan",
+      "conflict": "Konflik",
+      "merged": "Digabung",
+      "closed": "Ditutup"
+    }
   }
 }

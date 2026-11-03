@@ -160,6 +160,26 @@
     "locked": "Tento soubor je zamčený.",
     "archived_banner": "Tento soubor je archivovaný.",
     "no_results": "Žádné výsledky.",
-    "icon": "Ikona"
+    "icon": "Ikona",
+    "change_request": "Žádost o změnu",
+    "start_change": "Navrhnout úpravu",
+    "submit_change": "Odeslat",
+    "withdraw_change": "Stáhnout",
+    "close_change": "Zavřít",
+    "return_change": "Vrátit",
+    "merge_change": "Sloučit",
+    "change_comment": "Komentář",
+    "change_saved": "Koncept uložen",
+    "change_conflict": "Publikovaná stránka se změnila. Před sloučením vyřešte konflikt.",
+    "published_unchanged": "Tento koncept nemění publikovanou stránku.",
+    "from_change": "Ze žádosti o změnu",
+    "change_status": {
+      "draft": "Koncept",
+      "in_review": "Ke kontrole",
+      "changes_requested": "Vyžaduje úpravy",
+      "conflict": "Konflikt",
+      "merged": "Sloučeno",
+      "closed": "Zavřeno"
+    }
   }
 }

@@ -160,6 +160,26 @@
     "locked": "Цей файл заблоковано.",
     "archived_banner": "Цей файл в архіві.",
     "no_results": "Нічого не знайдено.",
-    "icon": "Піктограма"
+    "icon": "Піктограма",
+    "change_request": "Запит на зміну",
+    "start_change": "Запропонувати правку",
+    "submit_change": "Надіслати",
+    "withdraw_change": "Відкликати",
+    "close_change": "Закрити",
+    "return_change": "Повернути",
+    "merge_change": "Злити",
+    "change_comment": "Коментар",
+    "change_saved": "Чернетку збережено",
+    "change_conflict": "Опублікована сторінка змінилася. Розв'яжіть конфлікт перед злиттям.",
+    "published_unchanged": "Ця чернетка не змінює опубліковану сторінку.",
+    "from_change": "Із запиту на зміну",
+    "change_status": {
+      "draft": "Чернетка",
+      "in_review": "На перевірці",
+      "changes_requested": "Потрібні правки",
+      "conflict": "Конфлікт",
+      "merged": "Злито",
+      "closed": "Закрито"
+    }
   }
 }

@@ -160,6 +160,26 @@
     "locked": "Dit bestand is vergrendeld.",
     "archived_banner": "Dit bestand is gearchiveerd.",
     "no_results": "Geen resultaten.",
-    "icon": "Pictogram"
+    "icon": "Pictogram",
+    "change_request": "Wijzigingsverzoek",
+    "start_change": "Wijziging voorstellen",
+    "submit_change": "Indienen",
+    "withdraw_change": "Intrekken",
+    "close_change": "Sluiten",
+    "return_change": "Terugsturen",
+    "merge_change": "Samenvoegen",
+    "change_comment": "Opmerking",
+    "change_saved": "Concept opgeslagen",
+    "change_conflict": "De gepubliceerde pagina is gewijzigd. Los het conflict op voor het samenvoegen.",
+    "published_unchanged": "Dit concept wijzigt de gepubliceerde pagina niet.",
+    "from_change": "Uit een wijzigingsverzoek",
+    "change_status": {
+      "draft": "Concept",
+      "in_review": "In review",
+      "changes_requested": "Wijzigingen gevraagd",
+      "conflict": "Conflict",
+      "merged": "Samengevoegd",
+      "closed": "Gesloten"
+    }
   }
 }

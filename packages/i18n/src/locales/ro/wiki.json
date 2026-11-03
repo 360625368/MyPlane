@@ -160,6 +160,26 @@
     "locked": "Acest fișier este blocat.",
     "archived_banner": "Acest fișier este arhivat.",
     "no_results": "Niciun rezultat.",
-    "icon": "Pictogramă"
+    "icon": "Pictogramă",
+    "change_request": "Cerere de modificare",
+    "start_change": "Propune o editare",
+    "submit_change": "Trimite",
+    "withdraw_change": "Retrage",
+    "close_change": "Închide",
+    "return_change": "Trimite înapoi",
+    "merge_change": "Îmbină",
+    "change_comment": "Comentariu",
+    "change_saved": "Ciornă salvată",
+    "change_conflict": "Pagina publicată s-a schimbat. Rezolvă conflictul înainte de îmbinare.",
+    "published_unchanged": "Această ciornă nu schimbă pagina publicată.",
+    "from_change": "Dintr-o cerere",
+    "change_status": {
+      "draft": "Ciornă",
+      "in_review": "În revizuire",
+      "changes_requested": "Modificări cerute",
+      "conflict": "Conflict",
+      "merged": "Îmbinat",
+      "closed": "Închis"
+    }
   }
 }

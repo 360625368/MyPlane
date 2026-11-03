@@ -419,3 +419,180 @@ class TestWikiDocument:
         )
         assert saved.status_code == status.HTTP_200_OK
         assert saved.data["entity_data"]["name"] == "Field notes"
+
+
+def _file(client, workspace, name="Notes"):
+    created = client.post(
+        f"/api/workspaces/{workspace.slug}/wiki/nodes/",
+        {"parent_id": _root_id(client, workspace), "name": name, "node_type": "file"},
+        format="json",
+    )
+    assert created.status_code == status.HTTP_201_CREATED
+    return created.data["id"]
+
+
+def _grant(client, workspace, node_id, member, access):
+    response = client.put(
+        f"/api/workspaces/{workspace.slug}/wiki/nodes/{node_id}/access/",
+        {"member_id": str(member.id), "access": access},
+        format="json",
+    )
+    assert response.status_code == status.HTTP_200_OK
+
+
+@pytest.mark.contract
+class TestWikiChangeRequest:
+    def test_draft_does_not_change_published_body_until_merge(self, session_client, workspace, create_user):
+        other = _member(workspace, 15)
+        node_id = _file(session_client, workspace)
+        session_client.patch(
+            f"/api/workspaces/{workspace.slug}/wiki/nodes/{node_id}/description/",
+            {"description_html": "<p>Published</p>", "description_json": {"type": "doc"}},
+            format="json",
+        )
+        _grant(session_client, workspace, node_id, other, "editable")
+        session_client.force_authenticate(user=other)
+        opened = session_client.post(f"/api/workspaces/{workspace.slug}/wiki/nodes/{node_id}/changes/", format="json")
+        assert opened.status_code == status.HTTP_201_CREATED
+        change_id = opened.data["id"]
+        again = session_client.post(f"/api/workspaces/{workspace.slug}/wiki/nodes/{node_id}/changes/", format="json")
+        assert again.status_code == status.HTTP_200_OK
+        assert again.data["id"] == change_id
+
+        saved = session_client.patch(
+            f"/api/workspaces/{workspace.slug}/wiki/nodes/{node_id}/changes/{change_id}/",
+            {"description_html": "<p>Proposal</p>", "description_json": {"type": "doc"}},
+            format="json",
+        )
+        assert saved.status_code == status.HTTP_200_OK
+        session_client.force_authenticate(user=create_user)
+        published = session_client.get(f"/api/workspaces/{workspace.slug}/wiki/nodes/{node_id}/")
+        assert "Published" in published.data["description_html"]
+        assert "Proposal" not in published.data["description_html"]
+
+        session_client.force_authenticate(user=other)
+        submitted = session_client.post(
+            f"/api/workspaces/{workspace.slug}/wiki/nodes/{node_id}/changes/{change_id}/",
+            {"action": "submit"},
+            format="json",
+        )
+        assert submitted.data["status"] == "in_review"
+        session_client.force_authenticate(user=create_user)
+        merged = session_client.post(
+            f"/api/workspaces/{workspace.slug}/wiki/nodes/{node_id}/changes/{change_id}/",
+            {"action": "merge"},
+            format="json",
+        )
+        assert merged.status_code == status.HTTP_200_OK
+        assert merged.data["status"] == "merged"
+        published = session_client.get(f"/api/workspaces/{workspace.slug}/wiki/nodes/{node_id}/")
+        assert "Proposal" in published.data["description_html"]
+        versions = session_client.get(f"/api/workspaces/{workspace.slug}/wiki/nodes/{node_id}/versions/")
+        assert change_id in {version["change_request"] for version in versions.data}
+
+    def test_visible_member_cannot_open_a_change_and_stale_merge_is_blocked(
+        self, session_client, workspace, create_user
+    ):
+        other = _member(workspace, 15)
+        node_id = _file(session_client, workspace, "Shared")
+        session_client.patch(
+            f"/api/workspaces/{workspace.slug}/wiki/nodes/{node_id}/description/",
+            {"description_html": "<p>One</p>", "description_json": {}},
+            format="json",
+        )
+        _grant(session_client, workspace, node_id, other, "visible")
+        session_client.force_authenticate(user=other)
+        denied = session_client.post(f"/api/workspaces/{workspace.slug}/wiki/nodes/{node_id}/changes/", format="json")
+        assert denied.status_code == status.HTTP_403_FORBIDDEN
+
+        session_client.force_authenticate(user=create_user)
+        _grant(session_client, workspace, node_id, other, "editable")
+        session_client.force_authenticate(user=other)
+        opened = session_client.post(f"/api/workspaces/{workspace.slug}/wiki/nodes/{node_id}/changes/", format="json")
+        change_id = opened.data["id"]
+        session_client.patch(
+            f"/api/workspaces/{workspace.slug}/wiki/nodes/{node_id}/changes/{change_id}/",
+            {"description_html": "<p>Two</p>", "description_json": {}},
+            format="json",
+        )
+        session_client.post(
+            f"/api/workspaces/{workspace.slug}/wiki/nodes/{node_id}/changes/{change_id}/",
+            {"action": "submit"},
+            format="json",
+        )
+        session_client.force_authenticate(user=create_user)
+        session_client.patch(
+            f"/api/workspaces/{workspace.slug}/wiki/nodes/{node_id}/description/",
+            {"description_html": "<p>Three</p>", "description_json": {}},
+            format="json",
+        )
+        blocked = session_client.post(
+            f"/api/workspaces/{workspace.slug}/wiki/nodes/{node_id}/changes/{change_id}/",
+            {"action": "merge"},
+            format="json",
+        )
+        assert blocked.status_code == status.HTTP_409_CONFLICT
+        published = session_client.get(f"/api/workspaces/{workspace.slug}/wiki/nodes/{node_id}/")
+        assert "Three" in published.data["description_html"]
+        assert "Two" not in published.data["description_html"]
+
+        returned = session_client.post(
+            f"/api/workspaces/{workspace.slug}/wiki/nodes/{node_id}/changes/{change_id}/",
+            {"action": "return", "comment": "Please rebase"},
+            format="json",
+        )
+        assert returned.data["status"] == "changes_requested"
+        session_client.force_authenticate(user=other)
+        edited = session_client.patch(
+            f"/api/workspaces/{workspace.slug}/wiki/nodes/{node_id}/changes/{change_id}/",
+            {"description_html": "<p>Four</p>", "description_json": {}},
+            format="json",
+        )
+        assert edited.status_code == status.HTTP_200_OK
+
+    def test_downgraded_author_cannot_update_but_creator_can_still_merge(self, session_client, workspace, create_user):
+        other = _member(workspace, 15)
+        node_id = _file(session_client, workspace, "Review")
+        _grant(session_client, workspace, node_id, other, "editable")
+        session_client.force_authenticate(user=other)
+        opened = session_client.post(f"/api/workspaces/{workspace.slug}/wiki/nodes/{node_id}/changes/", format="json")
+        change_id = opened.data["id"]
+        session_client.patch(
+            f"/api/workspaces/{workspace.slug}/wiki/nodes/{node_id}/changes/{change_id}/",
+            {"description_html": "<p>Ready</p>", "description_json": {}},
+            format="json",
+        )
+        session_client.post(
+            f"/api/workspaces/{workspace.slug}/wiki/nodes/{node_id}/changes/{change_id}/",
+            {"action": "submit"},
+            format="json",
+        )
+        withdrawn = session_client.post(
+            f"/api/workspaces/{workspace.slug}/wiki/nodes/{node_id}/changes/{change_id}/",
+            {"action": "withdraw"},
+            format="json",
+        )
+        assert withdrawn.data["status"] == "draft"
+        session_client.post(
+            f"/api/workspaces/{workspace.slug}/wiki/nodes/{node_id}/changes/{change_id}/",
+            {"action": "submit"},
+            format="json",
+        )
+        session_client.force_authenticate(user=create_user)
+        _grant(session_client, workspace, node_id, other, "visible")
+        session_client.force_authenticate(user=other)
+        denied = session_client.patch(
+            f"/api/workspaces/{workspace.slug}/wiki/nodes/{node_id}/changes/{change_id}/",
+            {"description_html": "<p>Late</p>", "description_json": {}},
+            format="json",
+        )
+        assert denied.status_code == status.HTTP_403_FORBIDDEN
+        session_client.force_authenticate(user=create_user)
+        merged = session_client.post(
+            f"/api/workspaces/{workspace.slug}/wiki/nodes/{node_id}/changes/{change_id}/",
+            {"action": "merge"},
+            format="json",
+        )
+        assert merged.status_code == status.HTTP_200_OK
+        published = session_client.get(f"/api/workspaces/{workspace.slug}/wiki/nodes/{node_id}/")
+        assert "Ready" in published.data["description_html"]

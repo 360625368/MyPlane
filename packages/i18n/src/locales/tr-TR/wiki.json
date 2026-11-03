@@ -160,6 +160,26 @@
     "locked": "Bu dosya kilitli.",
     "archived_banner": "Bu dosya arşivlendi.",
     "no_results": "Sonuç yok.",
-    "icon": "Simge"
+    "icon": "Simge",
+    "change_request": "Değişiklik isteği",
+    "start_change": "Düzenleme öner",
+    "submit_change": "Gönder",
+    "withdraw_change": "Geri çek",
+    "close_change": "Kapat",
+    "return_change": "Geri gönder",
+    "merge_change": "Birleştir",
+    "change_comment": "Yorum",
+    "change_saved": "Taslak kaydedildi",
+    "change_conflict": "Yayımlanan sayfa değişti. Birleştirmeden önce çakışmayı çöz.",
+    "published_unchanged": "Bu taslak yayımlanan sayfayı değiştirmez.",
+    "from_change": "Bir değişiklik isteğinden",
+    "change_status": {
+      "draft": "Taslak",
+      "in_review": "İncelemede",
+      "changes_requested": "Değişiklik istendi",
+      "conflict": "Çakışma",
+      "merged": "Birleştirildi",
+      "closed": "Kapatıldı"
+    }
   }
 }

@@ -203,6 +203,49 @@ export class WikiService extends APIService {
         throw error?.response?.data;
       });
   }
+
+  async listChanges(workspaceSlug: string, nodeId: string): Promise<TWikiChange[]> {
+    return this.get(`/api/workspaces/${workspaceSlug}/wiki/nodes/${nodeId}/changes/`)
+      .then((response) => response?.data)
+      .catch((error) => {
+        throw error?.response?.data;
+      });
+  }
+
+  async openChange(workspaceSlug: string, nodeId: string): Promise<TWikiChange> {
+    return this.post(`/api/workspaces/${workspaceSlug}/wiki/nodes/${nodeId}/changes/`)
+      .then((response) => response?.data)
+      .catch((error) => {
+        throw error?.response?.data;
+      });
+  }
+
+  async saveChange(
+    workspaceSlug: string,
+    nodeId: string,
+    changeId: string,
+    data: { description_html: string; description_json: object }
+  ): Promise<TWikiChange> {
+    return this.patch(`/api/workspaces/${workspaceSlug}/wiki/nodes/${nodeId}/changes/${changeId}/`, data)
+      .then((response) => response?.data)
+      .catch((error) => {
+        throw error?.response?.data;
+      });
+  }
+
+  async actOnChange(
+    workspaceSlug: string,
+    nodeId: string,
+    changeId: string,
+    action: "submit" | "withdraw" | "close" | "return" | "merge",
+    comment?: string
+  ): Promise<TWikiChange> {
+    return this.post(`/api/workspaces/${workspaceSlug}/wiki/nodes/${nodeId}/changes/${changeId}/`, { action, comment })
+      .then((response) => response?.data)
+      .catch((error) => {
+        throw error?.response?.data;
+      });
+  }
 }
 
 export type TWikiVersion = {
@@ -211,4 +254,24 @@ export type TWikiVersion = {
   last_saved_at: string;
   description_html: string;
   description_json: object;
+  change_request?: string | null;
+};
+
+export type TWikiChangeStatus = "draft" | "in_review" | "changes_requested" | "conflict" | "merged" | "closed";
+
+export type TWikiChange = {
+  id: string;
+  node_id: string;
+  owned_by: string;
+  author_name: string;
+  status: TWikiChangeStatus;
+  review_comment: string;
+  description_html: string;
+  description_json: object;
+  can_edit: boolean;
+  can_submit: boolean;
+  can_withdraw: boolean;
+  can_close: boolean;
+  can_return: boolean;
+  can_merge: boolean;
 };

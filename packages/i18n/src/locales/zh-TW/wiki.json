@@ -160,6 +160,26 @@
     "locked": "這個檔案已鎖定。",
     "archived_banner": "這個檔案已封存。",
     "no_results": "沒有結果。",
-    "icon": "圖示"
+    "icon": "圖示",
+    "change_request": "變更請求",
+    "start_change": "建議修改",
+    "submit_change": "提交",
+    "withdraw_change": "撤回",
+    "close_change": "關閉",
+    "return_change": "退回",
+    "merge_change": "合併",
+    "change_comment": "意見",
+    "change_saved": "草案已儲存",
+    "change_conflict": "已發佈正文已變更，合併前需要先解決衝突。",
+    "published_unchanged": "這份草案不會改變已發佈正文。",
+    "from_change": "來自變更請求",
+    "change_status": {
+      "draft": "草稿",
+      "in_review": "待審閱",
+      "changes_requested": "需修改",
+      "conflict": "衝突",
+      "merged": "已合併",
+      "closed": "已關閉"
+    }
   }
 }

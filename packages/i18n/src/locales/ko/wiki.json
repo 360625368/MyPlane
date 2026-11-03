@@ -160,6 +160,26 @@
     "locked": "이 파일은 잠겨 있습니다.",
     "archived_banner": "이 파일은 보관되었습니다.",
     "no_results": "결과가 없습니다.",
-    "icon": "아이콘"
+    "icon": "아이콘",
+    "change_request": "변경 요청",
+    "start_change": "수정 제안",
+    "submit_change": "제출",
+    "withdraw_change": "철회",
+    "close_change": "닫기",
+    "return_change": "돌려보내기",
+    "merge_change": "병합",
+    "change_comment": "의견",
+    "change_saved": "초안을 저장했습니다",
+    "change_conflict": "게시된 본문이 변경되었습니다. 병합하기 전에 충돌을 해결하세요.",
+    "published_unchanged": "이 초안은 게시된 본문을 바꾸지 않습니다.",
+    "from_change": "변경 요청에서",
+    "change_status": {
+      "draft": "초안",
+      "in_review": "검토 대기",
+      "changes_requested": "수정 필요",
+      "conflict": "충돌",
+      "merged": "병합됨",
+      "closed": "닫힘"
+    }
   }
 }

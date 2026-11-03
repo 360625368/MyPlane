@@ -160,6 +160,26 @@
     "locked": "Diese Datei ist gesperrt.",
     "archived_banner": "Diese Datei ist archiviert.",
     "no_results": "Keine Ergebnisse.",
-    "icon": "Symbol"
+    "icon": "Symbol",
+    "change_request": "Änderungsanfrage",
+    "start_change": "Änderung vorschlagen",
+    "submit_change": "Einreichen",
+    "withdraw_change": "Zurückziehen",
+    "close_change": "Schließen",
+    "return_change": "Zurückgeben",
+    "merge_change": "Zusammenführen",
+    "change_comment": "Kommentar",
+    "change_saved": "Entwurf gespeichert",
+    "change_conflict": "Die veröffentlichte Seite hat sich geändert. Löse den Konflikt vor dem Zusammenführen.",
+    "published_unchanged": "Dieser Entwurf ändert die veröffentlichte Seite nicht.",
+    "from_change": "Aus einer Änderungsanfrage",
+    "change_status": {
+      "draft": "Entwurf",
+      "in_review": "In Prüfung",
+      "changes_requested": "Änderungen nötig",
+      "conflict": "Konflikt",
+      "merged": "Zusammengeführt",
+      "closed": "Geschlossen"
+    }
   }
 }

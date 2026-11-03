@@ -160,6 +160,26 @@
     "locked": "このファイルはロックされています。",
     "archived_banner": "このファイルはアーカイブされています。",
     "no_results": "結果はありません。",
-    "icon": "アイコン"
+    "icon": "アイコン",
+    "change_request": "変更リクエスト",
+    "start_change": "修正を提案",
+    "submit_change": "提出",
+    "withdraw_change": "取り下げる",
+    "close_change": "閉じる",
+    "return_change": "差し戻す",
+    "merge_change": "マージ",
+    "change_comment": "コメント",
+    "change_saved": "下書きを保存しました",
+    "change_conflict": "公開中の本文が変わっています。マージする前に競合を解決してください。",
+    "published_unchanged": "この下書きは公開中の本文を変えません。",
+    "from_change": "変更リクエストから",
+    "change_status": {
+      "draft": "下書き",
+      "in_review": "レビュー待ち",
+      "changes_requested": "修正が必要",
+      "conflict": "競合",
+      "merged": "マージ済み",
+      "closed": "クローズ"
+    }
   }
 }

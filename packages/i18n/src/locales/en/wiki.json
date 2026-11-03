@@ -160,6 +160,26 @@
     "locked": "This file is locked.",
     "archived_banner": "This file is archived.",
     "no_results": "No results.",
-    "icon": "Icon"
+    "icon": "Icon",
+    "change_request": "Change request",
+    "start_change": "Suggest an edit",
+    "submit_change": "Submit",
+    "withdraw_change": "Withdraw",
+    "close_change": "Close",
+    "return_change": "Send back",
+    "merge_change": "Merge",
+    "change_comment": "Comment",
+    "change_saved": "Draft saved",
+    "change_conflict": "The published page changed. Resolve the conflict before merging.",
+    "published_unchanged": "This draft does not change the published page.",
+    "from_change": "From a change request",
+    "change_status": {
+      "draft": "Draft",
+      "in_review": "In review",
+      "changes_requested": "Changes requested",
+      "conflict": "Conflict",
+      "merged": "Merged",
+      "closed": "Closed"
+    }
   }
 }

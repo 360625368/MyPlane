@@ -160,6 +160,26 @@
     "locked": "Этот файл заблокирован.",
     "archived_banner": "Этот файл в архиве.",
     "no_results": "Ничего не найдено.",
-    "icon": "Значок"
+    "icon": "Значок",
+    "change_request": "Запрос на изменение",
+    "start_change": "Предложить правку",
+    "submit_change": "Отправить",
+    "withdraw_change": "Отозвать",
+    "close_change": "Закрыть",
+    "return_change": "Вернуть",
+    "merge_change": "Слить",
+    "change_comment": "Комментарий",
+    "change_saved": "Черновик сохранён",
+    "change_conflict": "Опубликованная страница изменилась. Разрешите конфликт перед слиянием.",
+    "published_unchanged": "Этот черновик не меняет опубликованную страницу.",
+    "from_change": "Из запроса на изменение",
+    "change_status": {
+      "draft": "Черновик",
+      "in_review": "На проверке",
+      "changes_requested": "Нужны правки",
+      "conflict": "Конфликт",
+      "merged": "Слито",
+      "closed": "Закрыто"
+    }
   }
 }

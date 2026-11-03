@@ -160,6 +160,26 @@
     "locked": "Questo file è bloccato.",
     "archived_banner": "Questo file è archiviato.",
     "no_results": "Nessun risultato.",
-    "icon": "Icona"
+    "icon": "Icona",
+    "change_request": "Richiesta di modifica",
+    "start_change": "Proponi una modifica",
+    "submit_change": "Invia",
+    "withdraw_change": "Ritira",
+    "close_change": "Chiudi",
+    "return_change": "Restituisci",
+    "merge_change": "Unisci",
+    "change_comment": "Commento",
+    "change_saved": "Bozza salvata",
+    "change_conflict": "La pagina pubblicata è cambiata. Risolvi il conflitto prima di unire.",
+    "published_unchanged": "Questa bozza non cambia la pagina pubblicata.",
+    "from_change": "Da una richiesta di modifica",
+    "change_status": {
+      "draft": "Bozza",
+      "in_review": "In revisione",
+      "changes_requested": "Modifiche richieste",
+      "conflict": "Conflitto",
+      "merged": "Unito",
+      "closed": "Chiuso"
+    }
   }
 }

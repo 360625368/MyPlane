@@ -160,6 +160,26 @@
     "locked": "ეს ფაილი დაბლოკილია.",
     "archived_banner": "ეს ფაილი დაარქივებულია.",
     "no_results": "შედეგი არ არის.",
-    "icon": "ხატულა"
+    "icon": "ხატულა",
+    "change_request": "ცვლილების მოთხოვნა",
+    "start_change": "ცვლილების შეთავაზება",
+    "submit_change": "გაგზავნა",
+    "withdraw_change": "გამოხმობა",
+    "close_change": "დახურვა",
+    "return_change": "დაბრუნება",
+    "merge_change": "შერწყმა",
+    "change_comment": "კომენტარი",
+    "change_saved": "მონახაზი შენახულია",
+    "change_conflict": "გამოქვეყნებული გვერდი შეიცვალა. შერწყმამდე მოაგვარეთ კონფლიქტი.",
+    "published_unchanged": "ეს მონახაზი გამოქვეყნებულ გვერდს არ ცვლის.",
+    "from_change": "ცვლილების მოთხოვნიდან",
+    "change_status": {
+      "draft": "მონახაზი",
+      "in_review": "განხილვაში",
+      "changes_requested": "ცვლილებაა საჭირო",
+      "conflict": "კონფლიქტი",
+      "merged": "შერწყმულია",
+      "closed": "დახურულია"
+    }
   }
 }

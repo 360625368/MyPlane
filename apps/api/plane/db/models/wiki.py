@@ -80,6 +80,13 @@ class WikiNodeVersion(BaseModel):
         related_name="wiki_node_versions",
     )
     last_saved_at = models.DateTimeField(default=timezone.now)
+    change_request = models.ForeignKey(
+        "db.WikiChangeRequest",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="published_versions",
+    )
     description_json = models.JSONField(default=dict, blank=True)
     description_html = models.TextField(blank=True, default="<p></p>")
     description_stripped = models.TextField(blank=True, null=True)
@@ -97,6 +104,64 @@ class WikiNodeVersion(BaseModel):
 
     def __str__(self):
         return f"{self.node_id} {self.last_saved_at}"
+
+
+class WikiChangeRequest(BaseModel):
+    DRAFT = "draft"
+    IN_REVIEW = "in_review"
+    CHANGES_REQUESTED = "changes_requested"
+    CONFLICT = "conflict"
+    MERGED = "merged"
+    CLOSED = "closed"
+    STATUS_CHOICES = (
+        (DRAFT, "Draft"),
+        (IN_REVIEW, "In review"),
+        (CHANGES_REQUESTED, "Changes requested"),
+        (CONFLICT, "Conflict"),
+        (MERGED, "Merged"),
+        (CLOSED, "Closed"),
+    )
+    OPEN_STATUSES = (DRAFT, IN_REVIEW, CHANGES_REQUESTED, CONFLICT)
+
+    workspace = models.ForeignKey("db.Workspace", on_delete=models.CASCADE, related_name="wiki_change_requests")
+    node = models.ForeignKey(WikiNode, on_delete=models.CASCADE, related_name="change_requests")
+    owned_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="wiki_change_requests",
+    )
+    status = models.CharField(max_length=32, choices=STATUS_CHOICES, default=DRAFT)
+    baseline_html = models.TextField(blank=True, default="<p></p>")
+    baseline_json = models.JSONField(default=dict, blank=True)
+    description_json = models.JSONField(default=dict, blank=True)
+    description_html = models.TextField(blank=True, default="<p></p>")
+    description_stripped = models.TextField(blank=True, null=True)
+    review_comment = models.TextField(blank=True, default="")
+    submitted_at = models.DateTimeField(null=True, blank=True)
+    merged_at = models.DateTimeField(null=True, blank=True)
+    closed_at = models.DateTimeField(null=True, blank=True)
+
+    class Meta:
+        verbose_name = "Wiki Change Request"
+        verbose_name_plural = "Wiki Change Requests"
+        db_table = "wiki_change_requests"
+        ordering = ("-updated_at",)
+        constraints = [
+            models.UniqueConstraint(
+                fields=["node", "owned_by"],
+                condition=models.Q(deleted_at__isnull=True)
+                & models.Q(status__in=("draft", "in_review", "changes_requested", "conflict")),
+                name="wiki_change_one_open_per_author",
+            )
+        ]
+
+    def save(self, *args, **kwargs):
+        html = self.description_html
+        self.description_stripped = None if (html == "" or html is None) else strip_tags(html)
+        super().save(*args, **kwargs)
+
+    def __str__(self):
+        return f"{self.node_id} {self.owned_by_id} {self.status}"
 
 
 class WikiNodePermission(BaseModel):

@@ -4,6 +4,7 @@
 
 from django.urls import path
 
+from plane.app.views.wiki.changes import WikiChangeRequestDetailEndpoint, WikiChangeRequestEndpoint
 from plane.app.views.wiki.base import (
     WikiNodeAccessEndpoint,
     WikiNodeEndpoint,
@@ -49,6 +50,16 @@ urlpatterns = [
         "workspaces/<str:slug>/wiki/nodes/<uuid:node_id>/duplicate/",
         WikiNodeDuplicateEndpoint.as_view(),
         name="wiki-node-duplicate",
+    ),
+    path(
+        "workspaces/<str:slug>/wiki/nodes/<uuid:node_id>/changes/",
+        WikiChangeRequestEndpoint.as_view(),
+        name="wiki-node-changes",
+    ),
+    path(
+        "workspaces/<str:slug>/wiki/nodes/<uuid:node_id>/changes/<uuid:change_id>/",
+        WikiChangeRequestDetailEndpoint.as_view(),
+        name="wiki-node-change",
     ),
     path(
         "workspaces/<str:slug>/wiki/nodes/<uuid:node_id>/access/",

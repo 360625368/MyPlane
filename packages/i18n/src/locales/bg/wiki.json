@@ -160,6 +160,26 @@
     "locked": "Този файл е заключен.",
     "archived_banner": "Този файл е архивиран.",
     "no_results": "Няма резултати.",
-    "icon": "Икона"
+    "icon": "Икона",
+    "change_request": "Заявка за промяна",
+    "start_change": "Предложи редакция",
+    "submit_change": "Изпрати",
+    "withdraw_change": "Оттегли",
+    "close_change": "Затвори",
+    "return_change": "Върни",
+    "merge_change": "Слей",
+    "change_comment": "Коментар",
+    "change_saved": "Черновата е запазена",
+    "change_conflict": "Публикуваната страница се промени. Разреши конфликта преди сливане.",
+    "published_unchanged": "Тази чернова не променя публикуваната страница.",
+    "from_change": "От заявка за промяна",
+    "change_status": {
+      "draft": "Чернова",
+      "in_review": "В преглед",
+      "changes_requested": "Нужни са промени",
+      "conflict": "Конфликт",
+      "merged": "Слято",
+      "closed": "Затворено"
+    }
   }
 }

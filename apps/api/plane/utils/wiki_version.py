@@ -4,19 +4,32 @@
 
 from django.utils import timezone
 
-from plane.db.models import WikiNodeVersion
+from plane.db.models import WikiChangeRequest, WikiNodeVersion
 
 VERSION_COALESCE_SECONDS = 600
 VERSION_LIMIT = 20
 
 
-def record_wiki_version(node, previous_html, user_id):
+def mark_conflicting_change_requests(node):
+    """Leave open drafts intact, and mark them when the published body moved past their baseline."""
+    WikiChangeRequest.objects.filter(
+        node=node,
+        status__in=(
+            WikiChangeRequest.DRAFT,
+            WikiChangeRequest.IN_REVIEW,
+            WikiChangeRequest.CHANGES_REQUESTED,
+        ),
+    ).exclude(baseline_html=node.description_html).update(status=WikiChangeRequest.CONFLICT)
+
+
+def record_wiki_version(node, previous_html, user_id, change_request=None):
     """Keep a published-body snapshot, coalescing the same author's recent saves."""
     if previous_html == node.description_html:
         return None
     latest = WikiNodeVersion.objects.filter(node=node).order_by("-last_saved_at").first()
     if (
-        latest
+        change_request is None
+        and latest
         and str(latest.owned_by_id) == str(user_id)
         and (timezone.now() - latest.last_saved_at).total_seconds() <= VERSION_COALESCE_SECONDS
     ):
@@ -34,6 +47,7 @@ def record_wiki_version(node, previous_html, user_id):
         description_json=node.description_json,
         description_stripped=node.description_stripped,
         last_saved_at=timezone.now(),
+        change_request=change_request,
     )
     overflow = WikiNodeVersion.objects.filter(node=node).order_by("-last_saved_at")[VERSION_LIMIT:]
     for stale in overflow:
