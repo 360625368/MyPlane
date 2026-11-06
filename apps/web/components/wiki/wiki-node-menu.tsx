@@ -27,18 +27,20 @@ type Props = {
   revealed: boolean;
   hoverGroup: "list-item" | "wiki-node";
   onMove: (parentId: string) => void;
+  onSort: (direction: -1 | 1) => void;
   onPermissions: () => void;
   onDelete: () => void;
 };
 
 export function WikiNodeMenu(props: Props) {
-  const { node, destinations, revealed, hoverGroup, onMove, onPermissions, onDelete } = props;
+  const { node, destinations, revealed, hoverGroup, onMove, onSort, onPermissions, onDelete } = props;
   const { t } = useTranslation();
   const [open, setOpen] = useState(false);
   const canMove = node.can_move && destinations.length > 0;
+  const canSort = node.can_rename;
   const canPermissions = node.can_manage_access;
   const canDelete = node.can_delete;
-  if (!canMove && !canPermissions && !canDelete) return null;
+  if (!canMove && !canSort && !canPermissions && !canDelete) return null;
 
   return (
     <div
@@ -73,6 +75,8 @@ export function WikiNodeMenu(props: Props) {
               </MenuSubmenuContent>
             </MenuSubmenu>
           )}
+          {canSort && <MenuItem label={t("workspace_wiki.sort_up")} onClick={() => onSort(-1)} />}
+          {canSort && <MenuItem label={t("workspace_wiki.sort_down")} onClick={() => onSort(1)} />}
           {canPermissions && <MenuItem label={t("workspace_wiki.permissions")} onClick={onPermissions} />}
           {canDelete && (
             <MenuItem

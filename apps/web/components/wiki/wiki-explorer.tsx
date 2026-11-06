@@ -19,8 +19,9 @@ import { PageHead } from "@/components/core/page-title";
 import { WikiDocument } from "@/components/wiki/wiki-document";
 import { useWikiHeaderActions } from "@/components/wiki/wiki-header-actions";
 import { WikiNodeMenu } from "@/components/wiki/wiki-node-menu";
+import { WikiPermissionsDialog } from "@/components/wiki/wiki-permissions-dialog";
 import { WikiLogoControl, wikiLogo } from "@/components/wiki/wiki-logo";
-import type { TWikiAccess, TWikiMemberAccess, TWikiNode, TWikiNodeType, TWikiTrashNode } from "@/services/wiki.service";
+import type { TWikiNode, TWikiNodeType, TWikiTrashNode } from "@/services/wiki.service";
 import { WikiService } from "@/services/wiki.service";
 
 const wikiService = new WikiService();
@@ -90,7 +91,6 @@ export function WikiExplorer({ workspaceSlug, nodeId }: Props) {
   const navigate = useNavigate();
   const [nodes, setNodes] = useState<TWikiNode[]>([]);
   const [trash, setTrash] = useState<TWikiTrashNode[]>([]);
-  const [members, setMembers] = useState<TWikiMemberAccess[]>([]);
   const [explorerTab, setExplorerTab] = useState<TWikiExplorerTab>("wiki");
   const [showTrash, setShowTrash] = useState(false);
   const [showArchive, setShowArchive] = useState(false);
@@ -98,7 +98,7 @@ export function WikiExplorer({ workspaceSlug, nodeId }: Props) {
   const [searchQuery, setSearchQuery] = useState("");
   const [searchResults, setSearchResults] = useState<TWikiNode[] | null>(null);
   const [directNode, setDirectNode] = useState<TWikiNode | null>(null);
-  const [showAccess, setShowAccess] = useState(false);
+  const [permissionsNode, setPermissionsNode] = useState<{ id: string; name: string } | null>(null);
   const [missing, setMissing] = useState(false);
   const [loading, setLoading] = useState(true);
   const [message, setMessage] = useState("");
@@ -106,7 +106,6 @@ export function WikiExplorer({ workspaceSlug, nodeId }: Props) {
   const [rename, setRename] = useState("");
   const [moveTarget, setMoveTarget] = useState("");
   const [collapsedIds, setCollapsedIds] = useState<Set<string>>(() => new Set());
-  const [accessNodeId, setAccessNodeId] = useState<string | null>(null);
 
   const nodesById = useMemo(() => new Map(nodes.map((node) => [node.id, node])), [nodes]);
   const root = nodes.find((node) => node.is_root);
@@ -142,31 +141,8 @@ export function WikiExplorer({ workspaceSlug, nodeId }: Props) {
 
   useEffect(() => {
     setRename(selected?.name ?? "");
-    setShowAccess(false);
-    setMembers([]);
     setMoveTarget("");
   }, [selected?.id, selected?.name]);
-
-  useEffect(() => {
-    if (!selected || selected.id !== accessNodeId || selected.node_type === "file") return;
-    let cancelled = false;
-    const nodeIdToOpen = selected.id;
-    setShowAccess(true);
-    void wikiService
-      .access(workspaceSlug, nodeIdToOpen)
-      .then((items) => {
-        if (!cancelled) setMembers(items);
-        return undefined;
-      })
-      .catch((error) => {
-        if (!cancelled) setMessage(errorMessage(error, t));
-      });
-    return () => {
-      cancelled = true;
-    };
-    // `t` is a new function every render; depending on it retriggers this effect forever.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [accessNodeId, selected?.id, selected?.node_type, workspaceSlug]);
 
   const ancestorIds = useCallback(
     (id: string) => {
@@ -227,16 +203,6 @@ export function WikiExplorer({ workspaceSlug, nodeId }: Props) {
     });
   };
 
-  const openAccess = async () => {
-    if (!selected) return;
-    setShowAccess(true);
-    try {
-      setMembers(await wikiService.access(workspaceSlug, selected.id));
-    } catch (error) {
-      setMessage(errorMessage(error, t));
-    }
-  };
-
   const openTrash = async () => {
     setExplorerTab("trash");
     setShowTrash(true);
@@ -273,6 +239,12 @@ export function WikiExplorer({ workspaceSlug, nodeId }: Props) {
     void run(() => wikiService.update(workspaceSlug, node.id, { parent_id: parentId }).then(() => undefined));
   };
 
+  const sortNode = (node: TWikiNode, direction: -1 | 1) => {
+    void run(() =>
+      wikiService.update(workspaceSlug, node.id, { sort_order: node.sort_order + direction }).then(() => undefined)
+    );
+  };
+
   const deleteNode = (node: TWikiNode) => {
     if (!window.confirm(t("workspace_wiki.delete"))) return;
     void run(async () => {
@@ -284,8 +256,7 @@ export function WikiExplorer({ workspaceSlug, nodeId }: Props) {
   };
 
   const requestPermissions = (node: TWikiNode) => {
-    setAccessNodeId(node.id);
-    if (selected?.id !== node.id) navigate(`/${workspaceSlug}/wiki/${node.id}`);
+    setPermissionsNode({ id: node.id, name: node.name });
   };
 
   const renderNode = (node: TWikiNode) => {
@@ -298,6 +269,7 @@ export function WikiExplorer({ workspaceSlug, nodeId }: Props) {
         revealed={isSelected}
         hoverGroup={node.node_type === "folder" ? "wiki-node" : "list-item"}
         onMove={(parentId) => moveNode(node, parentId)}
+        onSort={(direction) => sortNode(node, direction)}
         onPermissions={() => requestPermissions(node)}
         onDelete={() => deleteNode(node)}
       />
@@ -366,6 +338,13 @@ export function WikiExplorer({ workspaceSlug, nodeId }: Props) {
 
   return (
     <>
+      <WikiPermissionsDialog
+        workspaceSlug={workspaceSlug}
+        nodeId={permissionsNode?.id ?? null}
+        nodeName={permissionsNode?.name ?? ""}
+        open={permissionsNode !== null}
+        onClose={() => setPermissionsNode(null)}
+      />
       <PageHead title={t("sidebar.wiki")} />
       <div className="flex h-full min-h-0 w-full">
         <aside className="flex w-72 shrink-0 flex-col gap-2 overflow-y-auto border-r border-subtle p-3">
@@ -501,12 +480,7 @@ export function WikiExplorer({ workspaceSlug, nodeId }: Props) {
             <p className="text-body-sm-regular">{t("workspace_wiki.not_found")}</p>
           )}
           {selected && !missing && selected.node_type === "file" && (
-            <WikiDocument
-              workspaceSlug={workspaceSlug}
-              nodeId={selected.id}
-              permissionsOpen={accessNodeId === selected.id}
-              onChanged={load}
-            />
+            <WikiDocument workspaceSlug={workspaceSlug} nodeId={selected.id} onChanged={load} />
           )}
           {selected && !missing && selected.node_type !== "file" && (
             <>
@@ -624,81 +598,6 @@ export function WikiExplorer({ workspaceSlug, nodeId }: Props) {
                     {t("workspace_wiki.move")}
                   </button>
                 </form>
-              )}
-              {selected.can_rename && (
-                <div className="flex gap-2">
-                  <button
-                    type="button"
-                    className="text-caption-sm-medium"
-                    onClick={() =>
-                      void run(() =>
-                        wikiService
-                          .update(workspaceSlug, selected.id, { sort_order: selected.sort_order - 1 })
-                          .then(() => undefined)
-                      )
-                    }
-                  >
-                    {t("workspace_wiki.sort_up")}
-                  </button>
-                  <button
-                    type="button"
-                    className="text-caption-sm-medium"
-                    onClick={() =>
-                      void run(() =>
-                        wikiService
-                          .update(workspaceSlug, selected.id, { sort_order: selected.sort_order + 1 })
-                          .then(() => undefined)
-                      )
-                    }
-                  >
-                    {t("workspace_wiki.sort_down")}
-                  </button>
-                </div>
-              )}
-              {selected.can_delete && (
-                <button
-                  type="button"
-                  className="w-fit text-caption-sm-medium text-danger-primary"
-                  onClick={() => {
-                    if (!window.confirm(t("workspace_wiki.delete"))) return;
-                    void run(() => wikiService.remove(workspaceSlug, selected.id));
-                  }}
-                >
-                  {t("workspace_wiki.delete")}
-                </button>
-              )}
-              {selected.can_manage_access && (
-                <div className="flex flex-col gap-2">
-                  <button type="button" className="w-fit text-caption-sm-medium" onClick={() => void openAccess()}>
-                    {t("workspace_wiki.permissions")}
-                  </button>
-                  {showAccess &&
-                    members.map((member) => (
-                      <label key={member.id} className="flex items-center justify-between gap-3">
-                        <span className="truncate text-body-sm-regular">{member.display_name || member.email}</span>
-                        <select
-                          value={member.explicit_access ?? "inherit"}
-                          className="h-8 rounded-md border border-subtle bg-layer-1 px-2 text-body-sm-regular"
-                          onChange={(event) => {
-                            const value = event.target.value;
-                            const access = value === "inherit" ? null : (value as TWikiAccess);
-                            void run(async () => {
-                              await wikiService.updateAccess(workspaceSlug, selected.id, {
-                                member_id: member.id,
-                                access,
-                              });
-                              setMembers(await wikiService.access(workspaceSlug, selected.id));
-                            });
-                          }}
-                        >
-                          <option value="inherit">{t("workspace_wiki.access.inherit")}</option>
-                          <option value="invisible">{t("workspace_wiki.access.invisible")}</option>
-                          <option value="visible">{t("workspace_wiki.access.visible")}</option>
-                          <option value="editable">{t("workspace_wiki.access.editable")}</option>
-                        </select>
-                      </label>
-                    ))}
-                </div>
               )}
               {selected.is_root && (
                 <p className="text-body-sm-regular text-tertiary">{t("workspace_wiki.root_permissions")}</p>

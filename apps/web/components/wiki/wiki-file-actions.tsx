@@ -43,11 +43,10 @@ type Props = {
   onVersions: () => void;
   onWide: (wide: boolean) => void;
   onColor: (color: string) => void;
-  onSort: (direction: -1 | 1) => void;
 };
 
 export function WikiFileActions(props: Props) {
-  const { node, favorite, onLock, onArchive, onFavorite, onDuplicate, onVersions, onWide, onColor, onSort } = props;
+  const { node, favorite, onLock, onArchive, onFavorite, onDuplicate, onVersions, onWide, onColor } = props;
   const { t } = useTranslation();
   const [displayState, setDisplayState] = useState<LockDisplayState>(node.is_locked ? "locked" : "neutral");
   const [copied, setCopied] = useState(false);
@@ -206,8 +205,6 @@ export function WikiFileActions(props: Props) {
               onClick={onArchive}
             />
           )}
-          {node.can_rename && <MenuItem label={t("workspace_wiki.sort_up")} onClick={() => onSort(-1)} />}
-          {node.can_rename && <MenuItem label={t("workspace_wiki.sort_down")} onClick={() => onSort(1)} />}
         </MenuContent>
       </Menu>
     </div>

@@ -24,7 +24,7 @@ import { useSetWikiHeaderActions } from "@/components/wiki/wiki-header-actions";
 import { WikiLogoControl } from "@/components/wiki/wiki-logo";
 import { useFavorite } from "@/hooks/store/use-favorite";
 import { useWorkspace } from "@/hooks/store/use-workspace";
-import type { TWikiAccess, TWikiMemberAccess, TWikiNode, TWikiVersion } from "@/services/wiki.service";
+import type { TWikiNode, TWikiVersion } from "@/services/wiki.service";
 import { WikiService } from "@/services/wiki.service";
 import { WorkspaceService } from "@/services/workspace.service";
 
@@ -37,16 +37,10 @@ const editorValue = (json?: object, html?: string): JSONContent | string =>
 type Props = {
   workspaceSlug: string;
   nodeId: string;
-  permissionsOpen?: boolean;
   onChanged: () => Promise<void>;
 };
 
-export const WikiDocument = observer(function WikiDocument({
-  workspaceSlug,
-  nodeId,
-  permissionsOpen = false,
-  onChanged,
-}: Props) {
+export const WikiDocument = observer(function WikiDocument({ workspaceSlug, nodeId, onChanged }: Props) {
   const { t } = useTranslation();
   const setHeaderActions = useSetWikiHeaderActions();
   const { getWorkspaceBySlug } = useWorkspace();
@@ -59,8 +53,6 @@ export const WikiDocument = observer(function WikiDocument({
   const [message, setMessage] = useState("");
   const [publishedHtml, setPublishedHtml] = useState("");
   const [title, setTitle] = useState("");
-  const [showAccess, setShowAccess] = useState(false);
-  const [members, setMembers] = useState<TWikiMemberAccess[]>([]);
   const [draftEditor, setDraftEditor] = useState<EditorRefApi | null>(null);
   const publishedEditor = useWikiEditorRef();
   const { fontSize, fontStyle } = usePageFilters();
@@ -83,8 +75,6 @@ export const WikiDocument = observer(function WikiDocument({
     let cancelled = false;
     setPreview(null);
     setShowVersions(false);
-    setShowAccess(false);
-    setMembers([]);
     void wikiService.retrieve(workspaceSlug, nodeId).then((detail) => {
       if (!cancelled) {
         serverHtml.current = detail.description_html || "";
@@ -168,29 +158,6 @@ export const WikiDocument = observer(function WikiDocument({
   };
 
   useEffect(() => {
-    if (!permissionsOpen) {
-      setShowAccess(false);
-      return;
-    }
-    let cancelled = false;
-    setShowAccess(true);
-    void wikiService
-      .access(workspaceSlug, nodeId)
-      .then((items) => {
-        if (!cancelled) setMembers(items);
-        return undefined;
-      })
-      .catch(() => {
-        if (!cancelled) setMessage(t("workspace_wiki.forbidden"));
-      });
-    return () => {
-      cancelled = true;
-    };
-    // `t` is a new function every render; depending on it retriggers this effect forever.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [nodeId, permissionsOpen, workspaceSlug]);
-
-  useEffect(() => {
     if (!node) {
       setHeaderActions(null);
       return;
@@ -223,11 +190,6 @@ export const WikiDocument = observer(function WikiDocument({
           setNode({ ...node, color });
           void wikiService.update(workspaceSlug, nodeId, { color }).then(refresh);
         }}
-        onSort={(direction) =>
-          void wikiService
-            .update(workspaceSlug, nodeId, { sort_order: node.sort_order + direction })
-            .then(() => refresh())
-        }
       />
     );
     return () => setHeaderActions(null);
@@ -375,32 +337,6 @@ export const WikiDocument = observer(function WikiDocument({
                 />
               )}
             </div>
-            {showAccess && (
-              <div className="mt-6 flex flex-col gap-2">
-                {members.map((member) => (
-                  <label key={member.id} className="flex items-center justify-between gap-3">
-                    <span className="truncate text-body-sm-regular">{member.display_name || member.email}</span>
-                    <select
-                      value={member.explicit_access ?? "inherit"}
-                      className="h-8 rounded-md border border-subtle bg-layer-1 px-2 text-body-sm-regular"
-                      onChange={(event) => {
-                        const access = event.target.value === "inherit" ? null : (event.target.value as TWikiAccess);
-                        void wikiService
-                          .updateAccess(workspaceSlug, nodeId, { member_id: member.id, access })
-                          .then(() => wikiService.access(workspaceSlug, nodeId))
-                          .then(setMembers)
-                          .catch(() => setMessage(t("workspace_wiki.forbidden")));
-                      }}
-                    >
-                      <option value="inherit">{t("workspace_wiki.access.inherit")}</option>
-                      <option value="invisible">{t("workspace_wiki.access.invisible")}</option>
-                      <option value="visible">{t("workspace_wiki.access.visible")}</option>
-                      <option value="editable">{t("workspace_wiki.access.editable")}</option>
-                    </select>
-                  </label>
-                ))}
-              </div>
-            )}
             <div className="mt-8">
               <WikiChanges
                 workspaceSlug={workspaceSlug}
