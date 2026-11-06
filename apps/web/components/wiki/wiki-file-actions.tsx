@@ -8,7 +8,6 @@ import { useEffect, useRef, useState } from "react";
 import {
   ArchiveOutline,
   CopyOutline,
-  DeleteOutline,
   HistoryOutline,
   LinkOutline,
   LockedOutline,
@@ -37,7 +36,6 @@ const hexColor = (value: string) => (/^#[0-9a-fA-F]{6}$/.test(value) ? value : "
 type Props = {
   node: TWikiNode;
   favorite: boolean;
-  destinations: { id: string; name: string }[];
   onLock: () => void;
   onArchive: () => void;
   onFavorite: () => void;
@@ -45,29 +43,11 @@ type Props = {
   onVersions: () => void;
   onWide: (wide: boolean) => void;
   onColor: (color: string) => void;
-  onDelete: () => void;
   onSort: (direction: -1 | 1) => void;
-  onMove: (parentId: string) => void;
-  onPermissions: () => void;
 };
 
 export function WikiFileActions(props: Props) {
-  const {
-    node,
-    favorite,
-    destinations,
-    onLock,
-    onArchive,
-    onFavorite,
-    onDuplicate,
-    onVersions,
-    onWide,
-    onColor,
-    onDelete,
-    onSort,
-    onMove,
-    onPermissions,
-  } = props;
+  const { node, favorite, onLock, onArchive, onFavorite, onDuplicate, onVersions, onWide, onColor, onSort } = props;
   const { t } = useTranslation();
   const [displayState, setDisplayState] = useState<LockDisplayState>(node.is_locked ? "locked" : "neutral");
   const [copied, setCopied] = useState(false);
@@ -226,25 +206,8 @@ export function WikiFileActions(props: Props) {
               onClick={onArchive}
             />
           )}
-          {node.can_move &&
-            destinations.map((destination) => (
-              <MenuItem
-                key={destination.id}
-                label={`${t("workspace_wiki.move")}: ${destination.name}`}
-                onClick={() => onMove(destination.id)}
-              />
-            ))}
           {node.can_rename && <MenuItem label={t("workspace_wiki.sort_up")} onClick={() => onSort(-1)} />}
           {node.can_rename && <MenuItem label={t("workspace_wiki.sort_down")} onClick={() => onSort(1)} />}
-          {node.can_manage_access && <MenuItem label={t("workspace_wiki.permissions")} onClick={onPermissions} />}
-          {node.can_delete && (
-            <MenuItem
-              variant="danger"
-              label={t("workspace_wiki.delete")}
-              icon={<Icon icon={DeleteOutline} />}
-              onClick={onDelete}
-            />
-          )}
         </MenuContent>
       </Menu>
     </div>

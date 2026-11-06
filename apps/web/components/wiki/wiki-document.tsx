@@ -37,11 +37,16 @@ const editorValue = (json?: object, html?: string): JSONContent | string =>
 type Props = {
   workspaceSlug: string;
   nodeId: string;
-  destinations: { id: string; name: string }[];
+  permissionsOpen?: boolean;
   onChanged: () => Promise<void>;
 };
 
-export const WikiDocument = observer(function WikiDocument({ workspaceSlug, nodeId, destinations, onChanged }: Props) {
+export const WikiDocument = observer(function WikiDocument({
+  workspaceSlug,
+  nodeId,
+  permissionsOpen = false,
+  onChanged,
+}: Props) {
   const { t } = useTranslation();
   const setHeaderActions = useSetWikiHeaderActions();
   const { getWorkspaceBySlug } = useWorkspace();
@@ -60,7 +65,6 @@ export const WikiDocument = observer(function WikiDocument({ workspaceSlug, node
   const publishedEditor = useWikiEditorRef();
   const { fontSize, fontStyle } = usePageFilters();
   const favorite = entityMap[nodeId];
-  const destinationKey = destinations.map((item) => `${item.id}:${item.name}`).join("|");
 
   const serverHtml = useRef("");
   const pendingSave = useRef<{ html: string; json: object; base: string } | null>(null);
@@ -164,6 +168,29 @@ export const WikiDocument = observer(function WikiDocument({ workspaceSlug, node
   };
 
   useEffect(() => {
+    if (!permissionsOpen) {
+      setShowAccess(false);
+      return;
+    }
+    let cancelled = false;
+    setShowAccess(true);
+    void wikiService
+      .access(workspaceSlug, nodeId)
+      .then((items) => {
+        if (!cancelled) setMembers(items);
+        return undefined;
+      })
+      .catch(() => {
+        if (!cancelled) setMessage(t("workspace_wiki.forbidden"));
+      });
+    return () => {
+      cancelled = true;
+    };
+    // `t` is a new function every render; depending on it retriggers this effect forever.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [nodeId, permissionsOpen, workspaceSlug]);
+
+  useEffect(() => {
     if (!node) {
       setHeaderActions(null);
       return;
@@ -172,7 +199,6 @@ export const WikiDocument = observer(function WikiDocument({ workspaceSlug, node
       <WikiFileActions
         node={node}
         favorite={Boolean(favorite)}
-        destinations={destinations}
         onLock={() => void wikiService.updateState(workspaceSlug, nodeId, { is_locked: !node.is_locked }).then(refresh)}
         onArchive={() =>
           void wikiService.updateState(workspaceSlug, nodeId, { archived: !node.archived_at }).then(refresh)
@@ -197,32 +223,18 @@ export const WikiDocument = observer(function WikiDocument({ workspaceSlug, node
           setNode({ ...node, color });
           void wikiService.update(workspaceSlug, nodeId, { color }).then(refresh);
         }}
-        onDelete={() => {
-          if (!window.confirm(t("workspace_wiki.delete"))) return;
-          void wikiService.remove(workspaceSlug, nodeId).then(() => onChanged());
-        }}
         onSort={(direction) =>
           void wikiService
             .update(workspaceSlug, nodeId, { sort_order: node.sort_order + direction })
             .then(() => refresh())
         }
-        onMove={(parentId) => void wikiService.update(workspaceSlug, nodeId, { parent_id: parentId }).then(refresh)}
-        onPermissions={() => {
-          setShowAccess(true);
-          void wikiService
-            .access(workspaceSlug, nodeId)
-            .then(setMembers)
-            .catch(() => setMessage(t("workspace_wiki.forbidden")));
-        }}
       />
     );
     return () => setHeaderActions(null);
-    // destinationKey stands in for the destinations list so a new array identity does not rebuild the menu.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
     addFavorite,
     deleteFavorite,
-    destinationKey,
     favorite,
     node,
     nodeId,
@@ -230,7 +242,6 @@ export const WikiDocument = observer(function WikiDocument({ workspaceSlug, node
     openVersions,
     refresh,
     setHeaderActions,
-    t,
     workspaceSlug,
   ]);
 

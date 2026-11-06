@@ -5,13 +5,20 @@
  */
 
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { Link } from "react-router";
+import { Link, useNavigate } from "react-router";
+import { Icon } from "@makeplane/propel/components/icon";
+import { ListItem, ListItemLabel } from "@makeplane/propel/components/list";
+import { Tab, Tabs, TabsList } from "@makeplane/propel/components/tabs";
+import { ListItemLink } from "@makeplane/propel/elements/list";
+import { ChevronDownOutline, FileOutline, FolderOutline } from "@makeplane/propel/icons";
 import { Logo } from "@plane/blocks/emoji-icon-picker";
 import { useTranslation } from "@plane/i18n";
 import type { TTranslationKeys } from "@plane/i18n";
+import { cn } from "@plane/utils";
 import { PageHead } from "@/components/core/page-title";
 import { WikiDocument } from "@/components/wiki/wiki-document";
 import { useWikiHeaderActions } from "@/components/wiki/wiki-header-actions";
+import { WikiNodeMenu } from "@/components/wiki/wiki-node-menu";
 import { WikiLogoControl, wikiLogo } from "@/components/wiki/wiki-logo";
 import type { TWikiAccess, TWikiMemberAccess, TWikiNode, TWikiNodeType, TWikiTrashNode } from "@/services/wiki.service";
 import { WikiService } from "@/services/wiki.service";
@@ -22,6 +29,8 @@ type Props = {
   workspaceSlug: string;
   nodeId?: string;
 };
+
+type TWikiExplorerTab = "wiki" | "trash" | "archive" | "recent";
 
 const ERROR_KEYS: Record<string, TTranslationKeys> = {
   folder_has_other_creators: "workspace_wiki.delete_blocked",
@@ -70,11 +79,19 @@ export function WikiHeader() {
   );
 }
 
+function nodeGlyph(node: TWikiNode) {
+  const logo = wikiLogo(node.logo_props);
+  if (logo) return <Logo logo={logo} size={16} type="lucide" />;
+  return <Icon icon={node.node_type === "folder" ? FolderOutline : FileOutline} size="inherit" tint="secondary" />;
+}
+
 export function WikiExplorer({ workspaceSlug, nodeId }: Props) {
   const { t } = useTranslation();
+  const navigate = useNavigate();
   const [nodes, setNodes] = useState<TWikiNode[]>([]);
   const [trash, setTrash] = useState<TWikiTrashNode[]>([]);
   const [members, setMembers] = useState<TWikiMemberAccess[]>([]);
+  const [explorerTab, setExplorerTab] = useState<TWikiExplorerTab>("wiki");
   const [showTrash, setShowTrash] = useState(false);
   const [showArchive, setShowArchive] = useState(false);
   const [archivedNodes, setArchivedNodes] = useState<TWikiNode[]>([]);
@@ -88,6 +105,8 @@ export function WikiExplorer({ workspaceSlug, nodeId }: Props) {
   const [draftName, setDraftName] = useState("");
   const [rename, setRename] = useState("");
   const [moveTarget, setMoveTarget] = useState("");
+  const [collapsedIds, setCollapsedIds] = useState<Set<string>>(() => new Set());
+  const [accessNodeId, setAccessNodeId] = useState<string | null>(null);
 
   const nodesById = useMemo(() => new Map(nodes.map((node) => [node.id, node])), [nodes]);
   const root = nodes.find((node) => node.is_root);
@@ -127,6 +146,54 @@ export function WikiExplorer({ workspaceSlug, nodeId }: Props) {
     setMembers([]);
     setMoveTarget("");
   }, [selected?.id, selected?.name]);
+
+  useEffect(() => {
+    if (!selected || selected.id !== accessNodeId || selected.node_type === "file") return;
+    let cancelled = false;
+    const nodeIdToOpen = selected.id;
+    setShowAccess(true);
+    void wikiService
+      .access(workspaceSlug, nodeIdToOpen)
+      .then((items) => {
+        if (!cancelled) setMembers(items);
+        return undefined;
+      })
+      .catch((error) => {
+        if (!cancelled) setMessage(errorMessage(error, t));
+      });
+    return () => {
+      cancelled = true;
+    };
+    // `t` is a new function every render; depending on it retriggers this effect forever.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [accessNodeId, selected?.id, selected?.node_type, workspaceSlug]);
+
+  const ancestorIds = useCallback(
+    (id: string) => {
+      const ids: string[] = [];
+      let current = nodesById.get(id);
+      const seen = new Set<string>();
+      while (current?.parent_id && !seen.has(current.parent_id)) {
+        seen.add(current.parent_id);
+        ids.push(current.parent_id);
+        current = nodesById.get(current.parent_id);
+      }
+      return ids;
+    },
+    [nodesById]
+  );
+
+  useEffect(() => {
+    if (!selected) return;
+    const openIds = new Set(ancestorIds(selected.id));
+    if (openIds.size === 0) return;
+    setCollapsedIds((current) => {
+      if (![...openIds].some((id) => current.has(id))) return current;
+      const next = new Set(current);
+      openIds.forEach((id) => next.delete(id));
+      return next;
+    });
+  }, [ancestorIds, selected]);
 
   const childrenOf = useCallback(
     (parentId: string) =>
@@ -171,6 +238,7 @@ export function WikiExplorer({ workspaceSlug, nodeId }: Props) {
   };
 
   const openTrash = async () => {
+    setExplorerTab("trash");
     setShowTrash(true);
     setShowArchive(false);
     setSearchResults(null);
@@ -181,25 +249,108 @@ export function WikiExplorer({ workspaceSlug, nodeId }: Props) {
     }
   };
 
-  const renderNode = (node: TWikiNode, depth: number) => {
-    const logo = wikiLogo(node.logo_props);
+  const toggleFolder = (id: string, open: boolean) => {
+    setCollapsedIds((current) => {
+      const next = new Set(current);
+      if (open) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  };
+
+  const moveDestinations = (node: TWikiNode) =>
+    nodes
+      .filter(
+        (candidate) =>
+          candidate.node_type === "folder" &&
+          candidate.can_create_child &&
+          candidate.id !== node.id &&
+          !descendantIds(node.id, nodes).has(candidate.id)
+      )
+      .map((candidate) => ({ id: candidate.id, name: candidate.name }));
+
+  const moveNode = (node: TWikiNode, parentId: string) => {
+    void run(() => wikiService.update(workspaceSlug, node.id, { parent_id: parentId }).then(() => undefined));
+  };
+
+  const deleteNode = (node: TWikiNode) => {
+    if (!window.confirm(t("workspace_wiki.delete"))) return;
+    void run(async () => {
+      await wikiService.remove(workspaceSlug, node.id);
+      if (selected?.id === node.id) {
+        navigate(node.parent_id ? `/${workspaceSlug}/wiki/${node.parent_id}` : `/${workspaceSlug}/wiki`);
+      }
+    });
+  };
+
+  const requestPermissions = (node: TWikiNode) => {
+    setAccessNodeId(node.id);
+    if (selected?.id !== node.id) navigate(`/${workspaceSlug}/wiki/${node.id}`);
+  };
+
+  const renderNode = (node: TWikiNode) => {
+    const isSelected = selected?.id === node.id;
+    const href = `/${workspaceSlug}/wiki/${node.id}`;
+    const menu = (
+      <WikiNodeMenu
+        node={node}
+        destinations={moveDestinations(node)}
+        revealed={isSelected}
+        hoverGroup={node.node_type === "folder" ? "wiki-node" : "list-item"}
+        onMove={(parentId) => moveNode(node, parentId)}
+        onPermissions={() => requestPermissions(node)}
+        onDelete={() => deleteNode(node)}
+      />
+    );
+    if (node.node_type === "folder") {
+      const children = childrenOf(node.id);
+      const open = !collapsedIds.has(node.id);
+      return (
+        <div key={node.id}>
+          <div
+            className={cn(
+              "group/wiki-node grid h-8 grid-cols-[minmax(0,1fr)_auto_auto] items-center gap-x-1 rounded-lg px-2 [--node-size:var(--control-glyph-lg)] hover:bg-layer-transparent-hover",
+              isSelected && "bg-layer-transparent-selected text-primary"
+            )}
+          >
+            <Link
+              to={href}
+              className={cn(
+                "flex min-w-0 items-center gap-2 text-body-xs-semibold text-tertiary",
+                isSelected && "text-primary"
+              )}
+            >
+              {nodeGlyph(node)}
+              <span className="truncate">{node.name}</span>
+            </Link>
+            {menu}
+            <button
+              type="button"
+              className="flex size-4 items-center justify-center text-tertiary"
+              aria-expanded={open}
+              aria-label={node.name}
+              onClick={() => toggleFolder(node.id, !open)}
+            >
+              <Icon
+                icon={<ChevronDownOutline className={cn("transition-transform", !open && "-rotate-90")} />}
+                size="inherit"
+                tint="secondary"
+              />
+            </button>
+          </div>
+          {open && children.length > 0 && <div className="flex flex-col gap-px ps-4">{children.map(renderNode)}</div>}
+        </div>
+      );
+    }
+
     return (
-      <div key={node.id}>
-        <Link
-          to={`/${workspaceSlug}/wiki/${node.id}`}
-          className={`flex items-center gap-2 rounded-md px-2 py-1 text-body-sm-regular hover:bg-layer-2 ${
-            selected?.id === node.id ? "bg-layer-2" : ""
-          }`}
-          style={{ paddingLeft: 8 + depth * 16 }}
-        >
-          {logo && <Logo logo={logo} size={14} type="lucide" />}
-          <span className="text-caption-sm-medium text-tertiary">
-            {node.node_type === "folder" ? t("workspace_wiki.folder") : t("workspace_wiki.file")}
-          </span>
-          <span className="truncate">{node.name}</span>
-        </Link>
-        {childrenOf(node.id).map((child) => renderNode(child, depth + 1))}
-      </div>
+      <ListItem key={node.id} density="comfortable">
+        <ListItemLink href={href} render={<Link to={href} />} aria-current={isSelected ? "page" : undefined}>
+          {nodeGlyph(node)}
+          <ListItemLabel>{node.name}</ListItemLabel>
+        </ListItemLink>
+        {menu}
+      </ListItem>
     );
   };
 
@@ -218,55 +369,54 @@ export function WikiExplorer({ workspaceSlug, nodeId }: Props) {
       <PageHead title={t("sidebar.wiki")} />
       <div className="flex h-full min-h-0 w-full">
         <aside className="flex w-72 shrink-0 flex-col gap-2 overflow-y-auto border-r border-subtle p-3">
-          <div className="flex gap-2">
-            <button
-              type="button"
-              className="text-caption-sm-medium text-tertiary"
-              onClick={() => {
+          <Tabs
+            variant="underline"
+            value={explorerTab}
+            onValueChange={(value) => {
+              const next = value as TWikiExplorerTab;
+              if (next === "wiki") {
+                setExplorerTab("wiki");
                 setShowTrash(false);
                 setShowArchive(false);
                 setSearchResults(null);
-              }}
-            >
-              {t("sidebar.wiki")}
-            </button>
-            <button type="button" className="text-caption-sm-medium text-tertiary" onClick={() => void openTrash()}>
-              {t("workspace_wiki.trash")}
-            </button>
-            <button
-              type="button"
-              className="text-caption-sm-medium text-tertiary"
-              onClick={() =>
+                return;
+              }
+              if (next === "trash") {
+                void openTrash();
+                return;
+              }
+              if (next === "archive") {
+                setExplorerTab("archive");
                 void wikiService.list(workspaceSlug, true).then((items) => {
                   setArchivedNodes(items);
                   setShowArchive(true);
                   setShowTrash(false);
                   setSearchResults(null);
                   return undefined;
-                })
+                });
+                return;
               }
-            >
-              {t("workspace_wiki.archive")}
-            </button>
-            <button
-              type="button"
-              className="text-caption-sm-medium text-tertiary"
-              onClick={() =>
-                void wikiService.recent(workspaceSlug).then((items) => {
-                  setShowArchive(false);
-                  setShowTrash(false);
-                  setSearchResults(items);
-                  return undefined;
-                })
-              }
-            >
-              {t("workspace_wiki.recent")}
-            </button>
-          </div>
+              setExplorerTab("recent");
+              void wikiService.recent(workspaceSlug).then((items) => {
+                setShowArchive(false);
+                setShowTrash(false);
+                setSearchResults(items);
+                return undefined;
+              });
+            }}
+          >
+            <TabsList aria-label={t("sidebar.wiki")}>
+              <Tab value="wiki" label={t("sidebar.wiki")} />
+              <Tab value="trash" label={t("workspace_wiki.trash")} />
+              <Tab value="archive" label={t("workspace_wiki.archive")} />
+              <Tab value="recent" label={t("workspace_wiki.recent")} />
+            </TabsList>
+          </Tabs>
           <form
             onSubmit={(event) => {
               event.preventDefault();
               void wikiService.search(workspaceSlug, searchQuery).then((items) => {
+                setExplorerTab("wiki");
                 setSearchResults(items);
                 setShowTrash(false);
                 setShowArchive(false);
@@ -338,7 +488,7 @@ export function WikiExplorer({ workspaceSlug, nodeId }: Props) {
               ))}
             </div>
           ) : (
-            root && renderNode(root, 0)
+            root && <div className="flex flex-col gap-px">{renderNode(root)}</div>
           )}
         </aside>
         <section
@@ -354,7 +504,7 @@ export function WikiExplorer({ workspaceSlug, nodeId }: Props) {
             <WikiDocument
               workspaceSlug={workspaceSlug}
               nodeId={selected.id}
-              destinations={destinations.map((node) => ({ id: node.id, name: node.name }))}
+              permissionsOpen={accessNodeId === selected.id}
               onChanged={load}
             />
           )}
