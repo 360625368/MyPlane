@@ -19,7 +19,9 @@ from django.http import HttpResponse
 class MinioUploadProxyMiddleware:
     def __init__(self, get_response):
         self.get_response = get_response
-        upstream = os.environ.get("AWS_S3_ENDPOINT_URL") or os.environ.get("MINIO_ENDPOINT_URL") or "http://127.0.0.1:9000"
+        upstream = (
+            os.environ.get("AWS_S3_ENDPOINT_URL") or os.environ.get("MINIO_ENDPOINT_URL") or "http://127.0.0.1:9000"
+        )
         self.upstream = urlparse(upstream)
 
     def __call__(self, request):
@@ -30,6 +32,11 @@ class MinioUploadProxyMiddleware:
     def _proxy(self, request):
         headers = {"Host": request.get_host()}
         for name, value in request.headers.items():
+            # runserver reports Content-Length as "" when the client omitted it.
+            # Forwarding that empty header makes MinIO answer 400, so presigned
+            # GETs for cover images and other static assets never load.
+            if not value:
+                continue
             lowered = name.lower()
             if lowered in {"content-type", "content-length", "authorization"} or lowered.startswith("x-amz-"):
                 headers[name] = value
