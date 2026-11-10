@@ -307,4 +307,5 @@ export type TWikiChange = {
   can_return: boolean;
   can_merge: boolean;
   merge_plan: TWikiMergePlan | null;
+  merge_detail?: TWikiMergePlan | null;
 };

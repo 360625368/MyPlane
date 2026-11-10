@@ -535,9 +535,80 @@ function MergePane({
   );
 }
 
+function MergeDetail({ change, onClose }: { change: TWikiChange; onClose: () => void }) {
+  const { t } = useTranslation();
+  const rows = (change.merge_detail?.blocks ?? []).filter(
+    (entry) => entry.current_text || entry.draft_text || entry.change !== "same"
+  );
+
+  return (
+    <Dialog open onOpenChange={(next) => !next && onClose()}>
+      <DialogContent size="full" density="compact" aria-label={t("workspace_wiki.merge_change")}>
+        <DialogCloseGroup>
+          <IconButton
+            variant="ghost"
+            size="xs"
+            aria-label={t("common.cancel")}
+            icon={<Icon icon={CloseOutline} />}
+            render={<DialogClose />}
+          />
+        </DialogCloseGroup>
+        <DialogMain>
+          <DialogHeader>
+            <DialogHeading>
+              <DialogTitle>
+                {change.author_name} · {t("workspace_wiki.change_status.merged")}
+              </DialogTitle>
+            </DialogHeading>
+          </DialogHeader>
+          <DialogBody tabIndex={0}>
+            <div className="flex h-full min-h-0 flex-col overflow-hidden rounded-lg border border-subtle">
+              <div className="grid shrink-0 grid-cols-2 border-b border-subtle bg-layer-1 text-caption-sm-medium text-tertiary">
+                <span className="px-3 py-2">{t("workspace_wiki.merge_before")}</span>
+                <span className="border-l border-subtle px-3 py-2">{t("workspace_wiki.merge_after")}</span>
+              </div>
+              <div className="vertical-scrollbar scrollbar-sm min-h-0 flex-1 overflow-y-auto">
+                {rows.length === 0 ? (
+                  <p className="px-3 py-4 text-body-sm-regular text-tertiary">{t("workspace_wiki.no_results")}</p>
+                ) : (
+                  rows.map((entry) => {
+                    const changed = entry.change !== "same";
+                    const tone = changed ? "bg-accent-subtle" : "";
+                    return (
+                      <div key={entry.id} className="grid grid-cols-2 border-b border-subtle last:border-b-0">
+                        <div className={`min-h-9 px-3 py-2 text-body-sm-regular leading-6 break-words ${tone}`}>
+                          <HighlightedText
+                            text={entry.current_text || ""}
+                            base={entry.draft_text || ""}
+                            conflict={false}
+                          />
+                        </div>
+                        <div
+                          className={`min-h-9 border-l border-subtle px-3 py-2 text-body-sm-regular leading-6 break-words ${tone}`}
+                        >
+                          <HighlightedText
+                            text={entry.draft_text || ""}
+                            base={entry.current_text || ""}
+                            conflict={false}
+                          />
+                        </div>
+                      </div>
+                    );
+                  })
+                )}
+              </div>
+            </div>
+          </DialogBody>
+        </DialogMain>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
 export function WikiReviewDialog({ open, changes, onClose, onApply }: Props) {
   const { t } = useTranslation();
   const [merging, setMerging] = useState<TWikiChange | null>(null);
+  const [detail, setDetail] = useState<TWikiChange | null>(null);
   const [page, setPage] = useState(1);
   const [jumpValue, setJumpValue] = useState("1");
   const [jumping, setJumping] = useState(false);
@@ -551,6 +622,7 @@ export function WikiReviewDialog({ open, changes, onClose, onApply }: Props) {
   useEffect(() => {
     if (!open) {
       setMerging(null);
+      setDetail(null);
       setPage(1);
       setJumping(false);
     }
@@ -621,21 +693,31 @@ export function WikiReviewDialog({ open, changes, onClose, onApply }: Props) {
                           className="grid h-[3.25rem] cursor-pointer grid-cols-[minmax(0,1fr)_11rem_auto] items-center gap-3 border-b border-subtle px-3 last:border-b-0 hover:bg-layer-1"
                           onDoubleClick={() => openMerge(change)}
                         >
-                          <span className="min-w-0 truncate text-body-sm-regular">
-                            {change.author_name}
-                            <span className="ml-2 text-caption-sm-medium text-tertiary">
-                              {t(`workspace_wiki.change_status.${change.status}`)}
+                          <button
+                            type="button"
+                            className="contents text-left"
+                            onClick={() => {
+                              if (change.status === "merged") setDetail(change);
+                            }}
+                          >
+                            <span className="min-w-0 truncate text-body-sm-regular">
+                              {change.author_name}
+                              <span className="ml-2 text-caption-sm-medium text-tertiary">
+                                {t(`workspace_wiki.change_status.${change.status}`)}
+                              </span>
                             </span>
-                          </span>
-                          <span className="text-body-sm-regular text-tertiary">{submittedLabel(change)}</span>
-                          <Button
-                            variant={change.can_merge ? "primary" : "secondary"}
-                            size="sm"
-                            stretch="auto"
-                            disabled={!change.can_merge}
-                            label={t("workspace_wiki.merge_change")}
-                            onClick={() => openMerge(change)}
-                          />
+                            <span className="text-body-sm-regular text-tertiary">{submittedLabel(change)}</span>
+                          </button>
+                          <div className={change.status === "merged" ? "pointer-events-none" : undefined}>
+                            <Button
+                              variant={change.can_merge ? "primary" : "secondary"}
+                              size="sm"
+                              stretch="auto"
+                              disabled={!change.can_merge}
+                              label={t("workspace_wiki.merge_change")}
+                              onClick={() => openMerge(change)}
+                            />
+                          </div>
                         </div>
                       ))}
                     </div>
@@ -699,6 +781,7 @@ export function WikiReviewDialog({ open, changes, onClose, onApply }: Props) {
         </DialogContent>
       </Dialog>
       {merging && <MergePane change={merging} onClose={() => setMerging(null)} onApply={onApply} />}
+      {detail && <MergeDetail change={detail} onClose={() => setDetail(null)} />}
     </>
   );
 }

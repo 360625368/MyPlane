@@ -7,7 +7,7 @@ from rest_framework import status
 from rest_framework.response import Response
 
 from plane.app.views.base import BaseAPIView
-from plane.db.models import WikiChangeRequest, WikiNode
+from plane.db.models import WikiChangeRequest, WikiNode, WikiNodeVersion
 from plane.utils.content_validator import validate_html_content
 from plane.utils.wiki_access import EDITABLE
 from plane.utils.wiki_merge import apply_resolutions, plan_merge
@@ -66,7 +66,53 @@ def _merge_plan(change, node):
     )
 
 
-def _serialize_change(change, node, user, access):
+def _merged_details(changes):
+    """Historical before/after for merged requests, using the published version when it still exists."""
+    merged = [change for change in changes if change.status == WikiChangeRequest.MERGED]
+    if not merged:
+        return {}
+    versions = WikiNodeVersion.objects.filter(change_request_id__in=[change.id for change in merged]).order_by(
+        "-last_saved_at"
+    )
+    after_by_change = {}
+    for version in versions:
+        after_by_change.setdefault(version.change_request_id, version)
+    history = WikiNodeVersion.objects.filter(node_id__in={change.node_id for change in merged}).order_by(
+        "-last_saved_at"
+    )
+    by_node = {}
+    for version in history:
+        by_node.setdefault(version.node_id, []).append(version)
+    details = {}
+    for change in merged:
+        after = after_by_change.get(change.id)
+        if after is None:
+            before_json, before_html = change.baseline_json, change.baseline_html
+            after_json, after_html = change.description_json, change.description_html
+        else:
+            previous = next(
+                (
+                    version
+                    for version in by_node.get(change.node_id, [])
+                    if version.id != after.id and version.last_saved_at < after.last_saved_at
+                ),
+                None,
+            )
+            before_json = previous.description_json if previous else change.baseline_json
+            before_html = previous.description_html if previous else change.baseline_html
+            after_json, after_html = after.description_json, after.description_html
+        details[change.id] = plan_merge(
+            before_json,
+            before_html,
+            before_json,
+            before_html,
+            after_json,
+            after_html,
+        )
+    return details
+
+
+def _serialize_change(change, node, user, access, merge_detail=None):
     author = change.owned_by_id == user.id
     creator = _is_creator(node, user)
     editable_author = author and _author_can_edit(node, user, access)
@@ -92,6 +138,7 @@ def _serialize_change(change, node, user, access):
         "can_return": publishable and change.status in (WikiChangeRequest.IN_REVIEW, WikiChangeRequest.CONFLICT),
         "can_merge": publishable and change.status in (WikiChangeRequest.IN_REVIEW, WikiChangeRequest.CONFLICT),
         "merge_plan": merge_plan,
+        "merge_detail": merge_detail,
     }
 
 
@@ -108,8 +155,10 @@ class WikiChangeRequestEndpoint(BaseAPIView):
         changes = WikiChangeRequest.objects.filter(node=node).select_related("owned_by")
         if not _is_creator(node, request.user):
             changes = changes.filter(owned_by=request.user)
+        changes = list(changes[:50])
+        details = _merged_details(changes)
         return Response(
-            [_serialize_change(change, node, request.user, access) for change in changes[:50]],
+            [_serialize_change(change, node, request.user, access, details.get(change.id)) for change in changes],
             status=status.HTTP_200_OK,
         )
 
