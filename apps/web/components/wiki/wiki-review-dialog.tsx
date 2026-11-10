@@ -22,10 +22,15 @@ import {
 import { Icon } from "@makeplane/propel/components/icon";
 import { IconButton } from "@makeplane/propel/components/icon-button";
 import { useTranslation } from "@plane/i18n";
+import type { JSONContent } from "@plane/types";
 import { renderFormattedDate, renderFormattedTime } from "@plane/utils";
+import { DocumentEditor } from "@/components/editor/document/editor";
+import { blocksHtml, plainText, RichBlocks } from "@/components/wiki/wiki-merge-rich";
 import type { TWikiChange, TWikiMergeBlock, TWikiMergeChange } from "@/services/wiki.service";
+import { WorkspaceService } from "@/services/workspace.service";
 
 const PAGE_SIZE = 8;
+const workspaceService = new WorkspaceService();
 
 type Choice = "current" | "draft" | "baseline" | "custom";
 
@@ -47,21 +52,16 @@ type ApplyPayload = {
   description_json: object;
 };
 
-type Props = {
+type Workspace = {
+  workspaceSlug: string;
+  workspaceId: string;
+};
+
+type Props = Workspace & {
   open: boolean;
   changes: TWikiChange[];
   onClose: () => void;
   onApply: (changeId: string, payload: ApplyPayload) => Promise<void>;
-};
-
-const plainText = (node: unknown): string => {
-  if (!node) return "";
-  if (typeof node === "string") return node;
-  if (typeof node !== "object") return "";
-  const record = node as { type?: string; html?: string; text?: string; content?: unknown[] };
-  if (record.type === "html") return record.html || "";
-  if (record.text) return String(record.text);
-  return (record.content || []).map((child) => plainText(child)).join("");
 };
 
 const blockOf = (value: object | null | undefined): object | null =>
@@ -107,131 +107,70 @@ const rowFromBlock = (entry: TWikiMergeBlock): MergeRow => {
   };
 };
 
-const escapeHtml = (value: string) =>
-  value.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
-
-const textBlock = (row: MergeRow, text: string): object | null => {
-  if (!text) return null;
-  const source = row.autoBlock || row.currentBlock || row.draftBlock || row.baseBlock;
-  const record = (source || {}) as { type?: string; attrs?: object };
-  const type = record.type === "heading" ? "heading" : "paragraph";
-  return {
-    type,
-    attrs: record.attrs || { id: row.id },
-    content: [{ type: "text", text }],
-  };
+const listOf = (block: object | null): object[] => {
+  if (!block) return [];
+  const record = block as { type?: string; content?: object[] };
+  return record.type === "doc" ? (record.content ?? []) : [block];
 };
 
-const chosenBlock = (row: MergeRow, choice: Choice | undefined, custom: string | undefined): object | null => {
-  if (choice === "current") return row.currentBlock;
-  if (choice === "draft") return row.draftBlock;
-  if (choice === "baseline") return row.baseBlock;
-  if (choice === "custom") return textBlock(row, custom || "");
-  if (row.change === "draft") return row.draftBlock;
-  if (row.change === "conflict") return null;
-  return row.autoBlock ?? row.currentBlock ?? row.draftBlock;
+const chosenBlocks = (row: MergeRow, choice: Choice | undefined, custom: object[] | undefined): object[] => {
+  if (choice === "custom") return custom ?? [];
+  if (choice === "current") return listOf(row.currentBlock);
+  if (choice === "draft") return listOf(row.draftBlock);
+  if (choice === "baseline") return listOf(row.baseBlock);
+  if (row.change === "draft") return listOf(row.draftBlock);
+  if (row.change === "conflict") return [];
+  return listOf(row.autoBlock ?? row.currentBlock ?? row.draftBlock);
 };
 
-const blockHtml = (block: object | null): string => {
-  if (!block) return "";
-  const record = block as { type?: string; html?: string; attrs?: { level?: number } };
-  if (record.type === "html") return record.html || "";
-  const text = escapeHtml(plainText(block));
-  if (!text) return "";
-  if (record.type === "heading") {
-    const level = Math.min(6, Math.max(1, Number(record.attrs?.level) || 1));
-    return `<h${level}>${text}</h${level}>`;
-  }
-  if (record.type === "blockquote") return `<blockquote><p>${text}</p></blockquote>`;
-  return `<p>${text}</p>`;
+const isEmptyParagraph = (block: object) => {
+  const record = block as { type?: string; content?: unknown[] };
+  return record.type === "paragraph" && !(record.content && record.content.length > 0);
 };
 
-const resultText = (row: MergeRow, choice: Choice | undefined, custom: string | undefined) => {
-  if (choice === "custom") return custom || "";
-  if (choice === "current") return row.currentText;
-  if (choice === "draft") return row.draftText;
-  if (choice === "baseline") return row.baseText;
-  if (row.change === "conflict") return "";
-  if (row.change === "draft") return row.draftText;
-  return row.currentText;
+const editedBlocks = (json: object): object[] => {
+  const content = ((json as JSONContent).content ?? []) as object[];
+  return content.every(isEmptyParagraph) ? [] : content;
 };
 
-const tokenize = (value: string) => {
-  const words = value.split(/(\s+)/).filter((part) => part.length > 0);
-  if (words.length > 1 && /\s/.test(value)) return words;
-  return Array.from(value);
-};
-
-const diffTokens = (base: string, text: string) => {
-  const left = tokenize(base);
-  const right = tokenize(text);
-  if (left.length * right.length > 20000) return [{ text, changed: text !== base }];
-  const scores: number[][] = Array.from({ length: left.length + 1 }, () => Array<number>(right.length + 1).fill(0));
-  for (let i = left.length - 1; i >= 0; i -= 1) {
-    for (let j = right.length - 1; j >= 0; j -= 1) {
-      scores[i][j] = left[i] === right[j] ? scores[i + 1][j + 1] + 1 : Math.max(scores[i + 1][j], scores[i][j + 1]);
-    }
-  }
-  const changed = new Set<number>();
-  let i = 0;
-  let j = 0;
-  while (j < right.length) {
-    if (i < left.length && left[i] === right[j]) {
-      i += 1;
-      j += 1;
-    } else if (i < left.length && scores[i + 1][j] >= scores[i][j + 1]) i += 1;
-    else {
-      changed.add(j);
-      j += 1;
-    }
-  }
-  const tokens = right.map((part, index) => ({ text: part, changed: changed.has(index) }));
-  const grouped: { text: string; changed: boolean }[] = [];
-  for (const token of tokens) {
-    const last = grouped[grouped.length - 1];
-    if (last && last.changed === token.changed) last.text += token.text;
-    else grouped.push({ text: token.text, changed: token.changed });
-  }
-  return grouped;
-};
-
-function HighlightedText({ text, base, conflict }: { text: string; base: string; conflict: boolean }) {
-  if (!text) return <span className="text-placeholder">—</span>;
-  const parts = text === base ? [{ text, changed: false }] : diffTokens(base, text);
-  let cursor = 0;
+function SidePane({ block, base, conflict }: { block: object | null; base: object | null; conflict: boolean }) {
   return (
-    <>
-      {parts.map((part) => {
-        const key = `${cursor}-${part.changed ? "c" : "s"}`;
-        cursor += part.text.length + 1;
-        return part.changed ? (
-          <mark
-            key={key}
-            className={
-              conflict
-                ? "rounded-sm bg-danger-subtle px-0.5 text-danger-primary"
-                : "rounded-sm bg-label-yellow-bg px-0.5 text-label-yellow-text"
-            }
-          >
-            {part.text}
-          </mark>
-        ) : (
-          <span key={key}>{part.text}</span>
-        );
-      })}
-    </>
+    <div className={`min-h-9 min-w-0 px-3 py-2 break-words ${conflict ? "bg-danger-subtle/40" : ""}`}>
+      <RichBlocks blocks={listOf(block)} base={plainText(base)} conflict={conflict} />
+    </div>
   );
 }
 
-function SidePane({ text, base, conflict }: { text: string; base: string; conflict: boolean }) {
+function CenterEditor({
+  rowId,
+  blocks,
+  workspaceSlug,
+  workspaceId,
+  onChange,
+}: Workspace & { rowId: string; blocks: object[]; onChange: (blocks: object[]) => void }) {
+  const [value] = useState<JSONContent>(() => ({
+    type: "doc",
+    content: (blocks.length > 0 ? blocks : [{ type: "paragraph" }]) as JSONContent[],
+  }));
+
   return (
-    <div
-      className={`min-h-9 px-3 py-2 text-body-sm-regular leading-6 break-words whitespace-pre-wrap ${
-        conflict ? "bg-danger-subtle/40" : ""
-      }`}
-    >
-      <HighlightedText text={text} base={base} conflict={conflict} />
-    </div>
+    <DocumentEditor
+      editable
+      autofocus
+      id={`wiki-merge-${rowId}`}
+      value={value}
+      workspaceId={workspaceId}
+      workspaceSlug={workspaceSlug}
+      containerClassName="border-none p-0"
+      displayConfig={{ fontSize: "small-font" }}
+      searchMentionCallback={async (payload) => workspaceService.searchEntity(workspaceSlug, payload)}
+      uploadFile={async () => ""}
+      duplicateFile={async () => ""}
+      onChange={(json, _html, options) => {
+        if (options?.isMigrationUpdate) return;
+        onChange(editedBlocks(json));
+      }}
+    />
   );
 }
 
@@ -265,9 +204,11 @@ function GutterButton({
 
 function MergePane({
   change,
+  workspaceSlug,
+  workspaceId,
   onClose,
   onApply,
-}: {
+}: Workspace & {
   change: TWikiChange;
   onClose: () => void;
   onApply: (changeId: string, payload: ApplyPayload) => Promise<void>;
@@ -275,7 +216,8 @@ function MergePane({
   const { t } = useTranslation();
   const rows = useMemo(() => buildRows(change), [change]);
   const [choices, setChoices] = useState<Record<string, Choice | undefined>>({});
-  const [custom, setCustom] = useState<Record<string, string>>({});
+  const [custom, setCustom] = useState<Record<string, object[]>>({});
+  const [editingId, setEditingId] = useState<string | null>(null);
   const [message, setMessage] = useState("");
   const [applying, setApplying] = useState(false);
 
@@ -286,6 +228,7 @@ function MergePane({
     }
     setChoices(initial);
     setCustom({});
+    setEditingId(null);
     setMessage("");
     // Reset only when a different request is opened. `change` is read for its blocks.
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -297,6 +240,7 @@ function MergePane({
   const ready = unresolved === 0 && !applying;
 
   const setChoice = (id: string, choice: Choice) => {
+    setEditingId((current) => (current === id ? null : current));
     setChoices((current) => ({ ...current, [id]: choice }));
     setCustom((current) => {
       if (!(id in current)) return current;
@@ -310,6 +254,7 @@ function MergePane({
     const ids = rows
       .filter((row) => includeConflicts || row.change === changeKind || row.change === "both")
       .map((row) => row.id);
+    setEditingId((current) => (current && ids.includes(current) ? null : current));
     setChoices((current) => {
       const next = { ...current };
       for (const id of ids) next[id] = changeKind;
@@ -324,16 +269,14 @@ function MergePane({
 
   const applyMerge = () => {
     if (!ready) return;
-    const content = rows
-      .map((row) => chosenBlock(row, choices[row.id], custom[row.id]))
-      .filter((block): block is object => block !== null);
+    const content = rows.flatMap((row) => chosenBlocks(row, choices[row.id], custom[row.id]));
     const resolutions = conflicts.map((row) => {
       const choice = choices[row.id];
       if (choice === "current" || choice === "draft") return { id: row.id, choice };
       return {
         id: row.id,
         choice: "custom" as const,
-        block: chosenBlock(row, choice, custom[row.id]) ?? {
+        block: chosenBlocks(row, choice, custom[row.id])[0] ?? {
           type: "paragraph",
           attrs: { id: row.id },
           content: [],
@@ -345,7 +288,7 @@ function MergePane({
     void onApply(change.id, {
       resolutions,
       description_json: { type: "doc", content },
-      description_html: content.map((block) => blockHtml(block)).join("") || "<p></p>",
+      description_html: blocksHtml(content) || "<p></p>",
     })
       .then(() => {
         onClose();
@@ -431,8 +374,9 @@ function MergePane({
                         .map((row) => {
                           const choice = choices[row.id];
                           const unresolvedRow = row.change === "conflict" && !choice;
-                          const center = resultText(row, choice, custom[row.id]);
+                          const center = chosenBlocks(row, choice, custom[row.id]);
                           const changedRow = row.change !== "same";
+                          const editing = editingId === row.id;
                           return (
                             <div
                               key={row.id}
@@ -440,7 +384,7 @@ function MergePane({
                                 unresolvedRow ? "bg-danger-subtle/30" : ""
                               }`}
                             >
-                              <SidePane text={row.currentText} base={row.baseText} conflict={unresolvedRow} />
+                              <SidePane block={row.currentBlock} base={row.baseBlock} conflict={unresolvedRow} />
                               <div className="flex items-center justify-center gap-1 border-x border-subtle bg-layer-1 px-1">
                                 {changedRow && (
                                   <>
@@ -459,20 +403,30 @@ function MergePane({
                                   </>
                                 )}
                               </div>
-                              <textarea
-                                value={center}
-                                aria-label={t("workspace_wiki.merge_result")}
-                                rows={Math.max(1, center.split("\n").length)}
-                                className={`min-h-9 w-full resize-none bg-transparent px-3 py-2 text-body-sm-regular leading-6 outline-none focus:bg-layer-1 ${
-                                  unresolvedRow ? "placeholder:text-danger-primary" : ""
-                                }`}
-                                placeholder="—"
-                                onChange={(event) => {
-                                  const value = event.target.value;
-                                  setChoices((currentChoices) => ({ ...currentChoices, [row.id]: "custom" }));
-                                  setCustom((currentCustom) => ({ ...currentCustom, [row.id]: value }));
-                                }}
-                              />
+                              {editing ? (
+                                <div className="min-h-9 min-w-0 bg-layer-1 px-3 py-2">
+                                  <CenterEditor
+                                    rowId={row.id}
+                                    blocks={center}
+                                    workspaceSlug={workspaceSlug}
+                                    workspaceId={workspaceId}
+                                    onChange={(blocks) => {
+                                      setChoices((currentChoices) => ({ ...currentChoices, [row.id]: "custom" }));
+                                      setCustom((currentCustom) => ({ ...currentCustom, [row.id]: blocks }));
+                                    }}
+                                  />
+                                </div>
+                              ) : (
+                                <div className="relative min-h-9 min-w-0 px-3 py-2 break-words hover:bg-layer-1">
+                                  <RichBlocks blocks={center} />
+                                  <button
+                                    type="button"
+                                    aria-label={t("workspace_wiki.merge_result")}
+                                    className="absolute inset-0 cursor-text outline-none focus-visible:ring-1 focus-visible:ring-accent-strong"
+                                    onClick={() => setEditingId(row.id)}
+                                  />
+                                </div>
+                              )}
                               <div className="flex items-center justify-center border-x border-subtle bg-layer-1 px-1">
                                 {changedRow && (
                                   <GutterButton
@@ -483,7 +437,7 @@ function MergePane({
                                   />
                                 )}
                               </div>
-                              <SidePane text={row.draftText} base={row.baseText} conflict={unresolvedRow} />
+                              <SidePane block={row.draftBlock} base={row.baseBlock} conflict={unresolvedRow} />
                             </div>
                           );
                         })}
@@ -576,21 +530,11 @@ function MergeDetail({ change, onClose }: { change: TWikiChange; onClose: () => 
                     const tone = changed ? "bg-accent-subtle" : "";
                     return (
                       <div key={entry.id} className="grid grid-cols-2 border-b border-subtle last:border-b-0">
-                        <div className={`min-h-9 px-3 py-2 text-body-sm-regular leading-6 break-words ${tone}`}>
-                          <HighlightedText
-                            text={entry.current_text || ""}
-                            base={entry.draft_text || ""}
-                            conflict={false}
-                          />
+                        <div className={`min-h-9 min-w-0 px-3 py-2 break-words ${tone}`}>
+                          <RichBlocks blocks={listOf(blockOf(entry.current))} base={plainText(blockOf(entry.draft))} />
                         </div>
-                        <div
-                          className={`min-h-9 border-l border-subtle px-3 py-2 text-body-sm-regular leading-6 break-words ${tone}`}
-                        >
-                          <HighlightedText
-                            text={entry.draft_text || ""}
-                            base={entry.current_text || ""}
-                            conflict={false}
-                          />
+                        <div className={`min-h-9 min-w-0 border-l border-subtle px-3 py-2 break-words ${tone}`}>
+                          <RichBlocks blocks={listOf(blockOf(entry.draft))} base={plainText(blockOf(entry.current))} />
                         </div>
                       </div>
                     );
@@ -605,7 +549,7 @@ function MergeDetail({ change, onClose }: { change: TWikiChange; onClose: () => 
   );
 }
 
-export function WikiReviewDialog({ open, changes, onClose, onApply }: Props) {
+export function WikiReviewDialog({ open, changes, workspaceSlug, workspaceId, onClose, onApply }: Props) {
   const { t } = useTranslation();
   const [merging, setMerging] = useState<TWikiChange | null>(null);
   const [detail, setDetail] = useState<TWikiChange | null>(null);
@@ -780,7 +724,15 @@ export function WikiReviewDialog({ open, changes, onClose, onApply }: Props) {
           </DialogMain>
         </DialogContent>
       </Dialog>
-      {merging && <MergePane change={merging} onClose={() => setMerging(null)} onApply={onApply} />}
+      {merging && (
+        <MergePane
+          change={merging}
+          workspaceSlug={workspaceSlug}
+          workspaceId={workspaceId}
+          onClose={() => setMerging(null)}
+          onApply={onApply}
+        />
+      )}
       {detail && <MergeDetail change={detail} onClose={() => setDetail(null)} />}
     </>
   );

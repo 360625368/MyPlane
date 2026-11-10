@@ -362,6 +362,8 @@ export function WikiChanges({
       <WikiReviewDialog
         open={reviewOpen}
         changes={changes}
+        workspaceSlug={workspaceSlug}
+        workspaceId={workspaceId}
         onClose={() => onReviewOpenChange(false)}
         onApply={async (changeId, payload) => {
           try {

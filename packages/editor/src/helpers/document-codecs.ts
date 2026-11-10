@@ -252,6 +252,9 @@ export const createDocumentCodecs = ({ generateHTML, generateJSON }: HTMLCodec) 
     return allFormats;
   };
 
+  const getDocumentEditorHTMLFromJSON = (contentJSON: JSONContent): string =>
+    generateHTML(contentJSON, DOCUMENT_EDITOR_EXTENSIONS);
+
   const extractTextFromHTML = (html: string): string => {
     // Use DOMPurify to safely extract text and remove all HTML tags
     // This is more secure than regex as it handles edge cases and prevents injection
@@ -271,6 +274,7 @@ export const createDocumentCodecs = ({ generateHTML, generateJSON }: HTMLCodec) 
     getAllDocumentFormatsFromRichTextEditorBinaryData,
     getAllDocumentFormatsFromDocumentEditorBinaryData,
     convertHTMLDocumentToAllFormats,
+    getDocumentEditorHTMLFromJSON,
     extractTextFromHTML,
   };
 };
