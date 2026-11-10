@@ -57,6 +57,7 @@ export const WikiDocument = observer(function WikiDocument({ workspaceSlug, node
   const [suggestOpen, setSuggestOpen] = useState(false);
   const [ownChange, setOwnChange] = useState<TWikiChange | null>(null);
   const [reviewOpen, setReviewOpen] = useState(false);
+  const [reviewRefresh, setReviewRefresh] = useState(0);
   const [reviewCount, setReviewCount] = useState(0);
   const handleOwnOpenChange = useCallback((change: TWikiChange | null) => {
     setOwnChange((current) =>
@@ -217,7 +218,14 @@ export const WikiDocument = observer(function WikiDocument({ workspaceSlug, node
         }
         onSuggest={!node.is_creator ? () => setSuggestOpen(true) : undefined}
         reviewLabel={node.is_creator && reviewCount > 0 ? t("workspace_wiki.change_request") : undefined}
-        onReview={node.is_creator ? () => setReviewOpen(true) : undefined}
+        onReview={
+          node.is_creator
+            ? () => {
+                setReviewRefresh((current) => current + 1);
+                setReviewOpen(true);
+              }
+            : undefined
+        }
       />
     );
     return () => setHeaderActions(null);
@@ -376,6 +384,7 @@ export const WikiDocument = observer(function WikiDocument({ workspaceSlug, node
                 onSuggestOpenChange={setSuggestOpen}
                 onOwnOpenChange={handleOwnOpenChange}
                 reviewOpen={reviewOpen}
+                reviewRefresh={reviewRefresh}
                 onReviewOpenChange={setReviewOpen}
                 onReviewCount={handleReviewCount}
                 onBeforeMerge={prepareMerge}

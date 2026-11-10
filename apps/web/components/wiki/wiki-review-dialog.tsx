@@ -25,6 +25,8 @@ import { useTranslation } from "@plane/i18n";
 import { renderFormattedDate, renderFormattedTime } from "@plane/utils";
 import type { TWikiChange, TWikiMergeBlock, TWikiMergeChange } from "@/services/wiki.service";
 
+const PAGE_SIZE = 8;
+
 type Choice = "current" | "draft" | "baseline" | "custom";
 
 type MergeRow = {
@@ -536,13 +538,36 @@ function MergePane({
 export function WikiReviewDialog({ open, changes, onClose, onApply }: Props) {
   const { t } = useTranslation();
   const [merging, setMerging] = useState<TWikiChange | null>(null);
+  const [page, setPage] = useState(1);
+  const [jumpValue, setJumpValue] = useState("1");
+  const [jumping, setJumping] = useState(false);
   const listed = [...changes].toSorted((left, right) =>
     (right.submitted_at || right.updated_at || "").localeCompare(left.submitted_at || left.updated_at || "")
   );
+  const pageCount = Math.max(1, Math.ceil(listed.length / PAGE_SIZE));
+  const safePage = Math.min(page, pageCount);
+  const pageItems = listed.slice((safePage - 1) * PAGE_SIZE, safePage * PAGE_SIZE);
 
   useEffect(() => {
-    if (!open) setMerging(null);
+    if (!open) {
+      setMerging(null);
+      setPage(1);
+      setJumping(false);
+    }
   }, [open]);
+
+  const goTo = (next: number) => {
+    const clamped = Math.min(pageCount, Math.max(1, Math.trunc(next)));
+    setPage(clamped);
+    setJumpValue(String(clamped));
+    setJumping(false);
+  };
+
+  const commitJump = () => {
+    const parsed = Number.parseInt(jumpValue, 10);
+    if (Number.isFinite(parsed)) goTo(parsed);
+    else setJumping(false);
+  };
 
   const submittedLabel = (change: TWikiChange) => {
     const value = change.submitted_at || change.updated_at;
@@ -589,29 +614,83 @@ export function WikiReviewDialog({ open, changes, onClose, onApply }: Props) {
                     <span />
                   </div>
                   <div className="overflow-hidden rounded-lg border border-subtle">
-                    {listed.map((change) => (
-                      <div
-                        key={change.id}
-                        className="grid cursor-pointer grid-cols-[minmax(0,1fr)_11rem_auto] items-center gap-3 border-b border-subtle px-3 py-2.5 last:border-b-0 hover:bg-layer-1"
-                        onDoubleClick={() => openMerge(change)}
-                      >
-                        <span className="min-w-0 truncate text-body-sm-regular">
-                          {change.author_name}
-                          <span className="ml-2 text-caption-sm-medium text-tertiary">
-                            {t(`workspace_wiki.change_status.${change.status}`)}
+                    <div className="h-[26rem]">
+                      {pageItems.map((change) => (
+                        <div
+                          key={change.id}
+                          className="grid h-[3.25rem] cursor-pointer grid-cols-[minmax(0,1fr)_11rem_auto] items-center gap-3 border-b border-subtle px-3 last:border-b-0 hover:bg-layer-1"
+                          onDoubleClick={() => openMerge(change)}
+                        >
+                          <span className="min-w-0 truncate text-body-sm-regular">
+                            {change.author_name}
+                            <span className="ml-2 text-caption-sm-medium text-tertiary">
+                              {t(`workspace_wiki.change_status.${change.status}`)}
+                            </span>
                           </span>
-                        </span>
-                        <span className="text-body-sm-regular text-tertiary">{submittedLabel(change)}</span>
-                        <Button
-                          variant={change.can_merge ? "primary" : "secondary"}
-                          size="sm"
-                          stretch="auto"
-                          disabled={!change.can_merge}
-                          label={t("workspace_wiki.merge_change")}
-                          onClick={() => openMerge(change)}
-                        />
-                      </div>
-                    ))}
+                          <span className="text-body-sm-regular text-tertiary">{submittedLabel(change)}</span>
+                          <Button
+                            variant={change.can_merge ? "primary" : "secondary"}
+                            size="sm"
+                            stretch="auto"
+                            disabled={!change.can_merge}
+                            label={t("workspace_wiki.merge_change")}
+                            onClick={() => openMerge(change)}
+                          />
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                  <div className="flex flex-wrap items-center justify-end gap-2 pt-3">
+                    <Button
+                      variant="secondary"
+                      size="sm"
+                      stretch="auto"
+                      disabled={safePage <= 1}
+                      label={t("workspace_wiki.page_first")}
+                      onClick={() => goTo(1)}
+                    />
+                    <Button
+                      variant="secondary"
+                      size="sm"
+                      stretch="auto"
+                      disabled={safePage <= 1}
+                      label={t("workspace_wiki.page_previous")}
+                      onClick={() => goTo(safePage - 1)}
+                    />
+                    <input
+                      value={jumping ? jumpValue : String(safePage)}
+                      aria-label={t("workspace_wiki.page_jump")}
+                      inputMode="numeric"
+                      className="h-8 w-14 rounded-md border border-subtle bg-surface-1 text-center text-body-sm-regular outline-none focus:border-accent-strong"
+                      onFocus={() => {
+                        setJumpValue(String(safePage));
+                        setJumping(true);
+                      }}
+                      onChange={(event) => setJumpValue(event.target.value.replace(/\D/g, ""))}
+                      onBlur={commitJump}
+                      onKeyDown={(event) => {
+                        if (event.key === "Enter") {
+                          event.preventDefault();
+                          commitJump();
+                        }
+                      }}
+                    />
+                    <Button
+                      variant="secondary"
+                      size="sm"
+                      stretch="auto"
+                      disabled={safePage >= pageCount}
+                      label={t("workspace_wiki.page_next")}
+                      onClick={() => goTo(safePage + 1)}
+                    />
+                    <Button
+                      variant="secondary"
+                      size="sm"
+                      stretch="auto"
+                      disabled={safePage >= pageCount}
+                      label={t("workspace_wiki.page_last")}
+                      onClick={() => goTo(pageCount)}
+                    />
                   </div>
                 </div>
               )}

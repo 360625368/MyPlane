@@ -47,6 +47,7 @@ type Props = {
   onSuggestOpenChange: (open: boolean) => void;
   onOwnOpenChange: (change: TWikiChange | null) => void;
   reviewOpen: boolean;
+  reviewRefresh: number;
   onReviewOpenChange: (open: boolean) => void;
   onReviewCount: (count: number) => void;
   onBeforeMerge?: () => Promise<void>;
@@ -208,6 +209,7 @@ export function WikiChanges({
   onSuggestOpenChange,
   onOwnOpenChange,
   reviewOpen,
+  reviewRefresh,
   onReviewOpenChange,
   onReviewCount,
   onBeforeMerge,
@@ -253,6 +255,18 @@ export function WikiChanges({
       cancelled = true;
     };
   }, [node.id, publishedHtml, workspaceSlug]);
+
+  useEffect(() => {
+    if (!reviewOpen || !node.is_creator || reviewRefresh === 0) return;
+    let cancelled = false;
+    void wikiService.listChanges(workspaceSlug, node.id).then((items) => {
+      if (!cancelled) setChanges(items);
+      return undefined;
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [node.id, node.is_creator, reviewOpen, reviewRefresh, workspaceSlug]);
 
   useEffect(
     () => () => {
@@ -395,8 +409,8 @@ export function WikiChanges({
                 <DialogTitle>{suggestTitle}</DialogTitle>
               </DialogHeading>
             </DialogHeader>
-            <DialogBody tabIndex={0}>
-              <div className="flex h-full min-h-[520px] flex-col gap-3">
+            <DialogBody tabIndex={0} className="flex flex-col overflow-hidden">
+              <div className="flex min-h-0 flex-1 flex-col gap-3">
                 {!active && !message && (
                   <p className="text-body-sm-regular text-tertiary">{t("workspace_wiki.loading")}</p>
                 )}
@@ -458,7 +472,7 @@ export function WikiChanges({
                             value={editorValue(active.description_json, active.description_html)}
                             workspaceId={workspaceId}
                             workspaceSlug={workspaceSlug}
-                            containerClassName="h-full border-none p-0"
+                            containerClassName="border-none p-0"
                             displayConfig={{ fontSize, fontStyle, wideLayout: Boolean(node.view_props?.full_width) }}
                             searchMentionCallback={async (payload) =>
                               workspaceService.searchEntity(workspaceSlug, payload)
@@ -491,7 +505,7 @@ export function WikiChanges({
                             value={editorValue(active.description_json, active.description_html)}
                             workspaceId={workspaceId}
                             workspaceSlug={workspaceSlug}
-                            containerClassName="h-full border-none p-0"
+                            containerClassName="border-none p-0"
                             displayConfig={{ fontSize, fontStyle, wideLayout: Boolean(node.view_props?.full_width) }}
                           />
                         )}
@@ -499,68 +513,68 @@ export function WikiChanges({
                     </div>
                   </>
                 )}
-                <div className="flex items-center justify-end gap-3 border-t border-subtle pt-3">
-                  {message && (
-                    <p
-                      className={`mr-auto min-w-0 truncate text-caption-sm-medium ${
-                        messageIsError ? "text-danger-primary" : "text-tertiary"
-                      }`}
-                    >
-                      {message}
-                    </p>
-                  )}
-                  {active?.can_withdraw && (
-                    <Button
-                      variant="secondary"
-                      size="sm"
-                      stretch="auto"
-                      label={t("workspace_wiki.withdraw_change")}
-                      onClick={() =>
-                        void run(() =>
-                          wikiService.actOnChange(workspaceSlug, node.id, active.id, "withdraw").then(() => undefined)
-                        )
-                      }
-                    />
-                  )}
-                  {active?.can_close && (
-                    <Button
-                      variant="secondary"
-                      size="sm"
-                      stretch="auto"
-                      label={t("workspace_wiki.close_change")}
-                      onClick={() =>
-                        void run(() =>
-                          wikiService.actOnChange(workspaceSlug, node.id, active.id, "close").then(() => undefined)
-                        )
-                      }
-                    />
-                  )}
-                  {active?.can_merge && !active.merge_plan?.conflicts.length && (
-                    <Button
-                      variant="primary"
-                      size="sm"
-                      stretch="auto"
-                      label={t("workspace_wiki.merge_change")}
-                      onClick={() => mergeChange()}
-                    />
-                  )}
-                  {active?.can_submit && (
-                    <Button
-                      variant="primary"
-                      size="sm"
-                      stretch="auto"
-                      label={t("workspace_wiki.submit_change")}
-                      onClick={() =>
-                        void run(async () => {
-                          await flushDraft();
-                          await wikiService.actOnChange(workspaceSlug, node.id, active.id, "submit");
-                        })
-                      }
-                    />
-                  )}
-                </div>
               </div>
             </DialogBody>
+            <div className="flex shrink-0 items-center justify-end gap-3 border-t border-subtle pt-3">
+              {message && (
+                <p
+                  className={`mr-auto min-w-0 truncate text-caption-sm-medium ${
+                    messageIsError ? "text-danger-primary" : "text-tertiary"
+                  }`}
+                >
+                  {message}
+                </p>
+              )}
+              {active?.can_withdraw && (
+                <Button
+                  variant="secondary"
+                  size="sm"
+                  stretch="auto"
+                  label={t("workspace_wiki.withdraw_change")}
+                  onClick={() =>
+                    void run(() =>
+                      wikiService.actOnChange(workspaceSlug, node.id, active.id, "withdraw").then(() => undefined)
+                    )
+                  }
+                />
+              )}
+              {active?.can_close && (
+                <Button
+                  variant="secondary"
+                  size="sm"
+                  stretch="auto"
+                  label={t("workspace_wiki.close_change")}
+                  onClick={() =>
+                    void run(() =>
+                      wikiService.actOnChange(workspaceSlug, node.id, active.id, "close").then(() => undefined)
+                    )
+                  }
+                />
+              )}
+              {active?.can_merge && !active.merge_plan?.conflicts.length && (
+                <Button
+                  variant="primary"
+                  size="sm"
+                  stretch="auto"
+                  label={t("workspace_wiki.merge_change")}
+                  onClick={() => mergeChange()}
+                />
+              )}
+              {active?.can_submit && (
+                <Button
+                  variant="primary"
+                  size="sm"
+                  stretch="auto"
+                  label={t("workspace_wiki.submit_change")}
+                  onClick={() =>
+                    void run(async () => {
+                      await flushDraft();
+                      await wikiService.actOnChange(workspaceSlug, node.id, active.id, "submit");
+                    })
+                  }
+                />
+              )}
+            </div>
           </DialogMain>
         </DialogContent>
       </Dialog>
