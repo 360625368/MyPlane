@@ -9,14 +9,14 @@ import ts from "highlight.js/lib/languages/typescript";
 import { common, createLowlight } from "lowlight";
 // components
 import { CodeBlockLowlight } from "./code-block-lowlight";
-import { codeBlockNodeView } from "./code-block-node-view";
+import { CODE_BLOCK_CLASS_NAME, CodeBlockCopyButtonPlugin } from "./code-block-copy-button";
 
 const lowlight = createLowlight(common);
 lowlight.register("ts", ts);
 
 export const CustomCodeBlockExtension = CodeBlockLowlight.extend({
-  addNodeView() {
-    return codeBlockNodeView;
+  addProseMirrorPlugins() {
+    return [...(this.parent?.() ?? []), CodeBlockCopyButtonPlugin(this.name)];
   },
 
   addKeyboardShortcuts() {
@@ -124,6 +124,6 @@ export const CustomCodeBlockExtension = CodeBlockLowlight.extend({
   defaultLanguage: "plaintext",
   exitOnTripleEnter: false,
   HTMLAttributes: {
-    class: "",
+    class: CODE_BLOCK_CLASS_NAME,
   },
 });
