@@ -24,7 +24,7 @@ import { useSetWikiHeaderActions } from "@/components/wiki/wiki-header-actions";
 import { WikiLogoControl } from "@/components/wiki/wiki-logo";
 import { useFavorite } from "@/hooks/store/use-favorite";
 import { useWorkspace } from "@/hooks/store/use-workspace";
-import type { TWikiNode, TWikiVersion } from "@/services/wiki.service";
+import type { TWikiChange, TWikiNode, TWikiVersion } from "@/services/wiki.service";
 import { WikiService } from "@/services/wiki.service";
 import { WorkspaceService } from "@/services/workspace.service";
 
@@ -54,6 +54,20 @@ export const WikiDocument = observer(function WikiDocument({ workspaceSlug, node
   const [publishedHtml, setPublishedHtml] = useState("");
   const [title, setTitle] = useState("");
   const [draftEditor, setDraftEditor] = useState<EditorRefApi | null>(null);
+  const [suggestOpen, setSuggestOpen] = useState(false);
+  const [ownChange, setOwnChange] = useState<TWikiChange | null>(null);
+  const [reviewOpen, setReviewOpen] = useState(false);
+  const [reviewCount, setReviewCount] = useState(0);
+  const handleOwnOpenChange = useCallback((change: TWikiChange | null) => {
+    setOwnChange((current) =>
+      current?.id === change?.id && current?.status === change?.status && current?.can_edit === change?.can_edit
+        ? current
+        : change
+    );
+  }, []);
+  const handleReviewCount = useCallback((count: number) => {
+    setReviewCount((current) => (current === count ? current : count));
+  }, []);
   const publishedEditor = useWikiEditorRef();
   const { fontSize, fontStyle } = usePageFilters();
   const favorite = entityMap[nodeId];
@@ -75,6 +89,10 @@ export const WikiDocument = observer(function WikiDocument({ workspaceSlug, node
     let cancelled = false;
     setPreview(null);
     setShowVersions(false);
+    setSuggestOpen(false);
+    setOwnChange(null);
+    setReviewOpen(false);
+    setReviewCount(0);
     void wikiService.retrieve(workspaceSlug, nodeId).then((detail) => {
       if (!cancelled) {
         serverHtml.current = detail.description_html || "";
@@ -190,6 +208,16 @@ export const WikiDocument = observer(function WikiDocument({ workspaceSlug, node
           setNode({ ...node, color });
           void wikiService.update(workspaceSlug, nodeId, { color }).then(refresh);
         }}
+        suggestLabel={
+          !node.is_creator && (ownChange || (node.access === "editable" && !node.is_locked && !node.archived_at))
+            ? ownChange
+              ? `${t("workspace_wiki.change_request")} · ${t(`workspace_wiki.change_status.${ownChange.status}`)}`
+              : t("workspace_wiki.start_change")
+            : undefined
+        }
+        onSuggest={!node.is_creator ? () => setSuggestOpen(true) : undefined}
+        reviewLabel={node.is_creator && reviewCount > 0 ? t("workspace_wiki.change_request") : undefined}
+        onReview={node.is_creator ? () => setReviewOpen(true) : undefined}
       />
     );
     return () => setHeaderActions(null);
@@ -199,6 +227,8 @@ export const WikiDocument = observer(function WikiDocument({ workspaceSlug, node
     deleteFavorite,
     favorite,
     node,
+    ownChange,
+    reviewCount,
     nodeId,
     onChanged,
     openVersions,
@@ -306,7 +336,7 @@ export const WikiDocument = observer(function WikiDocument({ workspaceSlug, node
                   value={value}
                   workspaceId={workspaceId}
                   workspaceSlug={workspaceSlug}
-                  containerClassName="h-full p-0 pb-64"
+                  containerClassName="h-full p-0 pb-64 border-none"
                   displayConfig={{ fontSize, fontStyle, wideLayout: wide }}
                   searchMentionCallback={async (payload) => workspaceService.searchEntity(workspaceSlug, payload)}
                   uploadFile={async () => ""}
@@ -332,7 +362,7 @@ export const WikiDocument = observer(function WikiDocument({ workspaceSlug, node
                   value={value}
                   workspaceId={workspaceId}
                   workspaceSlug={workspaceSlug}
-                  containerClassName="h-full p-0 pb-64"
+                  containerClassName="h-full p-0 pb-64 border-none"
                   displayConfig={{ fontSize, fontStyle, wideLayout: wide }}
                 />
               )}
@@ -342,6 +372,12 @@ export const WikiDocument = observer(function WikiDocument({ workspaceSlug, node
                 workspaceSlug={workspaceSlug}
                 node={node}
                 publishedHtml={publishedHtml}
+                suggestOpen={suggestOpen}
+                onSuggestOpenChange={setSuggestOpen}
+                onOwnOpenChange={handleOwnOpenChange}
+                reviewOpen={reviewOpen}
+                onReviewOpenChange={setReviewOpen}
+                onReviewCount={handleReviewCount}
                 onBeforeMerge={prepareMerge}
                 onMerged={refresh}
                 onMergeSettled={releasePublish}

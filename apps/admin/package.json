@@ -6,10 +6,10 @@
   "license": "AGPL-3.0",
   "type": "module",
   "scripts": {
-    "dev": "react-router dev --port 3001",
+    "dev": "react-router dev --port ${ADMIN_PORT:-3011}",
     "build": "react-router build",
-    "preview": "react-router build && serve -s build/client -l 3001",
-    "start": "serve -s build/client -l 3001",
+    "preview": "react-router build && serve -s build/client -l ${ADMIN_PORT:-3011}",
+    "start": "serve -s build/client -l ${ADMIN_PORT:-3011}",
     "clean": "rm -rf .turbo && rm -rf .next && rm -rf node_modules && rm -rf dist && rm -rf build",
     "check:lint": "oxlint --max-warnings=759 .",
     "check:types": "react-router typegen && tsc --noEmit",

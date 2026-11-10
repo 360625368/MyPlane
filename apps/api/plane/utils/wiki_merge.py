@@ -109,28 +109,33 @@ def plan_merge(baseline_json, baseline_html, current_json, current_html, draft_j
         if current_key == draft_key:
             chosen = current_block
             conflict = False
+            change = "same" if current_key == base_key else "both"
         elif current_key == base_key:
             chosen = draft_block
             conflict = False
+            change = "draft"
         elif draft_key == base_key:
             chosen = current_block
             conflict = False
+            change = "current"
         else:
             chosen = None
             conflict = True
-        entry = {"id": key, "conflict": conflict, "block": chosen}
-        if conflict:
-            entry.update(
-                {
-                    "baseline": base_block,
-                    "current": current_block,
-                    "draft": draft_block,
-                    "baseline_text": _plain_text(base_block),
-                    "current_text": _plain_text(current_block),
-                    "draft_text": _plain_text(draft_block),
-                }
-            )
-        blocks.append(entry)
+            change = "conflict"
+        blocks.append(
+            {
+                "id": key,
+                "conflict": conflict,
+                "change": change,
+                "block": chosen,
+                "baseline": base_block,
+                "current": current_block,
+                "draft": draft_block,
+                "baseline_text": _plain_text(base_block),
+                "current_text": _plain_text(current_block),
+                "draft_text": _plain_text(draft_block),
+            }
+        )
     resolved = [entry["block"] for entry in blocks if entry["block"] is not None and not entry["conflict"]]
     return {
         "blocks": blocks,

@@ -9,6 +9,11 @@ LOG="$ROOT/.runtime/logs"
 PY="$ROOT/apps/api/.venv/bin/python"
 CELERY="$ROOT/apps/api/.venv/bin/celery"
 
+# Local ports. 3000 is already taken by another app on this machine.
+WEB_APP_PORT=3010
+ADMIN_PORT=3011
+API_PORT=3012
+
 mkdir -p "$DATA/pg" "$DATA/redis" "$DATA/rabbitmq" "$DATA/minio" "$LOG"
 
 if [[ ! -x "$PREFIX/bin/postgres" ]]; then
@@ -94,6 +99,17 @@ set -a
 source "$ROOT/apps/api/.env"
 set +a
 export DJANGO_SETTINGS_MODULE=plane.settings.local
+# The checked-in env files still mention the upstream ports. This machine uses the ports above.
+export APP_BASE_URL="http://localhost:${WEB_APP_PORT}"
+export ADMIN_BASE_URL="http://localhost:${ADMIN_PORT}"
+export WEB_URL="http://localhost:${API_PORT}"
+export API_BASE_URL="http://localhost:${API_PORT}"
+export WEB_BASE_URL="http://localhost:${WEB_APP_PORT}"
+export CORS_ALLOWED_ORIGINS="http://localhost:${WEB_APP_PORT},http://localhost:${ADMIN_PORT},http://localhost:3002,http://localhost:3100"
+export VITE_API_BASE_URL="http://localhost:${API_PORT}"
+export VITE_WEB_BASE_URL="http://localhost:${WEB_APP_PORT}"
+export VITE_ADMIN_BASE_URL="http://localhost:${ADMIN_PORT}"
+export WEB_APP_PORT ADMIN_PORT API_PORT
 cd "$ROOT/apps/api"
 "$PY" manage.py wait_for_db --settings=plane.settings.local
 "$PY" manage.py migrate --settings=plane.settings.local
@@ -104,8 +120,8 @@ export MACHINE_SIGNATURE="$SIG"
 "$PY" manage.py create_bucket --settings=plane.settings.local
 "$PY" manage.py clear_cache --settings=plane.settings.local
 
-if ! lsof -nP -iTCP:8000 -sTCP:LISTEN >/dev/null 2>&1; then
-  nohup "$PY" manage.py runserver 127.0.0.1:8000 --settings=plane.settings.local \
+if ! lsof -nP -iTCP:"$API_PORT" -sTCP:LISTEN >/dev/null 2>&1; then
+  nohup "$PY" manage.py runserver "127.0.0.1:${API_PORT}" --settings=plane.settings.local \
     > "$LOG/api.log" 2>&1 &
 fi
 if ! pgrep -f "celery -A plane worker" >/dev/null 2>&1; then
@@ -116,19 +132,19 @@ if ! pgrep -f "celery -A plane beat" >/dev/null 2>&1; then
   nohup "$CELERY" -A plane beat -l info > "$LOG/beat.log" 2>&1 &
 fi
 
-# Web apps. Port 3000 is already taken on this machine, so the web app uses 3010.
+# Web apps. package.json dev scripts read WEB_APP_PORT and ADMIN_PORT.
 unset PREFIX
 export NVM_DIR="$HOME/.nvm"
 # shellcheck disable=SC1091
 . "$NVM_DIR/nvm.sh"
 nvm use 22.23.3 >/dev/null
 cd "$ROOT"
-if ! lsof -nP -iTCP:3010 -sTCP:LISTEN >/dev/null 2>&1; then
+if ! lsof -nP -iTCP:"$WEB_APP_PORT" -sTCP:LISTEN >/dev/null 2>&1; then
   nohup pnpm dev > "$LOG/web.log" 2>&1 &
 fi
 
 echo "Plane is starting."
-echo "  Admin setup: http://localhost:3001/god-mode/"
-echo "  App:         http://localhost:3010/"
-echo "  API:         http://localhost:8000/"
+echo "  Admin setup: http://localhost:${ADMIN_PORT}/god-mode/"
+echo "  App:         http://localhost:${WEB_APP_PORT}/"
+echo "  API:         http://localhost:${API_PORT}/"
 echo "Logs: $LOG"

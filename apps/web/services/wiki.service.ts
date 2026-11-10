@@ -267,9 +267,12 @@ export type TWikiVersion = {
 
 export type TWikiChangeStatus = "draft" | "in_review" | "changes_requested" | "conflict" | "merged" | "closed";
 
+export type TWikiMergeChange = "same" | "both" | "current" | "draft" | "conflict";
+
 export type TWikiMergeBlock = {
   id: string;
   conflict: boolean;
+  change?: TWikiMergeChange;
   block: object | null;
   baseline?: object | null;
   current?: object | null;
@@ -295,6 +298,8 @@ export type TWikiChange = {
   review_comment: string;
   description_html: string;
   description_json: object;
+  submitted_at?: string | null;
+  updated_at?: string | null;
   can_edit: boolean;
   can_submit: boolean;
   can_withdraw: boolean;

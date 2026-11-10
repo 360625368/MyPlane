@@ -56,8 +56,6 @@ def _load_request(node, user, change_id):
 
 
 def _merge_plan(change, node):
-    if change.baseline_html == node.description_html:
-        return None
     return plan_merge(
         change.baseline_json,
         change.baseline_html,
@@ -85,6 +83,7 @@ def _serialize_change(change, node, user, access):
         "review_comment": change.review_comment,
         "description_html": change.description_html,
         "description_json": change.description_json,
+        "submitted_at": change.submitted_at,
         "updated_at": change.updated_at,
         "can_edit": editable_author and change.status in editable_statuses,
         "can_submit": editable_author and change.status in editable_statuses,
@@ -215,9 +214,14 @@ class WikiChangeRequestDetailEndpoint(BaseAPIView):
             blocked = _creator_can_publish(node, request.user)
             if blocked:
                 return blocked
+            edited_html, edited_json, invalid = (None, None, None)
+            if "description_html" in request.data and "description_json" in request.data:
+                edited_html, edited_json, invalid = _clean_description(request.data)
+                if invalid:
+                    return invalid
             if change.baseline_html == node.description_html:
-                merged_html = change.description_html
-                merged_json = change.description_json
+                merged_html = edited_html if edited_html is not None else change.description_html
+                merged_json = edited_json if edited_json is not None else change.description_json
             else:
                 plan = plan_merge(
                     change.baseline_json,
@@ -235,11 +239,10 @@ class WikiChangeRequestDetailEndpoint(BaseAPIView):
                             change.save(update_fields=["status", "updated_at"])
                         return Response({"error": "conflict", "merge_plan": plan}, status=status.HTTP_409_CONFLICT)
                     merged_json, merged_html = applied
-                    if "description_html" in request.data and "description_json" in request.data:
-                        cleaned_html, cleaned_json, invalid = _clean_description(request.data)
-                        if invalid:
-                            return invalid
-                        merged_html, merged_json = cleaned_html, cleaned_json
+                    if edited_html is not None:
+                        merged_html, merged_json = edited_html, edited_json
+                elif edited_html is not None:
+                    merged_html, merged_json = edited_html, edited_json
                 else:
                     merged_html = plan["html"]
                     merged_json = plan["json"]

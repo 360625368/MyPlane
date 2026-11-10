@@ -8,6 +8,7 @@ import { useEffect, useRef, useState } from "react";
 import {
   ArchiveOutline,
   CopyOutline,
+  EditOutline,
   HistoryOutline,
   LinkOutline,
   LockedOutline,
@@ -43,10 +44,28 @@ type Props = {
   onVersions: () => void;
   onWide: (wide: boolean) => void;
   onColor: (color: string) => void;
+  suggestLabel?: string;
+  onSuggest?: () => void;
+  reviewLabel?: string;
+  onReview?: () => void;
 };
 
 export function WikiFileActions(props: Props) {
-  const { node, favorite, onLock, onArchive, onFavorite, onDuplicate, onVersions, onWide, onColor } = props;
+  const {
+    node,
+    favorite,
+    onLock,
+    onArchive,
+    onFavorite,
+    onDuplicate,
+    onVersions,
+    onWide,
+    onColor,
+    suggestLabel,
+    onSuggest,
+    reviewLabel,
+    onReview,
+  } = props;
   const { t } = useTranslation();
   const [displayState, setDisplayState] = useState<LockDisplayState>(node.is_locked ? "locked" : "neutral");
   const [copied, setCopied] = useState(false);
@@ -168,6 +187,10 @@ export function WikiFileActions(props: Props) {
           }
         />
         <MenuContent side="bottom" align="end">
+          {reviewLabel && onReview && <MenuItem label={reviewLabel} onClick={onReview} />}
+          {suggestLabel && onSuggest && (
+            <MenuItem label={suggestLabel} icon={<Icon icon={EditOutline} />} onClick={onSuggest} />
+          )}
           {node.is_creator && (
             <MenuItem
               label={t("workspace_wiki.wide")}
