@@ -1,0 +1,5 @@
+*
+!pyproject.toml
+!uv.lock
+!plane_ce_mcp/
+!plane_ce_mcp/*.py
