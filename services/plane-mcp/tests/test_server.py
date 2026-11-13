@@ -31,7 +31,7 @@ def test_protocol_and_api_mapping():
         server = create_server(make_client(handler))
         async with create_connected_server_and_client_session(server._mcp_server) as session:
             tools = (await session.list_tools()).tools
-            assert len(tools) == 9
+            assert len(tools) == 28
             assert next(t for t in tools if t.name == "delete_resource").annotations.destructiveHint
             result = await session.call_tool(
                 "list_resources",
@@ -95,7 +95,7 @@ def test_write_delete_and_read_only():
         assert [r.method for r in requests] == ["POST", "PATCH", "DELETE"]
         read_client = make_client(handler, read_only=True)
         read_server = create_server(read_client)
-        assert len(await read_server.list_tools()) == 6
+        assert len(await read_server.list_tools()) == 13
         with pytest.raises(ValueError, match="read-only"):
             await read_client.request("POST", "projects/", data={})
 
@@ -150,5 +150,46 @@ def test_http_auth_all_requests():
                         method, "/mcp", headers={"Authorization": f"Bearer {token}"}
                     )
                 ).status_code == 200
+
+    asyncio.run(run())
+
+
+def test_wiki_tools_protocol_and_content():
+    requests = []
+    body = {
+        "id": str(ITEM),
+        "name": "部署说明",
+        "description_html": "<h1>部署</h1><p>中文内容</p>",
+        "description_json": {"type": "doc", "content": []},
+    }
+
+    def handler(request):
+        requests.append(request)
+        if request.url.path.endswith(f"/{ITEM}/"):
+            return httpx.Response(200, json=body)
+        return httpx.Response(
+            200, json=[{"id": str(ITEM), "name": "部署说明", "parent_id": str(PROJECT)}]
+        )
+
+    async def run():
+        server = create_server(make_client(handler, read_only=True))
+        async with create_connected_server_and_client_session(server._mcp_server) as session:
+            tools = {tool.name: tool for tool in (await session.list_tools()).tools}
+            for name in ["list_wiki_nodes", "get_wiki_node", "search_wiki"]:
+                assert tools[name].annotations.readOnlyHint
+            assert not (await session.call_tool("list_wiki_nodes", {"archived": True})).isError
+            result = await session.call_tool("get_wiki_node", {"node_id": str(ITEM)})
+            assert not result.isError
+            assert "中文内容" in result.content[0].text
+            assert "description_json" in result.content[0].text
+            assert not (await session.call_tool("search_wiki", {"query": " 部署 "})).isError
+            assert (await session.call_tool("get_wiki_node", {"node_id": "../escape"})).isError
+            assert (await session.call_tool("search_wiki", {"query": " "})).isError
+        assert len(requests) == 3
+        assert requests[0].url.path == "/api/v1/workspaces/team/wiki/nodes/"
+        assert requests[0].url.params["archived"] == "1"
+        assert requests[1].url.path == f"/api/v1/workspaces/team/wiki/nodes/{ITEM}/"
+        assert requests[2].url.path == "/api/v1/workspaces/team/wiki/search/"
+        assert requests[2].url.params["q"] == "部署"
 
     asyncio.run(run())
