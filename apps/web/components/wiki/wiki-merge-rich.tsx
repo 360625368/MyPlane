@@ -133,9 +133,21 @@ export const diffTokens = (base: string, text: string) => {
 
 const changedRanges = (base: string, text: string): Range[] => {
   if (!text || text === base) return [];
+  const before = Array.from(base);
+  const after = Array.from(text);
+  const sharedLength = Math.min(before.length, after.length);
+  let prefix = 0;
+  while (prefix < sharedLength && before[prefix] === after[prefix]) prefix += 1;
+  let suffix = 0;
+  while (suffix < sharedLength - prefix && before[before.length - 1 - suffix] === after[after.length - 1 - suffix]) {
+    suffix += 1;
+  }
+
   const ranges: Range[] = [];
-  let offset = 0;
-  for (const part of diffTokens(base, text)) {
+  let offset = after.slice(0, prefix).join("").length;
+  const remainingBase = before.slice(prefix, before.length - suffix).join("");
+  const remainingText = after.slice(prefix, after.length - suffix).join("");
+  for (const part of diffTokens(remainingBase, remainingText)) {
     if (part.changed) ranges.push({ start: offset, end: offset + part.text.length });
     offset += part.text.length;
   }
@@ -229,26 +241,35 @@ const createTag = (tag: string, props: Record<string, unknown>, children: ReactN
 
 export function RichBlocks({
   blocks,
-  base = "",
+  base,
   conflict = false,
   className = "",
 }: {
   blocks: object[];
-  base?: string;
+  base?: object[];
   conflict?: boolean;
   className?: string;
 }) {
   const signature = JSON.stringify(blocks);
+  const baseSignature = base === undefined ? undefined : JSON.stringify(base);
   const content = useMemo(() => {
     const parsed = JSON.parse(signature) as object[];
     const html = blocksHtml(parsed);
     if (!html) return null;
-    const ranges = changedRanges(base, parsed.map((block) => plainText(block)).join(""));
     const tone = conflict ? "bg-danger-subtle text-danger-primary" : "bg-label-yellow-bg text-label-yellow-text";
-    const body = new DOMParser().parseFromString(html, "text/html").body;
+    const parser = new DOMParser();
+    const body = parser.parseFromString(html, "text/html").body;
+    const ranges =
+      baseSignature === undefined
+        ? []
+        : changedRanges(
+            parser.parseFromString(blocksHtml(JSON.parse(baseSignature) as object[]), "text/html").body.textContent ??
+              "",
+            body.textContent ?? ""
+          );
     const cursor = { offset: 0 };
     return Array.from(body.childNodes).map((child, index) => renderDom(child, ranges, cursor, tone, String(index)));
-  }, [base, conflict, signature]);
+  }, [baseSignature, conflict, signature]);
 
   if (!content) return <span className="text-placeholder">—</span>;
   return (

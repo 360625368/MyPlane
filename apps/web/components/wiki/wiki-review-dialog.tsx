@@ -136,7 +136,7 @@ const editedBlocks = (json: object): object[] => {
 function SidePane({ block, base, conflict }: { block: object | null; base: object | null; conflict: boolean }) {
   return (
     <div className={`min-h-9 min-w-0 px-3 py-2 break-words ${conflict ? "bg-danger-subtle/40" : ""}`}>
-      <RichBlocks blocks={listOf(block)} base={plainText(base)} conflict={conflict} />
+      <RichBlocks blocks={listOf(block)} base={listOf(base)} conflict={conflict} />
     </div>
   );
 }
@@ -418,7 +418,7 @@ function MergePane({
                                 </div>
                               ) : (
                                 <div className="relative min-h-9 min-w-0 px-3 py-2 break-words hover:bg-layer-1">
-                                  <RichBlocks blocks={center} />
+                                  <RichBlocks blocks={center} base={listOf(row.baseBlock)} />
                                   <button
                                     type="button"
                                     aria-label={t("workspace_wiki.merge_result")}
@@ -527,10 +527,10 @@ function MergeDetail({ change, onClose }: { change: TWikiChange; onClose: () => 
                     return (
                       <div key={entry.id} className="grid grid-cols-2 border-b border-subtle last:border-b-0">
                         <div className={`min-h-9 min-w-0 px-3 py-2 break-words ${tone}`}>
-                          <RichBlocks blocks={listOf(blockOf(entry.current))} base={plainText(blockOf(entry.draft))} />
+                          <RichBlocks blocks={listOf(blockOf(entry.current))} base={listOf(blockOf(entry.draft))} />
                         </div>
                         <div className={`min-h-9 min-w-0 border-l border-subtle px-3 py-2 break-words ${tone}`}>
-                          <RichBlocks blocks={listOf(blockOf(entry.draft))} base={plainText(blockOf(entry.current))} />
+                          <RichBlocks blocks={listOf(blockOf(entry.draft))} base={listOf(blockOf(entry.current))} />
                         </div>
                       </div>
                     );
