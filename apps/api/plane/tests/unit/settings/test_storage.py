@@ -222,3 +222,16 @@ class TestS3StorageObjectMetadata:
 
         assert S3Storage().get_object_metadata("ws/missing.png") is None
         assert mock_log.called is logged
+
+
+@pytest.mark.unit
+@pytest.mark.parametrize("content_type", ["text/markdown", "text/plain"])
+@pytest.mark.parametrize("disposition", ["inline", "attachment"])
+@patch("plane.settings.storage.boto3")
+def test_text_downloads_declare_utf8(mock_boto3, content_type, disposition):
+    storage = S3Storage()
+    storage.generate_presigned_url("workspace/README.md", content_type=content_type, disposition=disposition)
+    params = mock_boto3.client.return_value.generate_presigned_url.call_args.kwargs["Params"]
+    assert params["ResponseContentType"] == f"{content_type}; charset=utf-8"
+    # Text attachments retain the existing download disposition policy.
+    assert params["ResponseContentDisposition"].startswith("attachment;")

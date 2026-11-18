@@ -70,3 +70,26 @@ class TestMinioUploadProxyMiddleware:
         headers = connection.request.call_args.kwargs["headers"]
         assert headers["Content-Type"] == "image/jpeg"
         assert headers["Content-Length"] == "10"
+
+
+    @pytest.mark.parametrize("mime_type", ["text/markdown", "text/plain"])
+    def test_text_response_declares_utf8(self, request_factory, middleware, mime_type):
+        body = "# 中文附件".encode("utf-8")
+        request = request_factory.get("/uploads/workspace/README.md", HTTP_HOST="127.0.0.1:8000")
+        connection = _upstream(body=body, content_type=mime_type)
+
+        with patch("plane.middleware.minio_proxy.http.client.HTTPConnection", return_value=connection):
+            response = middleware(request)
+
+        assert response["Content-Type"] == f"{mime_type}; charset=utf-8"
+        assert response.content == body
+        assert response.text == "# 中文附件"
+
+    def test_preserves_explicit_text_charset(self, request_factory, middleware):
+        request = request_factory.get("/uploads/workspace/notes.txt", HTTP_HOST="127.0.0.1:8000")
+        connection = _upstream(content_type="text/plain; charset=gb18030")
+
+        with patch("plane.middleware.minio_proxy.http.client.HTTPConnection", return_value=connection):
+            response = middleware(request)
+
+        assert response["Content-Type"] == "text/plain; charset=gb18030"

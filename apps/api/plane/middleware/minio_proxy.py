@@ -51,6 +51,11 @@ class MinioUploadProxyMiddleware:
             response = HttpResponse(upstream.read(), status=upstream.status)
             content_type = upstream.getheader("Content-Type")
             if content_type:
+                # Text attachments are UTF-8; without a charset browsers may guess
+                # a legacy encoding and display Chinese Markdown as mojibake.
+                mime_type = content_type.split(";", 1)[0].strip().lower()
+                if mime_type in {"text/markdown", "text/plain"} and "charset=" not in content_type.lower():
+                    content_type = f"{content_type}; charset=utf-8"
                 response["Content-Type"] = content_type
             etag = upstream.getheader("ETag")
             if etag:

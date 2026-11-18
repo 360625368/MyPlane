@@ -324,7 +324,7 @@ function MergePane({
                 render={<DialogClose />}
               />
             </DialogCloseGroup>
-            <DialogMain>
+            <div className="flex min-h-0 flex-1 flex-col gap-4 overflow-hidden p-4">
               <DialogHeader>
                 <DialogHeading>
                   <DialogTitle>
@@ -332,9 +332,9 @@ function MergePane({
                   </DialogTitle>
                 </DialogHeading>
               </DialogHeader>
-              <DialogBody tabIndex={0}>
-                <div className="flex h-full min-h-0 flex-col gap-3">
-                  <div className="flex flex-wrap items-center justify-between gap-3">
+              <div className="flex min-h-0 flex-1 flex-col overflow-hidden" tabIndex={0}>
+                <div className="flex min-h-0 flex-1 flex-col gap-3">
+                  <div className="flex shrink-0 flex-wrap items-center justify-between gap-3">
                     <div className="flex items-center gap-2">
                       <span className="text-caption-sm-medium text-tertiary">
                         {t("workspace_wiki.apply_nonconflicting")}
@@ -443,45 +443,41 @@ function MergePane({
                         })}
                     </div>
                   </div>
-                  {message && <p className="text-caption-sm-medium text-danger-primary">{message}</p>}
-                  <div className="flex flex-wrap items-center justify-between gap-2 border-t border-subtle pt-3">
-                    <div className="flex gap-2">
-                      <Button
-                        variant="secondary"
-                        size="sm"
-                        stretch="auto"
-                        label={t("workspace_wiki.accept_left")}
-                        onClick={() => applySide("current", true)}
-                      />
-                      <Button
-                        variant="secondary"
-                        size="sm"
-                        stretch="auto"
-                        label={t("workspace_wiki.accept_right")}
-                        onClick={() => applySide("draft", true)}
-                      />
-                    </div>
-                    <div className="flex gap-2">
-                      <Button
-                        variant="secondary"
-                        size="sm"
-                        stretch="auto"
-                        label={t("common.cancel")}
-                        onClick={onClose}
-                      />
-                      <Button
-                        variant="primary"
-                        size="sm"
-                        stretch="auto"
-                        disabled={!ready}
-                        label={t("common.apply")}
-                        onClick={applyMerge}
-                      />
-                    </div>
-                  </div>
                 </div>
-              </DialogBody>
-            </DialogMain>
+              </div>
+            </div>
+            <div className="shrink-0 space-y-3 border-t border-subtle bg-surface-1 px-4 py-3">
+              {message && <p className="text-caption-sm-medium text-danger-primary">{message}</p>}
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                <div className="flex gap-2">
+                  <Button
+                    variant="secondary"
+                    size="sm"
+                    stretch="auto"
+                    label={t("workspace_wiki.accept_left")}
+                    onClick={() => applySide("current", true)}
+                  />
+                  <Button
+                    variant="secondary"
+                    size="sm"
+                    stretch="auto"
+                    label={t("workspace_wiki.accept_right")}
+                    onClick={() => applySide("draft", true)}
+                  />
+                </div>
+                <div className="flex gap-2">
+                  <Button variant="secondary" size="sm" stretch="auto" label={t("common.cancel")} onClick={onClose} />
+                  <Button
+                    variant="primary"
+                    size="sm"
+                    stretch="auto"
+                    disabled={!ready}
+                    label={t("common.apply")}
+                    onClick={applyMerge}
+                  />
+                </div>
+              </div>
+            </div>
           </BaseDialog.Popup>
         </BaseDialog.Viewport>
       </BaseDialog.Portal>

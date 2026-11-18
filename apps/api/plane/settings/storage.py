@@ -135,6 +135,10 @@ class S3Storage(S3Boto3Storage):
             params["ResponseContentType"] = content_type
         else:
             disposition = "attachment"
+        # Pin the encoding for plain-text attachments too, including existing
+        # objects uploaded without a charset in their stored Content-Type.
+        if content_type in {"text/markdown", "text/plain"}:
+            params["ResponseContentType"] = f"{content_type}; charset=utf-8"
         params["ResponseContentDisposition"] = self._get_content_disposition(disposition, filename)
         try:
             response = self.s3_client.generate_presigned_url(

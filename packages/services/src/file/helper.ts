@@ -103,8 +103,15 @@ const validateAndDetectFileType = async (file: File): Promise<string> => {
     console.warn("Error detecting file type from signature:", _error);
   }
 
-  // fallback for unknown files
-  return "";
+  // Plain-text formats have no binary signature. Use a narrow extension fallback
+  // for text attachments supported by the API, even when the browser omits File.type.
+  const textMimeTypes: Record<string, string> = {
+    md: "text/markdown",
+    markdown: "text/markdown",
+    txt: "text/plain",
+  };
+  const extension = file.name.split(".").pop()?.toLowerCase() ?? "";
+  return textMimeTypes[extension] ?? "";
 };
 
 /**

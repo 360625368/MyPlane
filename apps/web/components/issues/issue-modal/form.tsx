@@ -356,8 +356,13 @@ export const IssueFormRoot = observer(function IssueFormRoot(props: IssueFormPro
       {/* The form relays DialogContent's max-height into Main/Body: the description scrolls in
           DialogBody, default properties stay pinned in Main and buttons live in DialogActions. */}
       <div className="flex min-h-0 flex-1 gap-2 bg-transparent">
+        {/* This is an event boundary, not a click action. */}
+        {/* oxlint-disable-next-line jsx_a11y/click-events-have-key-events */}
         <form
           ref={formRef}
+          // Portaled clicks still bubble to the issue row, whose quick-action guard
+          // prevents default clicks and would cancel the submit button's form action.
+          onClick={(event) => event.stopPropagation()}
           onSubmit={handleSubmit((data) => handleFormSubmit(data))}
           className="flex min-h-0 w-full flex-1 flex-col"
         >
