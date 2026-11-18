@@ -11,6 +11,7 @@ from plane.app.views.wiki.base import (
     WikiNodeRestoreEndpoint,
     WikiTrashEndpoint,
 )
+from plane.app.views.wiki.comments import WikiCommentsEndpoint
 from plane.app.views.wiki.document import (
     WikiNodeDescriptionEndpoint,
     WikiNodeDuplicateEndpoint,
@@ -21,6 +22,16 @@ from plane.app.views.wiki.document import (
 )
 
 urlpatterns = [
+    path(
+        "workspaces/<str:slug>/wiki/nodes/<uuid:node_id>/comments/",
+        WikiCommentsEndpoint.as_view(http_method_names=["get", "post", "head", "options"]),
+        name="wiki-comments",
+    ),
+    path(
+        "workspaces/<str:slug>/wiki/nodes/<uuid:node_id>/comments/<uuid:comment_id>/",
+        WikiCommentsEndpoint.as_view(http_method_names=["patch", "delete", "options"]),
+        name="wiki-comment",
+    ),
     path("workspaces/<str:slug>/wiki/nodes/", WikiNodeEndpoint.as_view(), name="wiki-nodes"),
     path("workspaces/<str:slug>/wiki/nodes/<uuid:node_id>/", WikiNodeEndpoint.as_view(), name="wiki-node"),
     path(

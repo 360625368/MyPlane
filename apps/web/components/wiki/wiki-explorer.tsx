@@ -5,7 +5,7 @@
  */
 
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { Link, useNavigate } from "react-router";
+import { Link, useNavigate, useSearchParams } from "react-router";
 import { Icon } from "@makeplane/propel/components/icon";
 import { ListItem, ListItemLabel } from "@makeplane/propel/components/list";
 import { Tab, Tabs, TabsList } from "@makeplane/propel/components/tabs";
@@ -16,6 +16,7 @@ import { useTranslation } from "@plane/i18n";
 import type { TTranslationKeys } from "@plane/i18n";
 import { cn } from "@plane/utils";
 import { PageHead } from "@/components/core/page-title";
+import { WikiCommentsDialog } from "@/components/wiki/wiki-comments-dialog";
 import { WikiDocument } from "@/components/wiki/wiki-document";
 import { useWikiHeaderActions } from "@/components/wiki/wiki-header-actions";
 import { WikiNodeMenu } from "@/components/wiki/wiki-node-menu";
@@ -89,6 +90,9 @@ function nodeGlyph(node: TWikiNode) {
 export function WikiExplorer({ workspaceSlug, nodeId }: Props) {
   const { t } = useTranslation();
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
+  const [commentsNode, setCommentsNode] = useState<TWikiNode | null>(null);
+  const commentId = searchParams.get("comment");
   const [nodes, setNodes] = useState<TWikiNode[]>([]);
   const [trash, setTrash] = useState<TWikiTrashNode[]>([]);
   const [explorerTab, setExplorerTab] = useState<TWikiExplorerTab>("wiki");
@@ -271,6 +275,7 @@ export function WikiExplorer({ workspaceSlug, nodeId }: Props) {
         onMove={(parentId) => moveNode(node, parentId)}
         onSort={(direction) => sortNode(node, direction)}
         onPermissions={() => requestPermissions(node)}
+        onComments={() => setCommentsNode(node)}
         onDelete={() => deleteNode(node)}
       />
     );
@@ -336,8 +341,27 @@ export function WikiExplorer({ workspaceSlug, nodeId }: Props) {
       )
     : [];
 
+  const discussionNode = commentsNode ?? (commentId && selected?.node_type === "file" ? selected : null);
+
   return (
     <>
+      {discussionNode && (
+        <WikiCommentsDialog
+          key={`${workspaceSlug}/${discussionNode.id}`}
+          workspaceSlug={workspaceSlug}
+          nodeId={discussionNode.id}
+          nodeName={discussionNode.name}
+          targetId={discussionNode.id === nodeId ? commentId : null}
+          onClose={() => {
+            setCommentsNode(null);
+            if (commentId) {
+              const next = new URLSearchParams(searchParams);
+              next.delete("comment");
+              setSearchParams(next, { replace: true });
+            }
+          }}
+        />
+      )}
       <WikiPermissionsDialog
         workspaceSlug={workspaceSlug}
         nodeId={permissionsNode?.id ?? null}

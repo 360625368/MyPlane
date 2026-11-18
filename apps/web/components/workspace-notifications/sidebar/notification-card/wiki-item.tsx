@@ -17,6 +17,9 @@ import { useNotification } from "@/hooks/store/notifications/use-notification";
 import { NotificationOption } from "./options";
 
 const NOTICE_KEYS: Record<string, string> = {
+  comment_created: "workspace_wiki.comments.notice_created",
+  comment_replied: "workspace_wiki.comments.notice_replied",
+  comment_edited: "workspace_wiki.comments.notice_edited",
   submitted: "workspace_wiki.notice_submitted",
   returned: "workspace_wiki.notice_returned",
   merged: "workspace_wiki.notice_merged",
@@ -55,7 +58,8 @@ export const WikiNotificationItem = observer(function WikiNotificationItem(props
         console.error(error);
       }
     }
-    navigate(`/${workspaceSlug}/wiki/${wiki.node_id}`);
+    const query = wiki.comment_id ? `?comment=${encodeURIComponent(wiki.comment_id)}` : "";
+    navigate(`/${workspaceSlug}/wiki/${wiki.node_id}${query}`);
   };
 
   if (!notification?.id) return <></>;

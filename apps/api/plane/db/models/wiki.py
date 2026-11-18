@@ -193,3 +193,15 @@ class WikiNodePermission(BaseModel):
 
     def __str__(self):
         return f"{self.node_id} {self.member_id} {self.access}"
+
+
+class WikiComment(BaseModel):
+    node = models.ForeignKey(WikiNode, on_delete=models.CASCADE, related_name="+")
+    author = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True)
+    parent = models.ForeignKey("self", on_delete=models.SET_NULL, null=True, blank=True)
+    body = models.TextField()
+    edited_at = models.DateTimeField(null=True, blank=True)
+
+    class Meta:
+        db_table = "wiki_comments"
+        ordering = ("created_at", "id")

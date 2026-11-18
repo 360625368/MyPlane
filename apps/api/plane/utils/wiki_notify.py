@@ -6,7 +6,7 @@ from plane.db.models import Notification, WikiChangeRequest
 from plane.utils.wiki_favorite import visible_wiki_favorite
 
 
-def notify_wiki(workspace, node, receiver_id, triggered_by, field):
+def notify_wiki(workspace, node, receiver_id, triggered_by, field, *, comment_id=None):
     """Record one in-app notice when the receiver can still view the node."""
     if receiver_id is None or triggered_by is None:
         return None
@@ -28,6 +28,7 @@ def notify_wiki(workspace, node, receiver_id, triggered_by, field):
                 "field": field,
                 "node_id": str(node.id),
                 "name": node.name,
+                **({"comment_id": str(comment_id)} if comment_id is not None else {}),
             }
         },
     )

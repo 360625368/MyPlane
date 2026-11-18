@@ -29,18 +29,20 @@ type Props = {
   onMove: (parentId: string) => void;
   onSort: (direction: -1 | 1) => void;
   onPermissions: () => void;
+  onComments: () => void;
   onDelete: () => void;
 };
 
 export function WikiNodeMenu(props: Props) {
-  const { node, destinations, revealed, hoverGroup, onMove, onSort, onPermissions, onDelete } = props;
+  const { node, destinations, revealed, hoverGroup, onMove, onSort, onPermissions, onComments, onDelete } = props;
   const { t } = useTranslation();
   const [open, setOpen] = useState(false);
   const canMove = node.can_move && destinations.length > 0;
   const canSort = node.can_rename;
   const canPermissions = node.can_manage_access;
   const canDelete = node.can_delete;
-  if (!canMove && !canSort && !canPermissions && !canDelete) return null;
+  const canComment = node.node_type === "file";
+  if (!canComment && !canMove && !canSort && !canPermissions && !canDelete) return null;
 
   return (
     <div
@@ -77,6 +79,7 @@ export function WikiNodeMenu(props: Props) {
           )}
           {canSort && <MenuItem label={t("workspace_wiki.sort_up")} onClick={() => onSort(-1)} />}
           {canSort && <MenuItem label={t("workspace_wiki.sort_down")} onClick={() => onSort(1)} />}
+          {canComment && <MenuItem label={t("workspace_wiki.comments.title")} onClick={onComments} />}
           {canPermissions && <MenuItem label={t("workspace_wiki.permissions")} onClick={onPermissions} />}
           {canDelete && (
             <MenuItem

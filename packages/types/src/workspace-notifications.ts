@@ -28,6 +28,7 @@ export type TNotificationIssueLite = {
 };
 
 export type TWikiNotificationData = {
+  comment_id?: string;
   field: string | undefined;
   node_id: string | undefined;
   name: string | undefined;

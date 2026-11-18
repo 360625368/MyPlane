@@ -51,6 +51,21 @@ export type TWikiMemberAccess = {
   effective_access: TWikiAccess;
 };
 
+export type TWikiComment = {
+  author_avatar_url?: string | null;
+  id: string;
+  parent_id: string | null;
+  author_name: string;
+  body: string;
+  created_at: string;
+  edited_at: string | null;
+  deleted: boolean;
+  can_edit: boolean;
+  can_delete: boolean;
+};
+
+export type TWikiCommentPage = { page: number; total_pages: number; results: TWikiComment[] };
+
 export class WikiService extends APIService {
   constructor() {
     super(API_BASE_URL);
@@ -202,6 +217,40 @@ export class WikiService extends APIService {
       .catch((error) => {
         throw error?.response?.data;
       });
+  }
+
+  async listComments(
+    workspaceSlug: string,
+    nodeId: string,
+    page: number,
+    commentId: string | null
+  ): Promise<TWikiCommentPage> {
+    return (
+      await this.get(`/api/workspaces/${workspaceSlug}/wiki/nodes/${nodeId}/comments/`, {
+        params: { page, comment_id: commentId },
+      })
+    ).data;
+  }
+
+  async addComment(workspaceSlug: string, nodeId: string, body: string, parentId?: string): Promise<TWikiComment> {
+    return (
+      await this.post(`/api/workspaces/${workspaceSlug}/wiki/nodes/${nodeId}/comments/`, {
+        body,
+        parent_id: parentId,
+      })
+    ).data;
+  }
+
+  async editComment(workspaceSlug: string, nodeId: string, commentId: string, body: string): Promise<TWikiComment> {
+    return (
+      await this.patch(`/api/workspaces/${workspaceSlug}/wiki/nodes/${nodeId}/comments/${commentId}/`, {
+        body,
+      })
+    ).data;
+  }
+
+  async deleteComment(workspaceSlug: string, nodeId: string, commentId: string): Promise<void> {
+    await this.delete(`/api/workspaces/${workspaceSlug}/wiki/nodes/${nodeId}/comments/${commentId}/`);
   }
 
   async listChanges(workspaceSlug: string, nodeId: string): Promise<TWikiChange[]> {
