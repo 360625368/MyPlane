@@ -6,6 +6,18 @@
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { Link, useNavigate, useSearchParams } from "react-router";
+import type { MouseEvent } from "react";
+import { Button } from "@makeplane/propel/components/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogMain,
+  DialogHeader,
+  DialogHeading,
+  DialogTitle,
+  DialogBody,
+} from "@makeplane/propel/components/dialog";
+import { useWikiFileNavigation } from "@/components/wiki/use-wiki-file-navigation";
 import { Icon } from "@makeplane/propel/components/icon";
 import { ListItem, ListItemLabel } from "@makeplane/propel/components/list";
 import { Tab, Tabs, TabsList } from "@makeplane/propel/components/tabs";
@@ -90,6 +102,20 @@ function nodeGlyph(node: TWikiNode) {
 export function WikiExplorer({ workspaceSlug, nodeId }: Props) {
   const { t } = useTranslation();
   const navigate = useNavigate();
+  const fileNavigation = useWikiFileNavigation(workspaceSlug, nodeId, navigate);
+  const openNode = (event: MouseEvent, node: TWikiNode) => {
+    if (
+      node.node_type !== "file" ||
+      event.button !== 0 ||
+      event.metaKey ||
+      event.ctrlKey ||
+      event.shiftKey ||
+      event.altKey
+    )
+      return;
+    event.preventDefault();
+    void fileNavigation.openFile(node);
+  };
   const [searchParams, setSearchParams] = useSearchParams();
   const [commentsNode, setCommentsNode] = useState<TWikiNode | null>(null);
   const commentId = searchParams.get("comment");
@@ -322,7 +348,11 @@ export function WikiExplorer({ workspaceSlug, nodeId }: Props) {
 
     return (
       <ListItem key={node.id} density="comfortable">
-        <ListItemLink href={href} render={<Link to={href} />} aria-current={isSelected ? "page" : undefined}>
+        <ListItemLink
+          href={href}
+          render={<Link to={href} onClick={(event) => openNode(event, node)} />}
+          aria-current={isSelected ? "page" : undefined}
+        >
           {nodeGlyph(node)}
           <ListItemLabel>{node.name}</ListItemLabel>
         </ListItemLink>
@@ -345,6 +375,45 @@ export function WikiExplorer({ workspaceSlug, nodeId }: Props) {
 
   return (
     <>
+      <Dialog
+        open={fileNavigation.loadingName !== null}
+        onOpenChange={(open) => {
+          if (!open) fileNavigation.cancel();
+        }}
+      >
+        <DialogContent size="sm" aria-label={t("workspace_wiki.loading")}>
+          <DialogMain>
+            <DialogHeader>
+              <DialogHeading>
+                <DialogTitle>{t("workspace_wiki.loading")}</DialogTitle>
+              </DialogHeading>
+            </DialogHeader>
+            <DialogBody>
+              <div className="flex items-center gap-3 py-4" role="status">
+                <span
+                  className="size-5 animate-spin rounded-full border-2 border-subtle border-t-accent-strong"
+                  aria-hidden="true"
+                />
+                <span className="truncate">{fileNavigation.loadingName}</span>
+              </div>
+              <div className="flex justify-end">
+                <Button
+                  stretch="auto"
+                  variant="secondary"
+                  size="sm"
+                  label={t("common.cancel")}
+                  onClick={fileNavigation.cancel}
+                />
+              </div>
+            </DialogBody>
+          </DialogMain>
+        </DialogContent>
+      </Dialog>
+      {fileNavigation.failed && (
+        <p role="alert" className="px-4 py-2 text-danger-primary">
+          {t("workspace_wiki.not_found")}
+        </p>
+      )}
       {discussionNode && (
         <WikiCommentsDialog
           key={`${workspaceSlug}/${discussionNode.id}`}
@@ -440,7 +509,12 @@ export function WikiExplorer({ workspaceSlug, nodeId }: Props) {
                 <p className="text-body-sm-regular text-tertiary">{t("workspace_wiki.no_results")}</p>
               )}
               {searchResults.map((node) => (
-                <Link key={node.id} to={`/${workspaceSlug}/wiki/${node.id}`} className="truncate text-body-sm-regular">
+                <Link
+                  key={node.id}
+                  to={`/${workspaceSlug}/wiki/${node.id}`}
+                  onClick={(event) => openNode(event, node)}
+                  className="truncate text-body-sm-regular"
+                >
                   {node.name}
                 </Link>
               ))}
@@ -450,7 +524,11 @@ export function WikiExplorer({ workspaceSlug, nodeId }: Props) {
             <div className="flex flex-col gap-2">
               {archivedNodes.map((node) => (
                 <div key={node.id} className="flex items-center justify-between gap-2">
-                  <Link to={`/${workspaceSlug}/wiki/${node.id}`} className="truncate text-body-sm-regular">
+                  <Link
+                    to={`/${workspaceSlug}/wiki/${node.id}`}
+                    onClick={(event) => openNode(event, node)}
+                    className="truncate text-body-sm-regular"
+                  >
                     {node.name}
                   </Link>
                   {node.is_creator && (
@@ -504,7 +582,16 @@ export function WikiExplorer({ workspaceSlug, nodeId }: Props) {
             <p className="text-body-sm-regular">{t("workspace_wiki.not_found")}</p>
           )}
           {selected && !missing && selected.node_type === "file" && (
-            <WikiDocument workspaceSlug={workspaceSlug} nodeId={selected.id} onChanged={load} />
+            <WikiDocument
+              workspaceSlug={workspaceSlug}
+              nodeId={selected.id}
+              onChanged={load}
+              initialNode={
+                fileNavigation.loaded?.workspace === workspaceSlug && fileNavigation.loaded.node.id === selected.id
+                  ? fileNavigation.loaded.node
+                  : undefined
+              }
+            />
           )}
           {selected && !missing && selected.node_type !== "file" && (
             <>

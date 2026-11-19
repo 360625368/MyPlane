@@ -39,19 +39,25 @@ type Props = {
   workspaceSlug: string;
   nodeId: string;
   onChanged: () => Promise<void>;
+  initialNode?: TWikiNode;
 };
 
 export function WikiDocument(props: Props) {
   return <WikiDocumentSession key={JSON.stringify([props.workspaceSlug, props.nodeId])} {...props} />;
 }
 
-const WikiDocumentSession = observer(function WikiDocumentSession({ workspaceSlug, nodeId, onChanged }: Props) {
+const WikiDocumentSession = observer(function WikiDocumentSession({
+  workspaceSlug,
+  nodeId,
+  onChanged,
+  initialNode,
+}: Props) {
   const { t } = useTranslation();
   const setHeaderActions = useSetWikiHeaderActions();
   const { getWorkspaceBySlug } = useWorkspace();
   const { entityMap, addFavorite, deleteFavorite } = useFavorite();
   const workspaceId = getWorkspaceBySlug(workspaceSlug)?.id ?? "";
-  const [node, setNode] = useState<TWikiNode | null>(null);
+  const [node, setNode] = useState<TWikiNode | null>(() => (initialNode?.id === nodeId ? initialNode : null));
   const [versions, setVersions] = useState<TWikiVersion[]>([]);
   const [showVersions, setShowVersions] = useState(false);
   const [preview, setPreview] = useState<TWikiVersion | null>(null);
@@ -78,6 +84,7 @@ const WikiDocumentSession = observer(function WikiDocumentSession({ workspaceSlu
   const { fontSize, fontStyle } = usePageFilters();
   const favorite = entityMap[nodeId];
 
+  const initialDocument = useRef(initialNode);
   const active = useRef(true);
   const serverHtml = useRef("");
   const pendingSave = useRef<{ html: string; json: object; base: string } | null>(null);
@@ -102,7 +109,11 @@ const WikiDocumentSession = observer(function WikiDocumentSession({ workspaceSlu
     setOwnChange(null);
     setReviewOpen(false);
     setReviewCount(0);
-    void wikiService.retrieve(workspaceSlug, nodeId).then((detail) => {
+    void (
+      initialDocument.current?.id === nodeId
+        ? Promise.resolve(initialDocument.current)
+        : wikiService.retrieve(workspaceSlug, nodeId)
+    ).then((detail) => {
       if (!cancelled) {
         serverHtml.current = detail.description_html || "";
         setNode(detail);
