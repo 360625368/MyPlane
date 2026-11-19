@@ -24,6 +24,7 @@ import { IconButton } from "@makeplane/propel/components/icon-button";
 import { useTranslation } from "@plane/i18n";
 import type { JSONContent } from "@plane/types";
 import { renderFormattedDate, renderFormattedTime } from "@plane/utils";
+import { uploadWikiImage } from "@/components/wiki/wiki-assets";
 import { DocumentEditor } from "@/components/editor/document/editor";
 import { blocksHtml, plainText, RichBlocks } from "@/components/wiki/wiki-merge-rich";
 import type { TWikiChange, TWikiMergeBlock, TWikiMergeChange } from "@/services/wiki.service";
@@ -142,12 +143,13 @@ function SidePane({ block, base, conflict }: { block: object | null; base: objec
 }
 
 function CenterEditor({
+  nodeId,
   rowId,
   blocks,
   workspaceSlug,
   workspaceId,
   onChange,
-}: Workspace & { rowId: string; blocks: object[]; onChange: (blocks: object[]) => void }) {
+}: Workspace & { nodeId: string; rowId: string; blocks: object[]; onChange: (blocks: object[]) => void }) {
   const [value] = useState<JSONContent>(() => ({
     type: "doc",
     content: (blocks.length > 0 ? blocks : [{ type: "paragraph" }]) as JSONContent[],
@@ -164,8 +166,8 @@ function CenterEditor({
       containerClassName="border-none p-0"
       displayConfig={{ fontSize: "small-font" }}
       searchMentionCallback={async (payload) => workspaceService.searchEntity(workspaceSlug, payload)}
-      uploadFile={async () => ""}
-      duplicateFile={async () => ""}
+      uploadFile={async (_blockId, file) => uploadWikiImage(workspaceSlug, nodeId, file)}
+      duplicateFile={async (assetId) => assetId}
       onChange={(json, _html, options) => {
         if (options?.isMigrationUpdate) return;
         onChange(editedBlocks(json));
@@ -406,6 +408,7 @@ function MergePane({
                               {editing ? (
                                 <div className="min-h-9 min-w-0 bg-layer-1 px-3 py-2">
                                   <CenterEditor
+                                    nodeId={change.node_id}
                                     rowId={row.id}
                                     blocks={center}
                                     workspaceSlug={workspaceSlug}

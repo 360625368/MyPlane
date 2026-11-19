@@ -42,6 +42,10 @@ def can_modify_asset(user, asset):
         .values_list("role", flat=True)
         .first()
     )
+    if asset.entity_type == FileAsset.EntityTypeContext.WIKI_DESCRIPTION:
+        return asset.is_project_accessible_to(user) and (
+            asset.created_by_id == user.id or asset.wiki_node.owned_by_id == user.id
+        )
     if asset.entity_type == FileAsset.EntityTypeContext.WORKSPACE_LOGO:
         return workspace_role == ROLE.ADMIN.value
 
@@ -75,6 +79,8 @@ class UserAssetsV2Endpoint(BaseAPIView):
         asset = FileAsset.objects.filter(id=asset_id, user_id=user_id).first()
         if asset is None:
             return
+        if asset.entity_type == FileAsset.EntityTypeContext.WIKI_DESCRIPTION:
+            return Response(status=status.HTTP_204_NO_CONTENT)
         asset.is_deleted = True
         asset.deleted_at = timezone.now()
         asset.save(update_fields=["is_deleted", "deleted_at"])
@@ -232,6 +238,8 @@ class UserAssetsV2Endpoint(BaseAPIView):
 
     def delete(self, request, asset_id):
         asset = FileAsset.objects.get(id=asset_id, user_id=request.user.id)
+        if asset.entity_type == FileAsset.EntityTypeContext.WIKI_DESCRIPTION:
+            return Response(status=status.HTTP_204_NO_CONTENT)
         asset.is_deleted = True
         asset.deleted_at = timezone.now()
         # get the entity and save the asset id for the request field
@@ -266,6 +274,9 @@ class WorkspaceFileAssetEndpoint(BaseAPIView):
         ]:
             return {"issue_id": entity_id}
 
+        if entity_type == FileAsset.EntityTypeContext.WIKI_DESCRIPTION:
+            return {"wiki_node_id": entity_id}
+
         # Page Description
         if entity_type == FileAsset.EntityTypeContext.PAGE_DESCRIPTION:
             return {"page_id": entity_id}
@@ -281,6 +292,8 @@ class WorkspaceFileAssetEndpoint(BaseAPIView):
         if asset is None:
             return
         # Mark the asset as deleted
+        if asset.entity_type == FileAsset.EntityTypeContext.WIKI_DESCRIPTION:
+            return Response(status=status.HTTP_204_NO_CONTENT)
         asset.is_deleted = True
         asset.deleted_at = timezone.now()
         asset.save(update_fields=["is_deleted", "deleted_at"])
@@ -367,6 +380,23 @@ class WorkspaceFileAssetEndpoint(BaseAPIView):
                 {"error": "Invalid entity type.", "status": False},
                 status=status.HTTP_400_BAD_REQUEST,
             )
+
+        if entity_type == FileAsset.EntityTypeContext.WIKI_DESCRIPTION:
+            from plane.app.views.wiki.document import _file_for_reading
+            from plane.utils.wiki_access import EDITABLE
+
+            try:
+                entity_identifier = uuid.UUID(str(entity_identifier))
+            except (ValueError, TypeError):
+                return Response({"error": "invalid_node"}, status=400)
+            workspace = Workspace.objects.get(slug=slug)
+            node, access, _, _ = _file_for_reading(workspace, request.user, entity_identifier)
+            if node is None:
+                return Response({"error": "not_found"}, status=404)
+            if access != EDITABLE or node.is_locked or node.archived_at:
+                return Response({"error": "forbidden"}, status=403)
+            if size <= 0 or size > settings.FILE_SIZE_LIMIT:
+                return Response({"error": "invalid_file_size"}, status=400)
 
         # WORKSPACE_LOGO may only be uploaded by workspace admins
         if entity_type == FileAsset.EntityTypeContext.WORKSPACE_LOGO:
@@ -477,6 +507,8 @@ class WorkspaceFileAssetEndpoint(BaseAPIView):
                 {"error": "You don't have the required permissions."},
                 status=status.HTTP_403_FORBIDDEN,
             )
+        if asset.entity_type == FileAsset.EntityTypeContext.WIKI_DESCRIPTION:
+            return Response(status=status.HTTP_204_NO_CONTENT)
         asset.is_deleted = True
         asset.deleted_at = timezone.now()
         # get the entity and save the asset id for the request field
@@ -703,6 +735,8 @@ class ProjectAssetEndpoint(BaseAPIView):
                 status=status.HTTP_403_FORBIDDEN,
             )
         # Check deleted assets
+        if asset.entity_type == FileAsset.EntityTypeContext.WIKI_DESCRIPTION:
+            return Response(status=status.HTTP_204_NO_CONTENT)
         asset.is_deleted = True
         asset.deleted_at = timezone.now()
         # Save the asset
@@ -849,6 +883,9 @@ class DuplicateAssetEndpoint(BaseAPIView):
         ]:
             return {"issue_id": entity_id}
 
+        if entity_type == FileAsset.EntityTypeContext.WIKI_DESCRIPTION:
+            return {"wiki_node_id": entity_id}
+
         # Page Description
         if entity_type == FileAsset.EntityTypeContext.PAGE_DESCRIPTION:
             return {"page_id": entity_id}
@@ -870,6 +907,9 @@ class DuplicateAssetEndpoint(BaseAPIView):
                 {"error": "Invalid entity type or entity id"},
                 status=status.HTTP_400_BAD_REQUEST,
             )
+
+        if entity_type == FileAsset.EntityTypeContext.WIKI_DESCRIPTION:
+            return Response({"error": "Wiki images reuse their existing asset IDs."}, status=400)
 
         workspace = Workspace.objects.get(slug=slug)
 

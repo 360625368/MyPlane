@@ -112,3 +112,42 @@ def test_comment_pages_limit_top_level_threads_and_locate_nested_replies(api_cli
     assert [item["id"] for item in second["results"]] == [roots[-1], reply, nested]
     assert second["results"][0]["deleted"]
     assert api_client.get(url, {"comment_id": nested}).data == second
+
+
+@pytest.mark.contract
+@pytest.mark.django_db
+def test_wiki_image_upload_and_read_permissions(api_client, discussion, monkeypatch):
+    from plane.db.models import FileAsset
+    from plane.settings.storage import S3Storage
+
+    monkeypatch.setattr(
+        S3Storage, "generate_presigned_post", lambda *a, **k: {"url": "https://storage.test", "fields": {}}
+    )
+    monkeypatch.setattr(S3Storage, "generate_presigned_url", lambda *a, **k: "https://storage.test/image")
+    file, (owner, viewer, _, hidden), _ = discussion
+    url = f"/api/assets/v2/workspaces/{file.workspace.slug}/"
+    payload = {
+        "entity_type": "WIKI_DESCRIPTION",
+        "entity_identifier": str(file.id),
+        "name": "test.png",
+        "type": "image/png",
+        "size": 100,
+    }
+
+    api_client.force_authenticate(user=viewer)
+    assert api_client.post(url, payload, format="json").status_code == 403
+    api_client.force_authenticate(user=owner)
+    result = api_client.post(url, payload, format="json")
+    assert result.status_code == 200
+    asset_id = result.data["asset_id"]
+    asset = FileAsset.objects.get(id=asset_id)
+    assert asset.wiki_node_id == file.id
+    asset.is_uploaded = True
+    asset.save()
+    api_client.force_authenticate(user=viewer)
+    assert api_client.get(f"{url}{asset_id}/").status_code == 302
+    api_client.force_authenticate(user=hidden)
+    assert api_client.get(f"{url}{asset_id}/").status_code == 403
+    api_client.force_authenticate(user=owner)
+    assert api_client.delete(f"{url}{asset_id}/").status_code == 204
+    assert FileAsset.objects.filter(id=asset_id).exists()

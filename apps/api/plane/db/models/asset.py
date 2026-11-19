@@ -39,6 +39,7 @@ class FileAsset(BaseModel):
         ISSUE_DESCRIPTION = "ISSUE_DESCRIPTION"
         COMMENT_DESCRIPTION = "COMMENT_DESCRIPTION"
         PAGE_DESCRIPTION = "PAGE_DESCRIPTION"
+        WIKI_DESCRIPTION = "WIKI_DESCRIPTION"
         USER_COVER = "USER_COVER"
         USER_AVATAR = "USER_AVATAR"
         WORKSPACE_LOGO = "WORKSPACE_LOGO"
@@ -46,6 +47,7 @@ class FileAsset(BaseModel):
         DRAFT_ISSUE_ATTACHMENT = "DRAFT_ISSUE_ATTACHMENT"
         DRAFT_ISSUE_DESCRIPTION = "DRAFT_ISSUE_DESCRIPTION"
 
+    wiki_node = models.ForeignKey("db.WikiNode", on_delete=models.CASCADE, null=True, related_name="assets")
     attributes = models.JSONField(default=dict)
     asset = models.FileField(upload_to=get_upload_path, max_length=800)
     user = models.ForeignKey("db.User", on_delete=models.CASCADE, null=True, related_name="assets")
@@ -113,6 +115,17 @@ class FileAsset(BaseModel):
         Assets with no project (workspace logos, user avatars and covers) are
         workspace-level, so this returns True for them.
         """
+        if self.entity_type == self.EntityTypeContext.WIKI_DESCRIPTION:
+            from plane.utils.wiki_favorite import visible_wiki_favorite
+            from .workspace import WorkspaceMember
+
+            return (
+                self.wiki_node_id is not None
+                and WorkspaceMember.objects.filter(
+                    workspace_id=self.workspace_id, member=user, is_active=True, role__in=[15, 20]
+                ).exists()
+                and visible_wiki_favorite(self.wiki_node_id, user.id, self.workspace_id) is not None
+            )
         if self.project_id is None:
             return True
         # Scope the membership to the asset's workspace as well as its project.

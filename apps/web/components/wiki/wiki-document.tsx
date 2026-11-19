@@ -15,6 +15,7 @@ import { useTranslation } from "@plane/i18n";
 import type { JSONContent, TLogoProps } from "@plane/types";
 import { cn, renderFormattedDate, renderFormattedTime } from "@plane/utils";
 import type { EditorRefApi } from "@plane/editor";
+import { uploadWikiImage } from "@/components/wiki/wiki-assets";
 import { DocumentEditor } from "@/components/editor/document/editor";
 import { WikiChanges } from "@/components/wiki/wiki-changes";
 import { useWikiEditorRef, WikiEditorToolbar } from "@/components/wiki/wiki-editor-toolbar";
@@ -347,8 +348,8 @@ export const WikiDocument = observer(function WikiDocument({ workspaceSlug, node
                   containerClassName="h-full p-0 pb-64 border-none"
                   displayConfig={{ fontSize, fontStyle, wideLayout: wide }}
                   searchMentionCallback={async (payload) => workspaceService.searchEntity(workspaceSlug, payload)}
-                  uploadFile={async () => ""}
-                  duplicateFile={async () => ""}
+                  uploadFile={async (_blockId, file) => uploadWikiImage(workspaceSlug, nodeId, file)}
+                  duplicateFile={async (assetId) => assetId}
                   onChange={(description, html, options) => {
                     if (options?.isMigrationUpdate || ignorePublish.current) return;
                     pendingSave.current = {

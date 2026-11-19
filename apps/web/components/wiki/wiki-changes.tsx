@@ -23,6 +23,7 @@ import { IconButton } from "@makeplane/propel/components/icon-button";
 import { useTranslation } from "@plane/i18n";
 import type { JSONContent } from "@plane/types";
 import type { EditorRefApi } from "@plane/editor";
+import { uploadWikiImage } from "@/components/wiki/wiki-assets";
 import { DocumentEditor } from "@/components/editor/document/editor";
 import { useWikiEditorRef, WikiEditorToolbar } from "@/components/wiki/wiki-editor-toolbar";
 import { WikiReviewDialog } from "@/components/wiki/wiki-review-dialog";
@@ -81,6 +82,7 @@ function composedDocument(
 }
 
 function WikiConflictResolve({
+  nodeId,
   workspaceId,
   workspaceSlug,
   plan,
@@ -88,6 +90,7 @@ function WikiConflictResolve({
 }: {
   workspaceId: string;
   workspaceSlug: string;
+  nodeId: string;
   plan: TWikiMergePlan;
   onConfirm: (payload: {
     resolutions: { id: string; choice: "current" | "draft" | "custom"; block?: object }[];
@@ -164,8 +167,8 @@ function WikiConflictResolve({
         value={document}
         workspaceId={workspaceId}
         workspaceSlug={workspaceSlug}
-        uploadFile={async () => ""}
-        duplicateFile={async () => ""}
+        uploadFile={async (_blockId, file) => uploadWikiImage(workspaceSlug, nodeId, file)}
+        duplicateFile={async (assetId) => assetId}
         searchMentionCallback={async () => ({})}
         onChange={(description, html) => {
           latest.current = { json: description, html: html || "<p></p>" };
@@ -455,6 +458,7 @@ export function WikiChanges({
                     )}
                     {active.can_merge && active.merge_plan && active.merge_plan.conflicts.length > 0 && (
                       <WikiConflictResolve
+                        nodeId={node.id}
                         workspaceId={workspaceId}
                         workspaceSlug={workspaceSlug}
                         plan={active.merge_plan}
@@ -479,8 +483,8 @@ export function WikiChanges({
                             searchMentionCallback={async (payload) =>
                               workspaceService.searchEntity(workspaceSlug, payload)
                             }
-                            uploadFile={async () => ""}
-                            duplicateFile={async () => ""}
+                            uploadFile={async (_blockId, file) => uploadWikiImage(workspaceSlug, node.id, file)}
+                            duplicateFile={async (assetId) => assetId}
                             onChange={(description, html, options) => {
                               if (options?.isMigrationUpdate) return;
                               pendingDraft.current = { html: html || "<p></p>", json: description };
