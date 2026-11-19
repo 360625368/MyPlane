@@ -10,10 +10,15 @@
 # From a workstation this script SSHes to the server and runs there.
 # On the server, run it again with --remote (the SSH path does that for you).
 # Pass --build to rebuild images before restarting.
+# New host: initialize a fresh PostgreSQL volume. No database or data
+# migration from the previous server is required. Django still initializes
+# the database schema before the API starts.
 set -euo pipefail
 
-DEPLOY_HOST="${DEPLOY_HOST:-43.156.249.109}"
+DEPLOY_HOST="${DEPLOY_HOST:-43.160.216.252}"
 DEPLOY_USER="${DEPLOY_USER:-ubuntu}"
+DEPLOY_SSH_PORT="${DEPLOY_SSH_PORT:-22}"
+DEPLOY_SSH_INTERFACE="${DEPLOY_SSH_INTERFACE:-}"
 DEPLOY_DIR="${DEPLOY_DIR:-/opt/plane}"
 DEPLOY_BRANCH="${DEPLOY_BRANCH:-feat-wiki}"
 WEB_PORT=3010
@@ -21,7 +26,17 @@ ADMIN_PORT=3011
 API_PORT=3012
 
 if [[ "${1:-}" != "--remote" ]]; then
-  exec ssh -o BatchMode=yes "${DEPLOY_USER}@${DEPLOY_HOST}" bash -s -- --remote "$@" < "$0"
+  ssh_args=(-o BatchMode=yes -o StrictHostKeyChecking=yes -p "$DEPLOY_SSH_PORT")
+  if [[ -n "$DEPLOY_SSH_INTERFACE" ]]; then
+    ssh_args+=(-B "$DEPLOY_SSH_INTERFACE")
+  fi
+  printf -v remote_command 'DEPLOY_HOST=%q DEPLOY_DIR=%q DEPLOY_BRANCH=%q bash -s -- --remote' \
+    "$DEPLOY_HOST" "$DEPLOY_DIR" "$DEPLOY_BRANCH"
+  for arg in "$@"; do
+    printf -v remote_arg ' %q' "$arg"
+    remote_command+="$remote_arg"
+  done
+  exec ssh "${ssh_args[@]}" "${DEPLOY_USER}@${DEPLOY_HOST}" "$remote_command" < "$0"
 fi
 shift
 
@@ -37,12 +52,12 @@ if [[ ! -f "$DEPLOY_DIR/docker-compose.yml" ]]; then
   sudo mkdir -p "$DEPLOY_DIR"
   sudo chown "$USER:$USER" "$DEPLOY_DIR"
   git clone --depth 1 --branch "$DEPLOY_BRANCH" https://github.com/360625368/MyPlane.git "$DEPLOY_DIR"
+  BUILD=1
 fi
 
 cd "$DEPLOY_DIR"
 
 if [[ -d .git ]]; then
-  git fetch --depth 1 origin "$DEPLOY_BRANCH"
   git checkout "$DEPLOY_BRANCH"
   git pull --ff-only origin "$DEPLOY_BRANCH"
 fi
@@ -279,11 +294,17 @@ services:
           memory: 256M
 EOF
 
+sudo docker compose config --quiet
 if [[ "$BUILD" -eq 1 ]]; then
-  sudo docker compose build
+  # Build one service at a time to limit peak memory on small hosts.
+  for service in api web admin space live proxy; do
+    sudo docker compose build "$service"
+  done
 fi
-
-sudo docker compose up -d --force-recreate --no-deps proxy api worker beat-worker live
+sudo docker compose up -d plane-db plane-redis plane-mq plane-minio
+# Initialize/update the schema on this server's database only.
+sudo docker compose run --rm --no-deps -T migrator </dev/null
+sudo docker compose up -d web admin space api worker beat-worker live proxy
 
 echo "Waiting for the API on port ${API_PORT}..."
 ready=0
