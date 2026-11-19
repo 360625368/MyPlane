@@ -1,3 +1,4 @@
+from contextvars import ContextVar
 from dataclasses import dataclass, field
 import os
 from typing import Any
@@ -6,12 +7,16 @@ from urllib.parse import urlsplit
 import httpx
 
 
+request_api_key: ContextVar[str | None] = ContextVar("plane_api_key", default=None)
+
+
 @dataclass(frozen=True)
 class Settings:
     base_url: str
     workspace: str
     api_key: str = field(repr=False)
     read_only: bool = False
+    per_user: bool = False
 
     def __post_init__(self) -> None:
         url = urlsplit(self.base_url)
@@ -26,7 +31,7 @@ class Settings:
             raise ValueError(
                 "PLANE_BASE_URL must be an HTTP(S) instance URL without credentials/query"
             )
-        if not self.api_key.strip():
+        if not self.per_user and not self.api_key.strip():
             raise ValueError("PLANE_API_KEY is required")
         segment(self.workspace)
 
@@ -35,8 +40,9 @@ class Settings:
         return cls(
             os.environ["PLANE_BASE_URL"].rstrip("/"),
             os.environ["PLANE_WORKSPACE_SLUG"],
-            os.environ["PLANE_API_KEY"],
+            os.getenv("PLANE_API_KEY", ""),
             os.getenv("PLANE_MCP_READ_ONLY", "false").lower() == "true",
+            os.getenv("PLANE_MCP_AUTH_MODE", "shared") == "per_user",
         )
 
 
@@ -63,6 +69,9 @@ class PlaneClient:
     ) -> Any:
         if self.settings.read_only and method != "GET":
             raise ValueError("Server is in read-only mode")
+        api_key = request_api_key.get() if self.settings.per_user else self.settings.api_key
+        if not api_key:
+            raise ValueError("A personal Plane API token is required")
         # Never follow redirects: a misconfigured proxy must not receive our key on another host.
         async with httpx.AsyncClient(
             transport=self.transport, timeout=30, follow_redirects=False
@@ -71,7 +80,7 @@ class PlaneClient:
                 response = await client.request(
                     method,
                     f"{self.settings.base_url.rstrip('/')}/api/v1/{path}",
-                    headers={"x-api-key": self.settings.api_key},
+                    headers={"x-api-key": api_key},
                     json=data,
                     params=query,
                 )

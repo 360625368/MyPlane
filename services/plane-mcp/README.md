@@ -40,7 +40,15 @@ Plane 地址是实例根地址（如 http://localhost:8000 或 https://plane.exa
 
 ## HTTP / Docker
 
-HTTP 模式使用独立 Bearer 密钥，所有连接共用配置的 Plane 身份和工作空间。适合受信任的个人或团队客户端；不提供多用户身份隔离、OAuth 登录或自动注册。
+远端 Plane 实例的根地址为 `https://plane.cashstory.cloud`。在 MCP 的 `.env` 中填写以下配置，无需附加 `/api/v1`。
+
+```dotenv
+PLANE_BASE_URL=https://plane.cashstory.cloud
+```
+
+HTTP 支持两种鉴权模式。线上使用 `PLANE_MCP_AUTH_MODE=per_user`，按每个连接者的个人 Plane Token 执行操作，参见下方「多用户 HTTP 接入」。
+
+以下为 `PLANE_MCP_AUTH_MODE=shared` 的共享账号部署方式，该模式使用独立 Bearer 连接密钥，所有连接共用配置的 Plane 身份和工作空间。
 
 ```sh
 # 生成连接密钥，填入 .env 中 PLANE_MCP_HTTP_TOKEN（至少32字符）
@@ -125,7 +133,7 @@ resource 取值：project、work_item、comment、link、cycle、module、state�
 
 新增 Token API 在 `/api/v1/workspaces/{slug}/wiki/` 下与网页 Wiki 对齐：nodes 集合 GET/POST，节点 GET/PATCH/DELETE；节点子路径 description PATCH、duplicate POST、state POST、restore POST、versions GET/POST、access GET/PUT、changes GET/POST、changes/{change_id} PATCH/POST；trash 和 search 只读。没有新增永久清空回收站接口。
 
-删除确认是客户端约定，不是独立审批。权限调整、通知、版本恢复及申请合并都以 Token 所属身份执行，HTTP 所有调用者共用此身份。
+删除确认是客户端约定，不是独立审批。权限调整、通知、版本恢复及申请合并都以 Token 所属身份执行，HTTP 多用户模式使用各自的 Token 身份，共享模式使用服务器配置的身份。
 
 ## 开发验证
 
@@ -139,3 +147,61 @@ uv run ruff format --check plane_ce_mcp tests
 测试使用模拟 Plane HTTP API，包含真实 MCP 初始化/工具发现/调用、路由映射、分页、写入、删除确认、只读模式、错误脱敏和 HTTP 鉴权。上线后先调用 current_user 和 list_resources(resource="project") 验证真实实例。
 
 参考：[官方 Plane MCP](https://github.com/makeplane/plane-mcp-server)、[MCP Python SDK](https://github.com/modelcontextprotocol/python-sdk)。
+
+## 多用户 HTTP 接入
+
+设置 `PLANE_MCP_AUTH_MODE=per_user` 并重启服务。每个客户端使用自己的
+`Authorization: Bearer <个人 Plane API Token>`，每次请求都会验证 Token，
+工具调用沿用该用户的 Plane 权限。该模式不使用服务器的
+`PLANE_API_KEY` 和 `PLANE_MCP_HTTP_TOKEN`。工作区仍由
+`PLANE_WORKSPACE_SLUG` 固定配置。
+
+### 线上客户端配置
+
+服务已部署在 `https://plane.cashstory.cloud/mcp`，工作区为
+`g-choco-quant`。每位用户在 Plane 的个人设置中创建自己的 API Token，
+并确保该账号已加入此工作区。将以下配置加入支持 Streamable HTTP 和自定义请求头的 MCP 客户端：
+
+```json
+{
+  "mcpServers": {
+    "plane": {
+      "url": "https://plane.cashstory.cloud/mcp",
+      "headers": { "Authorization": "Bearer <个人 Plane API Token>" }
+    }
+  }
+}
+```
+
+保存配置并重新连接后，先调用 `current_user` 确认身份，再调用
+`list_resources(resource="project")` 或 `list_wiki_nodes` 验证工作区访问权限。
+成员更换 Token 时只需修改自己的客户端配置，无需管理员修改服务器。
+公网 HTTPS 连接无需 SSH 权限或 SSH 隧道。请勿把真实 Token 提交到仓库。
+
+401/403 表示 Token 无效或权限不足；工具调用中的 403/404 也可能表示
+当前用户无权访问目标工作区或 Wiki。遇到 429 时按 `Retry-After` 等待后重试。
+
+### 服务端配置
+
+```dotenv
+PLANE_BASE_URL=https://plane.cashstory.cloud
+PLANE_WORKSPACE_SLUG=g-choco-quant
+PLANE_MCP_AUTH_MODE=per_user
+PLANE_MCP_ALLOWED_HOSTS=plane.cashstory.cloud
+PLANE_MCP_ALLOWED_ORIGINS=https://plane.cashstory.cloud
+PLANE_MCP_READ_ONLY=false
+```
+
+容器内的 `PLANE_BASE_URL` 也可以设置为可达的内部 Plane 地址，例如
+`http://host.docker.internal:3010`。反向代理把 `/mcp` 转发到 MCP 容器的
+8211 端口，并保留 Authorization 请求头。域名需要加入上述 Host/Origin
+允许列表。Caddy 使用持久化证书卷自动签发和续期证书。
+
+可选的 SSH 隧道用于本地访问：
+
+```sh
+ssh -N -L 8211:127.0.0.1:8211 ubuntu@43.160.216.252
+```
+
+使用隧道时，客户端 URL 改为 `http://localhost:8211/mcp`，
+Authorization 仍填写个人 Plane API Token。

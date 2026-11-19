@@ -193,3 +193,31 @@ def test_wiki_tools_protocol_and_content():
         assert requests[2].url.params["q"] == "部署"
 
     asyncio.run(run())
+
+
+def test_personal_keys_are_isolated_and_never_fall_back():
+    from plane_ce_mcp.client import request_api_key
+
+    async def run():
+        keys = []
+        client = PlaneClient(
+            Settings("https://plane.test", "team", "shared-secret", per_user=True),
+            httpx.MockTransport(
+                lambda r: (keys.append(r.headers["x-api-key"]) or httpx.Response(200, json={}))
+            ),
+        )
+
+        async def call(key):
+            context = request_api_key.set(key)
+            try:
+                await asyncio.sleep(0)
+                await client.request("GET", "users/me/")
+            finally:
+                request_api_key.reset(context)
+
+        await asyncio.gather(call("plane_api_alice"), call("plane_api_bob"))
+        assert set(keys) == {"plane_api_alice", "plane_api_bob"}
+        with pytest.raises(ValueError, match="personal Plane"):
+            await client.request("GET", "users/me/")
+
+    asyncio.run(run())
