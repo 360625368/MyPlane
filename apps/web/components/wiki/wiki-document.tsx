@@ -41,7 +41,11 @@ type Props = {
   onChanged: () => Promise<void>;
 };
 
-export const WikiDocument = observer(function WikiDocument({ workspaceSlug, nodeId, onChanged }: Props) {
+export function WikiDocument(props: Props) {
+  return <WikiDocumentSession key={JSON.stringify([props.workspaceSlug, props.nodeId])} {...props} />;
+}
+
+const WikiDocumentSession = observer(function WikiDocumentSession({ workspaceSlug, nodeId, onChanged }: Props) {
   const { t } = useTranslation();
   const setHeaderActions = useSetWikiHeaderActions();
   const { getWorkspaceBySlug } = useWorkspace();
@@ -74,12 +78,15 @@ export const WikiDocument = observer(function WikiDocument({ workspaceSlug, node
   const { fontSize, fontStyle } = usePageFilters();
   const favorite = entityMap[nodeId];
 
+  const active = useRef(true);
   const serverHtml = useRef("");
   const pendingSave = useRef<{ html: string; json: object; base: string } | null>(null);
   const saveInFlight = useRef<Promise<void> | null>(null);
   const ignorePublish = useRef(false);
   const refresh = useCallback(async () => {
+    if (!active.current) return;
     const detail = await wikiService.retrieve(workspaceSlug, nodeId);
+    if (!active.current) return;
     serverHtml.current = detail.description_html || "";
     setNode(detail);
     setPublishedHtml(detail.description_html || "");
@@ -142,12 +149,17 @@ export const WikiDocument = observer(function WikiDocument({ workspaceSlug, node
     await request;
     if (pendingSave.current && !ignorePublish.current) await flushPendingPublish();
   }, [nodeId, refresh, t, workspaceSlug]);
-  useEffect(
-    () => () => {
+  const flushOnExit = useRef(flushPendingPublish);
+  flushOnExit.current = flushPendingPublish;
+  useEffect(() => {
+    active.current = true;
+    return () => {
+      active.current = false;
       if (saveTimer.current) window.clearTimeout(saveTimer.current);
-    },
-    [nodeId]
-  );
+      // This session retains the original file ID and pending edits after navigation.
+      void flushOnExit.current();
+    };
+  }, []);
   const releasePublish = useCallback(() => {
     window.setTimeout(() => {
       ignorePublish.current = false;
@@ -351,7 +363,7 @@ export const WikiDocument = observer(function WikiDocument({ workspaceSlug, node
                   uploadFile={async (_blockId, file) => uploadWikiImage(workspaceSlug, nodeId, file)}
                   duplicateFile={async (assetId) => assetId}
                   onChange={(description, html, options) => {
-                    if (options?.isMigrationUpdate || ignorePublish.current) return;
+                    if (!active.current || options?.isMigrationUpdate || ignorePublish.current) return;
                     pendingSave.current = {
                       html: html || "<p></p>",
                       json: description,
