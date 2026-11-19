@@ -151,3 +151,24 @@ def test_wiki_image_upload_and_read_permissions(api_client, discussion, monkeypa
     api_client.force_authenticate(user=owner)
     assert api_client.delete(f"{url}{asset_id}/").status_code == 204
     assert FileAsset.objects.filter(id=asset_id).exists()
+
+
+@pytest.mark.contract
+@pytest.mark.django_db
+def test_home_recents_include_visible_wiki_files(api_client, discussion):
+    from plane.db.models import UserRecentVisit
+
+    file, (owner, viewer, _, hidden), _ = discussion
+    url = f"/api/workspaces/{file.workspace.slug}/recent-visits/"
+    for user in (owner, viewer, hidden):
+        UserRecentVisit.objects.create(
+            workspace=file.workspace, user=user, entity_name="wiki", entity_identifier=file.id
+        )
+    api_client.force_authenticate(user=viewer)
+    result = api_client.get(url)
+    assert result.status_code == 200
+    assert result.data[0]["entity_name"] == "wiki"
+    assert result.data[0]["entity_data"]["name"] == file.name
+    assert api_client.get(url, {"entity_name": "wiki"}).data[0]["entity_data"]["id"] == str(file.id)
+    api_client.force_authenticate(user=hidden)
+    assert api_client.get(url).data[0]["entity_data"] is None

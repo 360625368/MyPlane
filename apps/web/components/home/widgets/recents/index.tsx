@@ -27,6 +27,7 @@ const workspaceService = new WorkspaceService();
 const filters: { name: TRecentActivityFilterKeys; icon?: React.ReactNode; i18n_key: string }[] = [
   { name: "all item", i18n_key: "home.recents.filters.all" },
   { name: "issue", icon: <WorkItemsOutline className="h-4 w-4" />, i18n_key: "home.recents.filters.issues" },
+  { name: "wiki", icon: <PagesOutline height={16} width={16} />, i18n_key: "sidebar.wiki" },
   { name: "page", icon: <PagesOutline height={16} width={16} />, i18n_key: "home.recents.filters.pages" },
   { name: "project", icon: <ProjectsOutline height={16} width={16} />, i18n_key: "home.recents.filters.projects" },
 ];
@@ -54,14 +55,15 @@ export const RecentActivityWidget = observer(function RecentActivityWidget(props
           )
       : null,
     {
-      revalidateIfStale: false,
-      revalidateOnFocus: false,
+      revalidateIfStale: true,
+      revalidateOnFocus: true,
       revalidateOnReconnect: false,
     }
   );
 
   const resolveRecent = (activity: TActivityEntityData) => {
     switch (activity.entity_name) {
+      case "wiki":
       case "page":
       case "workspace_page":
         return <RecentPage activity={activity} ref={ref} workspaceSlug={workspaceSlug} />;

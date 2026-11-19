@@ -53,9 +53,7 @@ class WorkSpaceSerializer(DynamicBaseSerializer):
         # digit. Mirrors the frontend HAS_ALPHANUMERIC_REGEX check so the rule
         # cannot be bypassed via a direct API call.
         if not has_alphanumeric(value):
-            raise serializers.ValidationError(
-                "Name must contain at least one letter or number"
-            )
+            raise serializers.ValidationError("Name must contain at least one letter or number")
         return value
 
     def validate_slug(self, value):
@@ -323,6 +321,26 @@ class WorkspaceRecentVisitSerializer(BaseSerializer):
     def get_entity_data(self, obj):
         entity_name = obj.entity_name
         entity_identifier = obj.entity_identifier
+
+        if entity_name == "wiki":
+            from plane.db.models import WikiNode, WorkspaceMember
+            from plane.utils.wiki_favorite import visible_wiki_favorite
+
+            request = self.context.get("request")
+            if (
+                request is None
+                or not WorkspaceMember.objects.filter(
+                    workspace_id=obj.workspace_id, member=request.user, is_active=True, role__in=[15, 20]
+                ).exists()
+            ):
+                return None
+            data = visible_wiki_favorite(entity_identifier, request.user.id, obj.workspace_id)
+            if data is None:
+                return None
+            node = WikiNode.objects.filter(id=entity_identifier, workspace_id=obj.workspace_id).first()
+            if node is None or node.node_type != WikiNode.FILE or node.archived_at:
+                return None
+            return {**data, "owned_by": str(node.owned_by_id) if node.owned_by_id else None}
 
         entity_model, entity_serializer = get_entity_model_and_serializer(entity_name)
 

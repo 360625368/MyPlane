@@ -17,6 +17,7 @@ from .base import (
     _is_creator,
     _load_nodes,
     _not_found,
+    _remember_visit,
     _serialize_node,
     _visible_node,
     _workspace_or_404,
@@ -73,6 +74,7 @@ class WikiNodeDescriptionEndpoint(BaseAPIView):
         node.description_html = clean_html or "<p></p>"
         node.description_json = description_json
         node.save()
+        _remember_visit(workspace, request.user, node)
         if previous_html != node.description_html:
             record_wiki_version(node, previous_html, request.user.id)
             mark_conflicting_change_requests(node)
