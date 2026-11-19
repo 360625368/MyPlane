@@ -4,7 +4,7 @@
  * See the LICENSE file for details.
  */
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { observer } from "mobx-react";
 import { Controller, useForm } from "react-hook-form";
 import { useTranslation } from "@plane/i18n";
@@ -21,10 +21,15 @@ import {
   DialogMain,
   DialogTitle,
 } from "@makeplane/propel/components/dialog";
+import { MoreHorizontalOutline } from "@makeplane/propel/icons";
+import { Icon } from "@makeplane/propel/components/icon";
+import { IconButton } from "@makeplane/propel/components/icon-button";
+import { Menu, MenuTrigger, MenuContent, MenuItem } from "@makeplane/propel/components/menu";
 import { InputField } from "@makeplane/propel/components/input-field";
 // hooks
 import { useIssueDetail } from "@/hooks/store/use-issue-detail";
 // types
+import { DocumentLinkPicker } from "./document-picker";
 import type { TLinkOperations } from "./root";
 
 export type TLinkOperationsModal = Exclude<TLinkOperations, "remove">;
@@ -51,12 +56,14 @@ export const IssueLinkCreateUpdateModal = observer(function IssueLinkCreateUpdat
   const { isModalOpen, handleOnClose, linkOperations, issueServiceType } = props;
   // i18n
   const { t } = useTranslation();
+  const [source, setSource] = useState<"wiki" | "page" | null>(null);
   // react hook form
   const {
     formState: { errors, isSubmitting },
     handleSubmit,
     control,
     reset,
+    setValue,
   } = useForm<TIssueLinkCreateFormFieldOptions>({
     defaultValues,
   });
@@ -80,7 +87,10 @@ export const IssueLinkCreateUpdateModal = observer(function IssueLinkCreateUpdat
   };
 
   useEffect(() => {
-    if (isModalOpen) reset({ ...defaultValues, ...preloadedData });
+    if (isModalOpen) {
+      reset({ ...defaultValues, ...preloadedData });
+      setSource(null);
+    }
   }, [preloadedData, reset, isModalOpen]);
 
   return (
@@ -112,6 +122,25 @@ export const IssueLinkCreateUpdateModal = observer(function IssueLinkCreateUpdat
                     id="url"
                     type="text"
                     label={t("common.url")}
+                    endIcon={
+                      <Menu>
+                        <MenuTrigger
+                          render={
+                            <IconButton
+                              type="button"
+                              variant="ghost"
+                              size="xs"
+                              aria-label={t("aria_labels.common.more_actions")}
+                              icon={<Icon icon={MoreHorizontalOutline} />}
+                            />
+                          }
+                        />
+                        <MenuContent align="end">
+                          <MenuItem label={t("sidebar.wiki")} onClick={() => setSource("wiki")} />
+                          <MenuItem label={t("home.recents.filters.pages")} onClick={() => setSource("page")} />
+                        </MenuContent>
+                      </Menu>
+                    }
                     value={value}
                     onChange={onChange}
                     ref={ref}
@@ -162,6 +191,45 @@ export const IssueLinkCreateUpdateModal = observer(function IssueLinkCreateUpdat
           </DialogActions>
         </form>
       </DialogContent>
+      <Dialog
+        open={isModalOpen && source !== null}
+        onOpenChange={(open) => {
+          if (!open) setSource(null);
+        }}
+      >
+        <DialogContent size="md">
+          <DialogMain>
+            <DialogHeader>
+              <DialogHeading>
+                <DialogTitle>{source === "wiki" ? t("sidebar.wiki") : t("home.recents.filters.pages")}</DialogTitle>
+              </DialogHeading>
+            </DialogHeader>
+            <DialogBody>
+              {source && (
+                <DocumentLinkPicker
+                  key={source}
+                  kind={source}
+                  onSelect={(title, url) => {
+                    setValue("title", title, { shouldDirty: true });
+                    setValue("url", url, { shouldDirty: true, shouldValidate: true });
+                    setSource(null);
+                  }}
+                />
+              )}
+            </DialogBody>
+          </DialogMain>
+          <DialogActions>
+            <Button
+              type="button"
+              variant="secondary"
+              size="md"
+              stretch="auto"
+              label={t("common.cancel")}
+              onClick={() => setSource(null)}
+            />
+          </DialogActions>
+        </DialogContent>
+      </Dialog>
     </Dialog>
   );
 });
