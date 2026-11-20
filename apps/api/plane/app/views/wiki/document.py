@@ -71,10 +71,12 @@ class WikiNodeDescriptionEndpoint(BaseAPIView):
             return Response({"error": "conflict"}, status=status.HTTP_409_CONFLICT)
 
         previous_html = node.description_html
+        previous_json = node.description_json
         node.description_html = clean_html or "<p></p>"
         node.description_json = description_json
         node.save()
-        _remember_visit(workspace, request.user, node)
+        if previous_html != node.description_html or previous_json != node.description_json:
+            _remember_visit(workspace, request.user, node, entity_name="wiki_edit")
         if previous_html != node.description_html:
             record_wiki_version(node, previous_html, request.user.id)
             mark_conflicting_change_requests(node)

@@ -311,6 +311,12 @@ def get_entity_model_and_serializer(entity_type):
 
 
 class WorkspaceRecentVisitSerializer(BaseSerializer):
+    def to_representation(self, instance):
+        data = super().to_representation(instance)
+        if data["entity_name"] == "wiki_edit":
+            data["entity_name"] = "wiki"
+        return data
+
     entity_data = serializers.SerializerMethodField()
 
     class Meta:
@@ -322,7 +328,7 @@ class WorkspaceRecentVisitSerializer(BaseSerializer):
         entity_name = obj.entity_name
         entity_identifier = obj.entity_identifier
 
-        if entity_name == "wiki":
+        if entity_name in ("wiki", "wiki_edit"):
             from plane.db.models import WikiNode, WorkspaceMember
             from plane.utils.wiki_favorite import visible_wiki_favorite
 

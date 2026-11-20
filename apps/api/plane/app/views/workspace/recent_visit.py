@@ -28,9 +28,11 @@ class UserRecentVisitViewSet(BaseViewSet):
         entity_name = request.query_params.get("entity_name")
 
         if entity_name:
-            user_recent_visits = user_recent_visits.filter(entity_name=entity_name)
+            user_recent_visits = user_recent_visits.filter(
+                entity_name="wiki_edit" if entity_name == "wiki" else entity_name
+            )
 
-        user_recent_visits = user_recent_visits.filter(entity_name__in=["issue", "page", "project", "wiki"])
+        user_recent_visits = user_recent_visits.filter(entity_name__in=["issue", "page", "project", "wiki_edit"])
 
         serializer = WorkspaceRecentVisitSerializer(
             user_recent_visits.order_by("-visited_at", "-id")[:20], many=True, context={"request": request}

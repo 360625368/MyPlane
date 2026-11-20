@@ -169,20 +169,20 @@ def _archived_branch_ids(nodes_by_id):
     return hidden
 
 
-def _remember_visit(workspace, user, node):
+def _remember_visit(workspace, user, node, entity_name="wiki"):
     from plane.db.models import UserRecentVisit
 
     visit = UserRecentVisit.objects.filter(
         workspace=workspace,
         user=user,
-        entity_name="wiki",
+        entity_name=entity_name,
         entity_identifier=node.id,
     ).first()
     if visit is None:
         UserRecentVisit.objects.create(
             workspace=workspace,
             user=user,
-            entity_name="wiki",
+            entity_name=entity_name,
             entity_identifier=node.id,
         )
         return

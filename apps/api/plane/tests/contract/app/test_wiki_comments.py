@@ -162,7 +162,7 @@ def test_home_recents_include_visible_wiki_files(api_client, discussion):
     url = f"/api/workspaces/{file.workspace.slug}/recent-visits/"
     for user in (owner, viewer, hidden):
         UserRecentVisit.objects.create(
-            workspace=file.workspace, user=user, entity_name="wiki", entity_identifier=file.id
+            workspace=file.workspace, user=user, entity_name="wiki_edit", entity_identifier=file.id
         )
     api_client.force_authenticate(user=viewer)
     result = api_client.get(url)
@@ -172,3 +172,26 @@ def test_home_recents_include_visible_wiki_files(api_client, discussion):
     assert api_client.get(url, {"entity_name": "wiki"}).data[0]["entity_data"]["id"] == str(file.id)
     api_client.force_authenticate(user=hidden)
     assert api_client.get(url).data[0]["entity_data"] is None
+
+
+@pytest.mark.contract
+@pytest.mark.django_db
+def test_wiki_home_recents_only_track_actual_edits(api_client, discussion):
+    file, (owner, *_), _ = discussion
+    api_client.force_authenticate(user=owner)
+    base = f"/api/workspaces/{file.workspace.slug}/"
+    recent = base + "recent-visits/?entity_name=wiki"
+    detail = base + f"wiki/nodes/{file.id}/"
+    assert api_client.get(detail).status_code == 200
+    assert api_client.get(recent).data == []
+    unchanged = {"description_html": file.description_html, "description_json": file.description_json}
+    assert api_client.patch(detail + "description/", unchanged, format="json").status_code == 200
+    assert api_client.get(recent).data == []
+    edited = {"description_html": "<p>Edited</p>", "description_json": {}}
+    assert api_client.patch(detail + "description/", edited, format="json").status_code == 200
+    records = api_client.get(recent).data
+    assert len(records) == 1
+    timestamp = records[0]["visited_at"]
+    api_client.get(detail)
+    api_client.patch(detail + "description/", edited, format="json")
+    assert api_client.get(recent).data[0]["visited_at"] == timestamp
