@@ -5,7 +5,7 @@
 from uuid import UUID
 
 from plane.db.models import WikiNode, WikiNodePermission
-from plane.utils.wiki_access import can_view, resolve_access
+from plane.utils.wiki_access import can_view, resolve_access, is_wiki_admin
 
 
 def _node_id(value):
@@ -51,6 +51,6 @@ def visible_wiki_favorite(node_id, user_id, workspace_id):
             for item in lineage
         ]
     )
-    if not can_view(access):
+    if not can_view(access) and not is_wiki_admin(workspace_id, user_id):
         return None
     return {"id": str(node.id), "name": node.name, "logo_props": node.logo_props}

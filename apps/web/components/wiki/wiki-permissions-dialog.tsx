@@ -79,7 +79,7 @@ export function WikiPermissionsDialog(props: Props) {
   }, [nodeId, open, workspaceSlug]);
 
   const changeAccess = (memberId: string, value: string) => {
-    if (!nodeId) return;
+    if (!nodeId || members.find((member) => member.id === memberId)?.access_locked) return;
     const access = value === "inherit" ? null : (value as TWikiAccess);
     setMessage("");
     void wikiService
@@ -125,8 +125,9 @@ export function WikiPermissionsDialog(props: Props) {
                   <label key={member.id} className="flex items-center justify-between gap-3">
                     <span className="truncate text-body-sm-regular">{member.display_name || member.email}</span>
                     <select
-                      value={member.explicit_access ?? "inherit"}
-                      className="h-8 rounded-md border border-subtle bg-layer-1 px-2 text-body-sm-regular"
+                      value={member.access_locked ? "editable" : (member.explicit_access ?? "inherit")}
+                      disabled={member.access_locked}
+                      className="h-8 rounded-md border border-subtle bg-layer-1 px-2 text-body-sm-regular disabled:cursor-not-allowed disabled:opacity-60"
                       onChange={(event) => changeAccess(member.id, event.target.value)}
                     >
                       {ACCESS_OPTIONS.map((option) => (

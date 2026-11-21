@@ -128,6 +128,7 @@ class TestWikiNodes:
         assert visible.data["can_create_child"] is False
 
     def test_editable_member_can_create_a_child(self, session_client, workspace, create_user):
+        WorkspaceMember.objects.filter(workspace=workspace, member=create_user).update(role=15)
         other = _member(workspace, 15)
         folder = session_client.post(
             f"/api/workspaces/{workspace.slug}/wiki/nodes/",
@@ -211,6 +212,7 @@ class TestWikiNodes:
     def test_creator_cannot_delete_a_folder_that_holds_another_creators_file(
         self, session_client, workspace, create_user
     ):
+        WorkspaceMember.objects.filter(workspace=workspace, member=create_user).update(role=15)
         other = _member(workspace, 15)
         parent = session_client.post(
             f"/api/workspaces/{workspace.slug}/wiki/nodes/",
@@ -362,6 +364,7 @@ class TestWikiDocument:
         assert node_id in {node["id"] for node in archived.data}
 
     def test_search_hides_private_files_and_duplicate_starts_fresh(self, session_client, workspace, create_user):
+        WorkspaceMember.objects.filter(workspace=workspace, member=create_user).update(role=15)
         other = _member(workspace, 15)
         created = session_client.post(
             f"/api/workspaces/{workspace.slug}/wiki/nodes/",

@@ -11,7 +11,15 @@ from rest_framework.response import Response
 
 from plane.app.views.base import BaseAPIView
 from plane.db.models import User, WikiNode, WikiNodePermission, Workspace, WorkspaceMember
-from plane.utils.wiki_access import EDITABLE, INVISIBLE, VISIBLE, can_create_child, can_view, resolve_access
+from plane.utils.wiki_access import (
+    is_wiki_admin,
+    EDITABLE,
+    INVISIBLE,
+    VISIBLE,
+    can_create_child,
+    can_view,
+    resolve_access,
+)
 
 ADMIN_ROLE = 20
 MEMBER_ROLE = 15
@@ -86,6 +94,8 @@ def _chain(node, nodes_by_id, explicit, user_id):
 
 
 def effective_access(node, user_id, nodes_by_id, explicit):
+    if is_wiki_admin(node.workspace_id, user_id):
+        return EDITABLE
     return resolve_access(_chain(node, nodes_by_id, explicit, user_id))
 
 
@@ -95,7 +105,7 @@ def _load_nodes(workspace):
 
 
 def _is_creator(node, user):
-    return node.owned_by_id is not None and node.owned_by_id == user.id
+    return (node.owned_by_id is not None and node.owned_by_id == user.id) or is_wiki_admin(node.workspace_id, user.id)
 
 
 def _serialize_node(node, user, access):
@@ -347,7 +357,7 @@ class WikiNodeEndpoint(BaseAPIView):
         descendant_ids = _descendant_ids(node.id, nodes_by_id)
         for descendant_id in descendant_ids:
             descendant = nodes_by_id[descendant_id]
-            if descendant.owned_by_id != request.user.id:
+            if not _is_creator(descendant, request.user):
                 return Response({"error": "folder_has_other_creators"}, status=status.HTTP_400_BAD_REQUEST)
 
         with transaction.atomic():
@@ -365,7 +375,7 @@ class WikiNodeRestoreEndpoint(BaseAPIView):
         if error:
             return error
         node = WikiNode.all_objects.filter(workspace=workspace, id=node_id, deleted_at__isnull=False).first()
-        if node is None or node.is_root or node.owned_by_id != request.user.id:
+        if node is None or node.is_root or not _is_creator(node, request.user):
             return _not_found()
         parent = WikiNode.objects.filter(workspace=workspace, id=node.parent_id).first()
         if parent is None:
@@ -387,10 +397,11 @@ class WikiTrashEndpoint(BaseAPIView):
             return error
         nodes = WikiNode.all_objects.filter(
             workspace=workspace,
-            owned_by=request.user,
             is_root=False,
             deleted_at__isnull=False,
         ).order_by("-deleted_at")
+        if not is_wiki_admin(workspace.id, request.user.id):
+            nodes = nodes.filter(owned_by=request.user)
         return Response(
             [
                 {
@@ -430,13 +441,17 @@ class WikiNodeAccessEndpoint(BaseAPIView):
             member = membership.member
             if member.id == request.user.id:
                 continue
+            access_locked = member.id == node.owned_by_id or membership.role == ADMIN_ROLE
             members.append(
                 {
                     "id": str(member.id),
                     "display_name": member.display_name or member.email,
                     "email": member.email,
                     "explicit_access": explicit.get((node.id, member.id)),
-                    "effective_access": effective_access(node, member.id, nodes_by_id, explicit),
+                    "effective_access": EDITABLE
+                    if access_locked
+                    else effective_access(node, member.id, nodes_by_id, explicit),
+                    "access_locked": access_locked,
                 }
             )
         return Response(members, status=status.HTTP_200_OK)
@@ -461,6 +476,9 @@ class WikiNodeAccessEndpoint(BaseAPIView):
             return Response({"error": "invalid_member"}, status=status.HTTP_400_BAD_REQUEST)
         if not User.objects.filter(id=member_id).exists():
             return Response({"error": "invalid_member"}, status=status.HTTP_400_BAD_REQUEST)
+
+        if member_id == node.owned_by_id or is_wiki_admin(workspace.id, member_id):
+            return Response({"error": "fixed_access"}, status=status.HTTP_403_FORBIDDEN)
 
         parent = nodes_by_id.get(node.parent_id)
         parent_access = effective_access(parent, member_id, nodes_by_id, explicit) if parent else EDITABLE

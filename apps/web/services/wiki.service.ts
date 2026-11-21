@@ -44,6 +44,7 @@ export type TWikiTrashNode = {
 };
 
 export type TWikiMemberAccess = {
+  access_locked: boolean;
   id: string;
   display_name: string;
   email: string;

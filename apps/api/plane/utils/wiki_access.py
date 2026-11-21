@@ -81,3 +81,12 @@ def can_view(access):
 
 def can_create_child(access):
     return access == EDITABLE
+
+
+def is_wiki_admin(workspace_id, user_id):
+    """Only active workspace admins receive Wiki creator-level privileges."""
+    from plane.db.models import WorkspaceMember
+
+    return WorkspaceMember.objects.filter(
+        workspace_id=workspace_id, member_id=user_id, role=20, is_active=True
+    ).exists()

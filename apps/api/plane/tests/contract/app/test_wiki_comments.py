@@ -242,3 +242,59 @@ def test_wiki_drop_reorders_equal_sort_values_and_rejects_cycles(api_client, dis
         workspace=file.workspace, parent=folder, name="Child", node_type="folder", owned_by=owner
     )
     assert api_client.patch(base + str(folder.id) + "/", {"parent_id": str(child.id)}, format="json").status_code == 400
+
+
+@pytest.mark.contract
+@pytest.mark.django_db
+def test_wiki_admin_has_creator_management_without_changing_owner(api_client, discussion):
+    file, (owner, _, _, admin), _ = discussion
+    WorkspaceMember.objects.filter(workspace=file.workspace, member=admin).update(role=20)
+    api_client.force_authenticate(user=admin)
+    base = f"/api/workspaces/{file.workspace.slug}/wiki/nodes/{file.id}/"
+    detail = api_client.get(base)
+    assert detail.status_code == 200
+    assert detail.data["is_creator"]
+    assert detail.data["can_edit_body"] and detail.data["can_manage_access"] and detail.data["can_move"]
+    assert detail.data["owned_by"] == str(owner.id)
+    assert api_client.get(base + "access/").status_code == 200
+    assert api_client.patch(base, {"name": "Admin renamed"}, format="json").status_code == 200
+    assert (
+        api_client.patch(base + "description/", {"description_html": "<p>Admin edit</p>"}, format="json").status_code
+        == 200
+    )
+    assert api_client.post(base + "state/", {"is_locked": True}, format="json").status_code == 200
+    assert api_client.post(base + "state/", {"is_locked": False}, format="json").status_code == 200
+    assert api_client.delete(base).status_code == 204
+    trash = api_client.get(f"/api/workspaces/{file.workspace.slug}/wiki/trash/")
+    assert str(file.id) in {node["id"] for node in trash.data}
+    assert api_client.post(base + "restore/").status_code == 200
+    file.refresh_from_db()
+    assert file.owned_by_id == owner.id
+    WorkspaceMember.objects.filter(workspace=file.workspace, member=admin).update(role=15)
+    assert api_client.get(base).status_code == 404
+
+
+@pytest.mark.contract
+@pytest.mark.django_db
+def test_creator_and_admin_permissions_are_fixed(api_client, discussion):
+    file, (owner, viewer, _, admin), _ = discussion
+    WorkspaceMember.objects.filter(workspace=file.workspace, member=admin).update(role=20)
+    WikiNodePermission.objects.create(workspace=file.workspace, node=file, member=admin, access="invisible")
+    url = f"/api/workspaces/{file.workspace.slug}/wiki/nodes/{file.id}/access/"
+    for actor, protected in ((admin, owner), (owner, admin)):
+        api_client.force_authenticate(user=actor)
+        response = api_client.get(url)
+        assert response.status_code == 200
+        row = next(item for item in response.data if item["id"] == str(protected.id))
+        assert row["access_locked"] is True
+        assert row["effective_access"] == "editable"
+        for access in (None, "invisible", "visible", "editable"):
+            assert (
+                api_client.put(url, {"member_id": str(protected.id), "access": access}, format="json").status_code
+                == 403
+            )
+        ordinary = next(item for item in response.data if item["id"] == str(viewer.id))
+        assert ordinary["access_locked"] is False
+        assert (
+            api_client.put(url, {"member_id": str(viewer.id), "access": "editable"}, format="json").status_code == 200
+        )

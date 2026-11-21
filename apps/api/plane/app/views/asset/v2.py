@@ -43,8 +43,12 @@ def can_modify_asset(user, asset):
         .first()
     )
     if asset.entity_type == FileAsset.EntityTypeContext.WIKI_DESCRIPTION:
+        from plane.utils.wiki_access import is_wiki_admin
+
         return asset.is_project_accessible_to(user) and (
-            asset.created_by_id == user.id or asset.wiki_node.owned_by_id == user.id
+            asset.created_by_id == user.id
+            or asset.wiki_node.owned_by_id == user.id
+            or is_wiki_admin(asset.workspace_id, user.id)
         )
     if asset.entity_type == FileAsset.EntityTypeContext.WORKSPACE_LOGO:
         return workspace_role == ROLE.ADMIN.value
