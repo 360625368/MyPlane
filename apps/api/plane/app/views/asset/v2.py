@@ -7,12 +7,14 @@ import uuid
 
 # Django imports
 from django.conf import settings
-from django.http import HttpResponseRedirect
+from django.http import FileResponse, HttpResponseRedirect
 from django.utils import timezone
+from django.utils.cache import patch_vary_headers
 from django.db import IntegrityError
 from django.db.models import Q
 
 # Third party imports
+from botocore.exceptions import ClientError
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.permissions import AllowAny
@@ -537,6 +539,22 @@ class WorkspaceFileAssetEndpoint(BaseAPIView):
                 {"error": "The requested asset could not be found."},
                 status=status.HTTP_404_NOT_FOUND,
             )
+
+        if asset.entity_type == FileAsset.EntityTypeContext.WIKI_DESCRIPTION:
+            content_type = asset.attributes.get("type", "")
+            if content_type not in settings.INLINE_SAFE_MIME_TYPES:
+                return Response({"error": "Invalid image type."}, status=status.HTTP_400_BAD_REQUEST)
+            try:
+                stored = S3Storage(request=request).open_object(asset.asset.name)
+            except ClientError:
+                return Response({"error": "Image not found."}, status=status.HTTP_404_NOT_FOUND)
+            response = FileResponse(stored["Body"], content_type=content_type)
+            response["Cache-Control"] = "private, max-age=86400"
+            patch_vary_headers(response, ["Cookie", "Authorization"])
+            response["X-Content-Type-Options"] = "nosniff"
+            if stored.get("ETag"):
+                response["ETag"] = stored["ETag"]
+            return response
 
         # Get the presigned URL
         storage = S3Storage(request=request)

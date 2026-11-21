@@ -330,7 +330,7 @@ const WikiDocumentSession = observer(function WikiDocumentSession({
               "max-w-[720px]": !wide,
             })}
           >
-            <div className="group/page-header">
+            <div className="group/page-header mb-6">
               <WikiLogoControl
                 variant="document"
                 logo={node.logo_props}

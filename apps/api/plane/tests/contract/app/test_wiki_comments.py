@@ -119,11 +119,13 @@ def test_comment_pages_limit_top_level_threads_and_locate_nested_replies(api_cli
 def test_wiki_image_upload_and_read_permissions(api_client, discussion, monkeypatch):
     from plane.db.models import FileAsset
     from plane.settings.storage import S3Storage
+    from io import BytesIO
 
     monkeypatch.setattr(
         S3Storage, "generate_presigned_post", lambda *a, **k: {"url": "https://storage.test", "fields": {}}
     )
     monkeypatch.setattr(S3Storage, "generate_presigned_url", lambda *a, **k: "https://storage.test/image")
+    monkeypatch.setattr(S3Storage, "open_object", lambda *a, **k: {"Body": BytesIO(b"image"), "ETag": '"wiki-image"'})
     file, (owner, viewer, _, hidden), _ = discussion
     url = f"/api/assets/v2/workspaces/{file.workspace.slug}/"
     payload = {
@@ -145,7 +147,11 @@ def test_wiki_image_upload_and_read_permissions(api_client, discussion, monkeypa
     asset.is_uploaded = True
     asset.save()
     api_client.force_authenticate(user=viewer)
-    assert api_client.get(f"{url}{asset_id}/").status_code == 302
+    image = api_client.get(f"{url}{asset_id}/")
+    assert image.status_code == 200
+    assert image["Cache-Control"] == "private, max-age=86400"
+    assert image["Content-Type"] == "image/png"
+    assert b"".join(image.streaming_content) == b"image"
     api_client.force_authenticate(user=hidden)
     assert api_client.get(f"{url}{asset_id}/").status_code == 403
     api_client.force_authenticate(user=owner)

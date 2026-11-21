@@ -154,6 +154,10 @@ class S3Storage(S3Boto3Storage):
         # The response contains the presigned URL
         return response
 
+    def open_object(self, object_name):
+        """Open an object body for streaming through a permission-checked endpoint."""
+        return self.s3_client.get_object(Bucket=self.aws_storage_bucket_name, Key=str(object_name))
+
     def get_object_metadata(self, object_name):
         """Get the metadata for an S3 object"""
         try:

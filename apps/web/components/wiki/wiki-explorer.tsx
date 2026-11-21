@@ -389,9 +389,9 @@ export function WikiExplorer({ workspaceSlug, nodeId }: Props) {
   return (
     <>
       <Dialog
-        open={fileNavigation.loadingName !== null}
+        open={moving || fileNavigation.loadingName !== null}
         onOpenChange={(open) => {
-          if (!open) fileNavigation.cancel();
+          if (!open && !moving) fileNavigation.cancel();
         }}
       >
         <DialogContent size="sm" aria-label={t("workspace_wiki.loading")}>
@@ -402,22 +402,24 @@ export function WikiExplorer({ workspaceSlug, nodeId }: Props) {
               </DialogHeading>
             </DialogHeader>
             <DialogBody>
-              <div className="flex items-center gap-3 py-4" role="status">
+              <div className="flex items-center gap-3 py-4" role="status" aria-busy={moving}>
                 <span
                   className="size-5 animate-spin rounded-full border-2 border-subtle border-t-accent-strong"
                   aria-hidden="true"
                 />
-                <span className="truncate">{fileNavigation.loadingName}</span>
+                <span className="truncate">{moving ? t("workspace_wiki.move") : fileNavigation.loadingName}</span>
               </div>
-              <div className="flex justify-end">
-                <Button
-                  stretch="auto"
-                  variant="secondary"
-                  size="sm"
-                  label={t("common.cancel")}
-                  onClick={fileNavigation.cancel}
-                />
-              </div>
+              {!moving && (
+                <div className="flex justify-end">
+                  <Button
+                    stretch="auto"
+                    variant="secondary"
+                    size="sm"
+                    label={t("common.cancel")}
+                    onClick={fileNavigation.cancel}
+                  />
+                </div>
+              )}
             </DialogBody>
           </DialogMain>
         </DialogContent>
