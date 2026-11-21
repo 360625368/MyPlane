@@ -584,7 +584,7 @@ export function WikiExplorer({ workspaceSlug, nodeId }: Props) {
               ))}
             </div>
           ) : (
-            root && <div className="flex flex-col gap-px">{renderNode(root)}</div>
+            root && <div className="flex flex-col gap-px">{childrenOf(root.id).map(renderNode)}</div>
           )}
         </aside>
         <section
