@@ -4,7 +4,7 @@
  * See the LICENSE file for details.
  */
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Link, useNavigate, useSearchParams } from "react-router";
 import type { MouseEvent } from "react";
 import { Button } from "@makeplane/propel/components/button";
@@ -29,6 +29,7 @@ import type { TTranslationKeys } from "@plane/i18n";
 import { cn } from "@plane/utils";
 import { PageHead } from "@/components/core/page-title";
 import { WikiCommentsDialog } from "@/components/wiki/wiki-comments-dialog";
+import { WikiDraggableRow } from "@/components/wiki/wiki-draggable-row";
 import { WikiDocument } from "@/components/wiki/wiki-document";
 import { useWikiHeaderActions } from "@/components/wiki/wiki-header-actions";
 import { WikiNodeMenu } from "@/components/wiki/wiki-node-menu";
@@ -119,6 +120,8 @@ export function WikiExplorer({ workspaceSlug, nodeId }: Props) {
   const [searchParams, setSearchParams] = useSearchParams();
   const [commentsNode, setCommentsNode] = useState<TWikiNode | null>(null);
   const commentId = searchParams.get("comment");
+  const [moving, setMoving] = useState(false);
+  const moveInFlight = useRef(false);
   const [nodes, setNodes] = useState<TWikiNode[]>([]);
   const [trash, setTrash] = useState<TWikiTrashNode[]>([]);
   const [explorerTab, setExplorerTab] = useState<TWikiExplorerTab>("wiki");
@@ -254,27 +257,6 @@ export function WikiExplorer({ workspaceSlug, nodeId }: Props) {
     });
   };
 
-  const moveDestinations = (node: TWikiNode) =>
-    nodes
-      .filter(
-        (candidate) =>
-          candidate.node_type === "folder" &&
-          candidate.can_create_child &&
-          candidate.id !== node.id &&
-          !descendantIds(node.id, nodes).has(candidate.id)
-      )
-      .map((candidate) => ({ id: candidate.id, name: candidate.name }));
-
-  const moveNode = (node: TWikiNode, parentId: string) => {
-    void run(() => wikiService.update(workspaceSlug, node.id, { parent_id: parentId }).then(() => undefined));
-  };
-
-  const sortNode = (node: TWikiNode, direction: -1 | 1) => {
-    void run(() =>
-      wikiService.update(workspaceSlug, node.id, { sort_order: node.sort_order + direction }).then(() => undefined)
-    );
-  };
-
   const deleteNode = (node: TWikiNode) => {
     if (!window.confirm(t("workspace_wiki.delete"))) return;
     void run(async () => {
@@ -289,17 +271,29 @@ export function WikiExplorer({ workspaceSlug, nodeId }: Props) {
     setPermissionsNode({ id: node.id, name: node.name });
   };
 
+  const dropNode = async (id: string, data: { parent_id: string; sort_order: number }) => {
+    if (moveInFlight.current) return;
+    moveInFlight.current = true;
+    setMoving(true);
+    try {
+      await run(async () => {
+        await wikiService.update(workspaceSlug, id, data);
+        toggleFolder(data.parent_id, true);
+      });
+    } finally {
+      moveInFlight.current = false;
+      setMoving(false);
+    }
+  };
+
   const renderNode = (node: TWikiNode) => {
     const isSelected = selected?.id === node.id;
     const href = `/${workspaceSlug}/wiki/${node.id}`;
     const menu = (
       <WikiNodeMenu
         node={node}
-        destinations={moveDestinations(node)}
         revealed={isSelected}
         hoverGroup={node.node_type === "folder" ? "wiki-node" : "list-item"}
-        onMove={(parentId) => moveNode(node, parentId)}
-        onSort={(direction) => sortNode(node, direction)}
         onPermissions={() => requestPermissions(node)}
         onComments={() => setCommentsNode(node)}
         onDelete={() => deleteNode(node)}
@@ -310,54 +304,66 @@ export function WikiExplorer({ workspaceSlug, nodeId }: Props) {
       const open = !collapsedIds.has(node.id);
       return (
         <div key={node.id}>
-          <div
-            className={cn(
-              "group/wiki-node grid h-8 grid-cols-[minmax(0,1fr)_auto_auto] items-center gap-x-1 rounded-lg px-2 [--node-size:var(--control-glyph-lg)] hover:bg-layer-transparent-hover",
-              isSelected && "bg-layer-transparent-selected text-primary"
-            )}
-          >
-            <Link
-              to={href}
+          <WikiDraggableRow node={node} nodes={nodes} workspaceSlug={workspaceSlug} busy={moving} onMove={dropNode}>
+            <div
               className={cn(
-                "flex min-w-0 items-center gap-2 text-body-xs-semibold text-tertiary",
-                isSelected && "text-primary"
+                "group/wiki-node grid h-8 grid-cols-[minmax(0,1fr)_auto_auto] items-center gap-x-1 rounded-lg px-2 [--node-size:var(--control-glyph-lg)] hover:bg-layer-transparent-hover",
+                isSelected && "bg-layer-transparent-selected text-primary"
               )}
             >
-              {nodeGlyph(node)}
-              <span className="truncate">{node.name}</span>
-            </Link>
-            {menu}
-            <button
-              type="button"
-              className="flex size-4 items-center justify-center text-tertiary"
-              aria-expanded={open}
-              aria-label={node.name}
-              onClick={() => toggleFolder(node.id, !open)}
-            >
-              <Icon
-                icon={<ChevronDownOutline className={cn("transition-transform", !open && "-rotate-90")} />}
-                size="inherit"
-                tint="secondary"
-              />
-            </button>
-          </div>
+              <Link
+                to={href}
+                draggable={false}
+                className={cn(
+                  "flex min-w-0 items-center gap-2 text-body-xs-semibold text-tertiary",
+                  isSelected && "text-primary"
+                )}
+              >
+                {nodeGlyph(node)}
+                <span className="truncate">{node.name}</span>
+              </Link>
+              {menu}
+              <button
+                type="button"
+                className="flex size-4 items-center justify-center text-tertiary"
+                aria-expanded={open}
+                aria-label={node.name}
+                onClick={() => toggleFolder(node.id, !open)}
+              >
+                <Icon
+                  icon={<ChevronDownOutline className={cn("transition-transform", !open && "-rotate-90")} />}
+                  size="inherit"
+                  tint="secondary"
+                />
+              </button>
+            </div>
+          </WikiDraggableRow>
           {open && children.length > 0 && <div className="flex flex-col gap-px ps-4">{children.map(renderNode)}</div>}
         </div>
       );
     }
 
     return (
-      <ListItem key={node.id} density="comfortable">
-        <ListItemLink
-          href={href}
-          render={<Link to={href} onClick={(event) => openNode(event, node)} />}
-          aria-current={isSelected ? "page" : undefined}
-        >
-          {nodeGlyph(node)}
-          <ListItemLabel>{node.name}</ListItemLabel>
-        </ListItemLink>
-        {menu}
-      </ListItem>
+      <WikiDraggableRow
+        key={node.id}
+        node={node}
+        nodes={nodes}
+        workspaceSlug={workspaceSlug}
+        busy={moving}
+        onMove={dropNode}
+      >
+        <ListItem density="comfortable">
+          <ListItemLink
+            href={href}
+            render={<Link to={href} draggable={false} onClick={(event) => openNode(event, node)} />}
+            aria-current={isSelected ? "page" : undefined}
+          >
+            {nodeGlyph(node)}
+            <ListItemLabel>{node.name}</ListItemLabel>
+          </ListItemLink>
+          {menu}
+        </ListItem>
+      </WikiDraggableRow>
     );
   };
 

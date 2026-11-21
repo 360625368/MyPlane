@@ -209,3 +209,36 @@ def test_wiki_permissions_hide_system_bots(api_client, discussion):
     ids = {member["id"] for member in response.data}
     assert str(bot.id) not in ids
     assert str(viewer.id) in ids
+
+
+@pytest.mark.contract
+@pytest.mark.django_db
+def test_wiki_drop_reorders_equal_sort_values_and_rejects_cycles(api_client, discussion):
+    file, (owner, *_), _ = discussion
+    api_client.force_authenticate(user=owner)
+    root = file.parent
+    folder = WikiNode.objects.create(
+        workspace=file.workspace, parent=root, name="Folder", node_type="folder", owned_by=owner
+    )
+    other = WikiNode.objects.create(
+        workspace=file.workspace, parent=root, name="Other", node_type="file", owned_by=owner
+    )
+    base = f"/api/workspaces/{file.workspace.slug}/wiki/nodes/"
+    result = api_client.patch(
+        base + str(other.id) + "/",
+        {
+            "parent_id": str(root.id),
+            "relative_to": str(file.id),
+            "position": "before",
+        },
+        format="json",
+    )
+    assert result.status_code == 200
+    file.refresh_from_db()
+    other.refresh_from_db()
+    assert other.sort_order < file.sort_order
+    assert api_client.patch(base + str(file.id) + "/", {"parent_id": str(folder.id)}, format="json").status_code == 200
+    child = WikiNode.objects.create(
+        workspace=file.workspace, parent=folder, name="Child", node_type="folder", owned_by=owner
+    )
+    assert api_client.patch(base + str(folder.id) + "/", {"parent_id": str(child.id)}, format="json").status_code == 400

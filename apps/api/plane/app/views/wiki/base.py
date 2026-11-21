@@ -265,10 +265,12 @@ class WikiNodeEndpoint(BaseAPIView):
         )
         return Response(_serialize_node(node, request.user, EDITABLE), status=status.HTTP_201_CREATED)
 
+    @transaction.atomic
     def patch(self, request, slug, node_id):
         workspace, error = _workspace_or_404(slug)
         if error:
             return error
+        Workspace.objects.select_for_update().get(id=workspace.id)
         node, access, nodes_by_id, explicit = _visible_node(workspace, request.user, node_id)
         if node is None:
             return _not_found()
@@ -302,7 +304,32 @@ class WikiNodeEndpoint(BaseAPIView):
                 node.color = str(request.data.get("color") or "")[:255]
             if "view_props" in request.data and isinstance(request.data.get("view_props"), dict):
                 node.view_props = request.data.get("view_props")
+        relative_to = request.data.get("relative_to")
+        position = request.data.get("position")
+        ordered = None
+        if relative_to is not None:
+            target = next((item for item in nodes_by_id.values() if str(item.id) == str(relative_to)), None)
+            if (
+                target is None
+                or not can_view(effective_access(target, request.user.id, nodes_by_id, explicit))
+                or target.id == node.id
+                or target.parent_id != node.parent_id
+                or position not in ("before", "after")
+            ):
+                return Response({"error": "invalid_parent"}, status=400)
+            ordered = sorted(
+                (item for item in nodes_by_id.values() if item.parent_id == node.parent_id and item.id != node.id),
+                key=lambda item: (item.sort_order, item.name),
+            )
+            index = next(i for i, item in enumerate(ordered) if item.id == target.id)
+            ordered.insert(index + (position == "after"), node)
+            node.sort_order = (ordered.index(node) + 1) * WikiNode.DEFAULT_SORT_ORDER
         node.save()
+        if ordered is not None:
+            for index, sibling in enumerate(ordered, 1):
+                if sibling.id != node.id:
+                    WikiNode.objects.filter(id=sibling.id).update(sort_order=index * WikiNode.DEFAULT_SORT_ORDER)
+
         nodes_by_id[node.id] = node
         access = effective_access(node, request.user.id, nodes_by_id, explicit)
         return Response(_serialize_node(node, request.user, access), status=status.HTTP_200_OK)
