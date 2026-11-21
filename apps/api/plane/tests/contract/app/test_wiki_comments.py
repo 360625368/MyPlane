@@ -195,3 +195,17 @@ def test_wiki_home_recents_only_track_actual_edits(api_client, discussion):
     api_client.get(detail)
     api_client.patch(detail + "description/", edited, format="json")
     assert api_client.get(recent).data[0]["visited_at"] == timestamp
+
+
+@pytest.mark.contract
+@pytest.mark.django_db
+def test_wiki_permissions_hide_system_bots(api_client, discussion):
+    file, (owner, viewer, *_), _ = discussion
+    bot = User.objects.create(email="wiki-bot@example.com", username="wiki-bot", display_name="Plane", is_bot=True)
+    WorkspaceMember.objects.create(workspace=file.workspace, member=bot, role=20, is_active=True)
+    api_client.force_authenticate(user=owner)
+    response = api_client.get(f"/api/workspaces/{file.workspace.slug}/wiki/nodes/{file.id}/access/")
+    assert response.status_code == 200
+    ids = {member["id"] for member in response.data}
+    assert str(bot.id) not in ids
+    assert str(viewer.id) in ids

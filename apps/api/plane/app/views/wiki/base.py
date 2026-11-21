@@ -396,6 +396,7 @@ class WikiNodeAccessEndpoint(BaseAPIView):
             workspace=workspace,
             role__in=[ADMIN_ROLE, MEMBER_ROLE],
             is_active=True,
+            member__is_bot=False,
         ).select_related("member")
         members = []
         for membership in memberships:
