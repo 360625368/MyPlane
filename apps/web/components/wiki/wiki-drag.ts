@@ -2,6 +2,18 @@ import type { TWikiNode } from "@/services/wiki.service";
 
 export type WikiDropPosition = "before" | "inside" | "after";
 
+export function wikiDropPosition(
+  node: Pick<TWikiNode, "is_root" | "node_type">,
+  top: number,
+  height: number,
+  y: number
+): WikiDropPosition {
+  if (node.is_root) return "inside";
+  const offset = y - top;
+  if (node.node_type === "folder" && offset > 4 && offset < height - 4) return "inside";
+  return offset < height / 2 ? "before" : "after";
+}
+
 export function wikiDropUpdate(
   source: TWikiNode,
   target: TWikiNode,

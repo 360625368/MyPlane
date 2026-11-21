@@ -36,3 +36,11 @@ it("rejects cycles, hidden destinations, self drops and files as parents", () =>
   expect(wikiDropUpdate(file, { ...child, can_create_child: false }, "inside", nodes)).toBeNull();
   expect(wikiDropUpdate({ ...file, can_move: false }, folder, "inside", nodes)).toBeNull();
 });
+
+it("accepts a file inside a nested folder", () => {
+  const root = node("root", null, 0, true);
+  const parent = node("parent", "root", 10, true);
+  const nested = node("nested", "parent", 20, true);
+  const file = node("file", "root", 30);
+  expect(wikiDropUpdate(file, nested, "inside", [root, parent, nested, file])?.parent_id).toBe("nested");
+});

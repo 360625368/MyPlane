@@ -304,7 +304,14 @@ export function WikiExplorer({ workspaceSlug, nodeId }: Props) {
       const open = !collapsedIds.has(node.id);
       return (
         <div key={node.id}>
-          <WikiDraggableRow node={node} nodes={nodes} workspaceSlug={workspaceSlug} busy={moving} onMove={dropNode}>
+          <WikiDraggableRow
+            node={node}
+            nodes={nodes}
+            workspaceSlug={workspaceSlug}
+            busy={moving}
+            onMove={dropNode}
+            onExpand={() => toggleFolder(node.id, true)}
+          >
             <div
               className={cn(
                 "group/wiki-node grid h-8 grid-cols-[minmax(0,1fr)_auto_auto] items-center gap-x-1 rounded-lg px-2 [--node-size:var(--control-glyph-lg)] hover:bg-layer-transparent-hover",

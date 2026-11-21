@@ -6,7 +6,7 @@ import { DragDropOutline } from "@makeplane/propel/icons";
 import { useTranslation } from "@plane/i18n";
 import { cn } from "@plane/utils";
 import type { TWikiNode } from "@/services/wiki.service";
-import { wikiDropUpdate } from "./wiki-drag";
+import { wikiDropPosition, wikiDropUpdate } from "./wiki-drag";
 import type { WikiDropPosition } from "./wiki-drag";
 
 export function WikiDraggableRow({
@@ -16,6 +16,7 @@ export function WikiDraggableRow({
   busy,
   onMove,
   children,
+  onExpand,
 }: {
   node: TWikiNode;
   nodes: TWikiNode[];
@@ -23,6 +24,7 @@ export function WikiDraggableRow({
   busy: boolean;
   onMove: (id: string, data: { parent_id: string; sort_order: number }) => Promise<void>;
   children: ReactNode;
+  onExpand?: () => void;
 }) {
   const row = useRef<HTMLDivElement>(null);
   const handle = useRef<HTMLSpanElement>(null);
@@ -35,18 +37,20 @@ export function WikiDraggableRow({
     const dragHandle = handle.current;
     if (!element) return;
     const positionAt = (y: number): WikiDropPosition => {
-      if (node.is_root) return "inside";
       const rect = element.getBoundingClientRect();
-      const fraction = (y - rect.top) / rect.height;
-      if (node.node_type === "folder" && fraction > 0.25 && fraction < 0.75) return "inside";
-      return fraction < 0.5 ? "before" : "after";
+      return wikiDropPosition(node, rect.top, rect.height, y);
+    };
+    let expandTimer: ReturnType<typeof setTimeout> | undefined;
+    const clearExpand = () => {
+      if (expandTimer) clearTimeout(expandTimer);
+      expandTimer = undefined;
     };
     const sourceNode = (data: Record<string, unknown>) =>
       data.kind === "wiki-node" && data.workspace === workspaceSlug
         ? nodes.find((candidate) => candidate.id === data.id)
         : undefined;
 
-    return combine(
+    const cleanup = combine(
       ...(dragHandle && node.can_move && !node.is_root && !node.archived_at
         ? [
             draggable({
@@ -66,9 +70,18 @@ export function WikiDraggableRow({
           return !busy && !!sourceItem && !!wikiDropUpdate(sourceItem, node, positionAt(input.clientY), nodes);
         },
         onDrag: ({ location }) => setPosition(positionAt(location.current.input.clientY)),
-        onDragEnter: ({ location }) => setPosition(positionAt(location.current.input.clientY)),
-        onDragLeave: () => setPosition(null),
+        onDragEnter: ({ location }) => {
+          setPosition(positionAt(location.current.input.clientY));
+          if (node.node_type === "folder" && onExpand) {
+            expandTimer = setTimeout(onExpand, 500);
+          }
+        },
+        onDragLeave: () => {
+          clearExpand();
+          setPosition(null);
+        },
         onDrop: ({ source, location }) => {
+          clearExpand();
           setPosition(null);
           const sourceItem = sourceNode(source.data);
           const update =
@@ -77,7 +90,11 @@ export function WikiDraggableRow({
         },
       })
     );
-  }, [node, nodes, workspaceSlug, busy, onMove]);
+    return () => {
+      clearExpand();
+      cleanup();
+    };
+  }, [node, nodes, workspaceSlug, busy, onMove, onExpand]);
 
   return (
     <div
